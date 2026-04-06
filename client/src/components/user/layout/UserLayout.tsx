@@ -1,0 +1,46 @@
+import { type ReactNode } from 'react';
+import clsx from 'clsx';
+import UserNavbar from './UserNavbar';
+import UserSidebar, { type UserPageKey } from './UserSidebar';
+import styles from './UserLayout.module.css';
+
+interface UserLayoutProps {
+  children: ReactNode;
+  activePage: UserPageKey;
+  onNavigate: (page: UserPageKey) => void;
+  mobileSidebarOpen: boolean;
+  onToggleSidebar: () => void;
+  onCloseSidebar: () => void;
+  savedCount: number;
+}
+
+export default function UserLayout({
+  children,
+  activePage,
+  onNavigate,
+  mobileSidebarOpen,
+  onToggleSidebar,
+  onCloseSidebar,
+  savedCount,
+}: UserLayoutProps) {
+  return (
+    <div className={styles['user-layout-root']}>
+      <UserNavbar onToggleSidebar={onToggleSidebar} />
+
+      <div
+        className={clsx(styles['sidebar-overlay'], mobileSidebarOpen && styles.open)}
+        onClick={onCloseSidebar}
+      />
+
+      <div className={styles['app-shell']}>
+        <UserSidebar
+          activePage={activePage}
+          onNavigate={onNavigate}
+          savedCount={savedCount}
+          isMobileOpen={mobileSidebarOpen}
+        />
+        <main className={styles['content-col']}>{children}</main>
+      </div>
+    </div>
+  );
+}
