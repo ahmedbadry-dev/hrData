@@ -1,0 +1,29 @@
+.emptyState {
+  padding: 60px 0;
+  text-align: center;
+}
+
+.symbol {
+  font-size: 120px;
+  font-weight: 900;
+  color: var(--cream);
+  line-height: 1;
+  margin-bottom: 20px;
+}
+
+.title {
+  color: var(--warm);
+  font-size: 16px;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.description {
+  margin-top: 12px;
+  color: var(--warm);
+  font-size: 13px;
+}
+
+.action {
+  margin-top: 24px;
+}

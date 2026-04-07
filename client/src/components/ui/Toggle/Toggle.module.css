@@ -1,0 +1,46 @@
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: var(--cream);
+  border: 2px solid var(--warm);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.slider::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  right: 2px;
+  top: 2px;
+  background: var(--warm);
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle input:checked + .slider {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.toggle input:checked + .slider::before {
+  background: #fff;
+  right: auto;
+  left: 2px;
+}

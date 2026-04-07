@@ -1,0 +1,53 @@
+.input {
+  width: 100%;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Cairo', sans-serif;
+  outline: none;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+
+.input::placeholder {
+  color: var(--warm);
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.default {
+  text-align: right;
+}
+
+.search {
+  direction: ltr;
+  text-align: right;
+}
+
+.token {
+  direction: ltr;
+  text-align: left;
+  font-family: monospace;
+}
+
+.sm {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.md {
+  padding: 11px 14px;
+  font-size: 13px;
+}
+
+.lg {
+  padding: 14px 18px;
+  font-size: 15px;
+}

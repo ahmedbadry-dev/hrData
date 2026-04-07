@@ -1,0 +1,130 @@
+import type { SavedJob, UserJob } from '@/components/user/sections/userData';
+import { EmptyState, SearchBox } from '@/components/common';
+import { Button } from '@/components/ui';
+import { cn } from '@/lib/utils';
+import styles from './UserSearchSection.module.css';
+
+interface UserSearchSectionProps {
+  searchQuery: string;
+  onSearchQueryChange: (value: string) => void;
+  onSearch: () => void;
+  jobs: UserJob[];
+  visibleCount: number;
+  hasSearched: boolean;
+  selectedCard: string | null;
+  onSelectCard: (key: string) => void;
+  onLoadMore: () => void;
+  savedJobs: SavedJob[];
+  onToggleSave: (job: UserJob) => void;
+  onSaveAllVisible: () => void;
+}
+
+export default function UserSearchSection({
+  searchQuery,
+  onSearchQueryChange,
+  onSearch,
+  jobs,
+  visibleCount,
+  hasSearched,
+  selectedCard,
+  onSelectCard,
+  onLoadMore,
+  savedJobs,
+  onToggleSave,
+  onSaveAllVisible,
+}: UserSearchSectionProps) {
+  const visibleJobs = jobs.slice(0, visibleCount);
+
+  const isSaved = (job: UserJob) =>
+    savedJobs.some((s) => s.company === job.company && s.role === job.role);
+
+  return (
+    <section>
+      <div className={styles['search-wrapper']}>
+        <span className={styles['search-label']}>البحث عن وظيفة</span>
+        <SearchBox
+          value={searchQuery}
+          placeholder="مسمى وظيفي، تخصص، مدينة..."
+          onChange={onSearchQueryChange}
+          onSubmit={onSearch}
+          buttonLabel="بحث"
+          className={styles['search-box']}
+        />
+      </div>
+
+      {!hasSearched ? (
+        <EmptyState
+          symbol="◎"
+          title="لا توجد نتائج بحث بعد. استخدم مربع البحث أعلاه للعثور على وظيفتك المثالية."
+          className={styles['welcome-state']}
+          symbolClassName={styles['big-number']}
+        />
+      ) : (
+        <>
+          <div className={styles['control-bar']}>
+            <span className={styles['count-label']}>عُثر على {jobs.length} وظيفة</span>
+            <Button className={styles['save-all-btn']} onClick={onSaveAllVisible}>
+              حفظ الكل
+            </Button>
+          </div>
+
+          <div className={styles['results-list']}>
+            {visibleJobs.map((job) => {
+              const key = `${job.company}-${job.role}`;
+              const saved = isSaved(job);
+              const selected = selectedCard === key;
+
+              return (
+                <div
+                  className={cn(styles['job-card'], selected && styles.selected)}
+                  key={key}
+                  onClick={() => onSelectCard(key)}
+                >
+                  <div className={styles['card-top']}>
+                    <div className={styles['card-main']}>
+                      <div className={styles['company-tag']}>{job.company}</div>
+                      <h2 className={styles['job-title']}>{job.role}</h2>
+                      <div className={styles['meta-row']}>
+                        <span className={styles['meta-chip']}>📍 {job.city}</span>
+                        <span className={styles['meta-chip']}>🎓 {job.major}</span>
+                        <span className={styles['meta-chip']}>📅 {job.date}</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="icon"
+                      className={cn(styles['save-btn'], saved && styles.saved)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleSave(job);
+                      }}
+                      title={saved ? 'إزالة من المحفوظات' : 'حفظ الوظيفة'}
+                    >
+                      ★
+                    </Button>
+                  </div>
+
+                  <div className={styles['card-email']}>
+                    <span className={styles['email-hint']}>أرسل سيرتك إلى</span>
+                    <a className={styles['email-link']} href={`mailto:${job.email}`} onClick={(e) => e.stopPropagation()}>
+                      📧 {job.email}
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {visibleCount < jobs.length ? (
+            <div className={styles['load-more-wrap']}>
+              <Button className={styles['btn-load-more']} onClick={onLoadMore}>
+                تحميل المزيد
+              </Button>
+            </div>
+          ) : null}
+        </>
+      )}
+    </section>
+  );
+}
