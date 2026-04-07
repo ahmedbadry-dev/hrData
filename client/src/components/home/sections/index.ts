@@ -4,3 +4,4 @@ export { default as HomeFeaturesSection } from './HomeFeaturesSection/HomeFeatur
 export { default as HomeQuoteSection } from './HomeQuoteSection/HomeQuoteSection';
 export { default as HomeCtaSection } from './HomeCtaSection/HomeCtaSection';
 export { default as HomeFooterSection } from './HomeFooterSection/HomeFooterSection';
+export { default as HomeHowItWorksSection } from './HomeHowItWorksSection/HomeHowItWorksSection';

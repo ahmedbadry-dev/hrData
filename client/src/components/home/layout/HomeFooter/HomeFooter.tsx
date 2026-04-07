@@ -1,4 +1,4 @@
-import styles from '@/pages/home/HomePage.module.css';
+import styles from '@/components/home/layout/HomeLayout/HomeLayout.module.css';
 import { homeFooterLinks } from '@/components/home/sections/homeData';
 
 export default function HomeFooter() {

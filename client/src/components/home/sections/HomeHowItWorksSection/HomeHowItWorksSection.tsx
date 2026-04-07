@@ -1,5 +1,5 @@
-import styles from '@/pages/home/HomePage.module.css';
-import { homeSteps } from '@/components/home/sections/homeData';
+import { homeSteps } from '../homeData';
+import styles from '@/components/home/layout/HomeLayout/HomeLayout.module.css';
 
 export default function HomeHowItWorksSection() {
   return (
