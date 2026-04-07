@@ -1,0 +1,4 @@
+.card {
+  background: var(--paper);
+  border: 2px solid var(--ink);
+}

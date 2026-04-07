@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import UserLayout from '@/components/user/layout/UserLayout';
-import type { UserPageKey } from '@/components/user/layout/UserSidebar';
-import UserAnalyticsSection from '@/components/user/sections/UserAnalyticsSection';
-import UserAutoApplySection from '@/components/user/sections/UserAutoApplySection';
-import UserHomeSection from '@/components/user/sections/UserHomeSection';
-import UserSavedJobsSection from '@/components/user/sections/UserSavedJobsSection';
-import UserSearchSection from '@/components/user/sections/UserSearchSection';
-import UserSettingsSection from '@/components/user/sections/UserSettingsSection';
+import { UserLayout, type UserPageKey } from '@/components/user/layout';
+import {
+  UserAnalyticsSection,
+  UserAutoApplySection,
+  UserHomeSection,
+  UserSavedJobsSection,
+  UserSearchSection,
+  UserSettingsSection,
+} from '@/components/user/sections';
 import {
   PAGE_NAME,
   getApplications,

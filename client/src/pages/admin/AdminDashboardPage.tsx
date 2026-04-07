@@ -1,17 +1,17 @@
 import { useMemo, useState } from 'react';
-import AdminLayout from '@/components/admin/layout/AdminLayout';
-import type { AdminPageKey } from '@/components/admin/layout/AdminSidebar';
-import AdminAnnouncementsSection from '@/components/admin/sections/AdminAnnouncementsSection';
-import AdminAnalyticsSection from '@/components/admin/sections/AdminAnalyticsSection';
-import AdminHomeSection from '@/components/admin/sections/AdminHomeSection';
-import AdminModals, {
+import { AdminLayout, type AdminPageKey } from '@/components/admin/layout';
+import {
+  AdminAnnouncementsSection,
+  AdminAnalyticsSection,
+  AdminHomeSection,
+  AdminModals,
   type AnnouncementForm,
   type EditUserForm,
-} from '@/components/admin/sections/AdminModals';
-import AdminScraperSection from '@/components/admin/sections/AdminScraperSection';
-import AdminSettingsSection from '@/components/admin/sections/AdminSettingsSection';
-import AdminToast from '@/components/admin/sections/AdminToast';
-import AdminUsersSection from '@/components/admin/sections/AdminUsersSection';
+  AdminScraperSection,
+  AdminSettingsSection,
+  AdminToast,
+  AdminUsersSection,
+} from '@/components/admin/sections';
 import {
   initialAdminAnnouncements,
   initialAdminUsers,

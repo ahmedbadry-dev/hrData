@@ -1,0 +1,17 @@
+.searchBox {
+  display: flex;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  overflow: hidden;
+  direction: ltr;
+}
+
+.input {
+  border: none;
+  border-radius: 0;
+}
+
+.button {
+  border-width: 0;
+  border-radius: 0;
+}
