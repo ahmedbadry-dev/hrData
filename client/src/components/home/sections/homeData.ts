@@ -46,6 +46,20 @@ export const homeHeroCards: HomeHeroCard[] = [
     major: 'علوم حاسب',
     email: 'hr@tech.com',
   },
+  {
+    company: 'مجموعة شاكر',
+    role: 'أخصائي مبيعات',
+    city: 'الرياض',
+    major: 'إدارة أعمال',
+    email: 'recruitment@shaker.com',
+  },
+  {
+    company: 'شركة التقنية',
+    role: 'مطور برمجيات',
+    city: 'جدة',
+    major: 'علوم حاسب',
+    email: 'hr@tech.com',
+  },
 ];
 
 export const homeSteps: HomeStep[] = [

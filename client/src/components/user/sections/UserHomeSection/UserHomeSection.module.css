@@ -49,11 +49,29 @@
   padding: 24px;
   text-align: center;
   transition: transform 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
 }
 
 .stat-card:hover {
   transform: translateY(-4px);
   background: var(--cream);
+}
+
+.stat-card:hover::after {
+  transform: scaleX(1);
 }
 
 .stat-val {

@@ -36,6 +36,9 @@ export default function UserHomeSection({ savedCount }: UserHomeSectionProps) {
   const totalEmails = useAnimatedCounter(124);
   const openRate = useAnimatedCounter(68, '%');
   const saved = useAnimatedCounter(savedCount);
+  const replies = useAnimatedCounter(20);
+  const profileStrength = useAnimatedCounter(80, '%');
+  const activeApps = useAnimatedCounter(7);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -86,7 +89,7 @@ export default function UserHomeSection({ savedCount }: UserHomeSectionProps) {
       />
 
       <div className={styles['welcome-state']}>
-        <div className={styles['big-number']}>٢٠</div>
+        <div className={styles['big-number']}>١٠٠+</div>
         <p>وظيفة بانتظارك — اختر «اكتشف الوظائف» للبدء</p>
       </div>
 
@@ -112,14 +115,23 @@ export default function UserHomeSection({ savedCount }: UserHomeSectionProps) {
           value={saved}
           title="الوظائف المحفوظة"
         />
+        <StatCard
+          className={styles['stat-card']}
+          valueClassName={styles['stat-val']}
+          titleClassName={styles['stat-tit']}
+          value={replies}
+          title="الوظائف المتاحه"
+        />
+  
+
       </div>
 
-      <div className={styles['chart-container']}>
-        <div className={styles['chart-header']}>
-          <div className={styles['chart-title']}>نشاط الإرسال خلال الأسبوع</div>
-        </div>
-        <div className={styles['chart-wrap']}>
-          <canvas ref={chartRef} />
+        <div className={styles['chart-container']}>
+          <div className={styles['chart-header']}>
+            <div className={styles['chart-title']}>نشاط الإرسال خلال الأسبوع</div>
+          </div>
+          <div className={styles['chart-wrap']}>
+            <canvas ref={chartRef} />
         </div>
       </div>
     </section>

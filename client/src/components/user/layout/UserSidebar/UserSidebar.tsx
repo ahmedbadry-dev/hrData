@@ -165,7 +165,7 @@ export default function UserSidebar({
           </ul>
         </nav>
 
-        <div className={styles['sidebar-sys']}>
+        {/* <div className={styles['sidebar-sys']}>
           <div className={styles['sys-title']}>إحصائيات</div>
           <div className={styles['sys-item']}>
             <span className={styles['sys-label']}>وظيفة متاحة</span>
@@ -179,7 +179,7 @@ export default function UserSidebar({
             <span className={styles['sys-label']}>محفوظة</span>
             <span className={styles['sys-val']}>{savedCount}</span>
           </div>
-        </div>
+        </div> */}
       </div>
     </aside>
   );

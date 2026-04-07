@@ -51,16 +51,34 @@ export default function HomeHeroSection() {
         </div>
         <div>
           <div className={styles['hero-card-preview']}>
+            <div className={styles['hcp-tag']}>أرامكو السعودية</div>
+            <div className={styles['hcp-title']}>مهندس برمجيات</div>
+            <div className={styles['hcp-meta']}>📍 الظهران · 🎓 علوم حاسب</div>
+            <div className={styles['hcp-email']}>📧 jobs@aramco.com</div>
+          </div>
+          <div
+            className={`${styles['hero-card-preview']} `}
+          >
             <div className={styles['hcp-tag']}>مجموعة شاكر</div>
             <div className={styles['hcp-title']}>أخصائي مبيعات</div>
             <div className={styles['hcp-meta']}>📍 الرياض · 🎓 إدارة أعمال</div>
             <div className={styles['hcp-email']}>📧 recruitment@shaker.com</div>
           </div>
-          <div className={`${styles['hero-card-preview']} ${styles['hero-card-preview-secondary']}`}>
-            <div className={styles['hcp-tag']}>شركة التقنية</div>
-            <div className={styles['hcp-title']}>مطور برمجيات</div>
-            <div className={styles['hcp-meta']}>📍 جدة · 🎓 علوم حاسب</div>
-            <div className={styles['hcp-email']}>📧 hr@tech.com</div>
+          <div
+            className={`${styles['hero-card-preview']} `}
+          >
+            <div className={styles['hcp-tag']}>شركة نيوم</div>
+            <div className={styles['hcp-title']}>مدير مشاريع</div>
+            <div className={styles['hcp-meta']}>📍 تبوك · 🎓 هندسة مدنية</div>
+            <div className={styles['hcp-email']}>📧 careers@neom.com</div>
+          </div>
+          <div
+            className={`${styles['hero-card-preview']} `}
+          >
+            <div className={styles['hcp-tag']}>مصرف الراجحي</div>
+            <div className={styles['hcp-title']}>محلل مالي</div>
+            <div className={styles['hcp-meta']}>📍 جدة · 🎓 مالية ومحاسبة</div>
+            <div className={styles['hcp-email']}>📧 careers@alrajhibank.com.sa</div>
           </div>
         </div>
       </div>
