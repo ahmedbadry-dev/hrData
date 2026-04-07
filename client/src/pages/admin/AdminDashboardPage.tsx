@@ -276,7 +276,7 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <>
+    <div dir="rtl">
       <AdminLayout
         activePage={activePage}
         onNavigate={navigate}
@@ -310,6 +310,6 @@ export default function AdminDashboardPage() {
         visible={toast.visible}
         onHide={() => setToast((prev) => ({ ...prev, visible: false }))}
       />
-    </>
+    </div>
   );
 }

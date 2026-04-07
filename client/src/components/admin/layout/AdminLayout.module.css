@@ -1,5 +1,6 @@
 .admin-layout-root {
   min-height: 100vh;
+  direction: rtl;
 }
 
 .app-shell {
