@@ -6,7 +6,6 @@ build
 *.log
 .DS_Store
 
-# AI / Agent files
 .claude/
 .specify/
 specs/
