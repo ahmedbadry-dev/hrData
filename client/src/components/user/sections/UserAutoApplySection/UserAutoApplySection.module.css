@@ -147,43 +147,78 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  max-height: 420px;
+  overflow-x: hidden;
+  border-bottom: 2px solid var(--ink);
+}
+
+.results-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.results-list::-webkit-scrollbar-track {
+  background: var(--cream);
+}
+
+.results-list::-webkit-scrollbar-thumb {
+  background: var(--ink);
+  border-radius: 0;
 }
 
 .recipient-row {
   border: 1px solid var(--cream);
   border-top: none;
-  padding: 16px;
+  padding: 20px 24px;
   display: flex;
-  gap: 12px;
-  flex-direction: row-reverse;
-  align-items: flex-start;
+  gap: 16px;
+  align-items: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: var(--paper);
 }
 
 .recipient-row:first-child {
   border-top: 1px solid var(--cream);
 }
 
+.recipient-row:hover {
+  background: var(--cream);
+  transform: translateX(-4px);
+}
+
 .recipient-row input {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   accent-color: var(--accent);
   cursor: pointer;
-  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.recipient-content {
+  flex: 1;
 }
 
 .company-tag {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   color: var(--accent);
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .job-title {
-  font-size: 15px;
-  font-weight: 900;
+  font-size: 16px;
+  font-weight: 800;
   color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.connected-email {
+  font-size: 11px;
+  color: var(--warm);
+  direction: ltr;
+  text-align: right;
 }
 
 .empty-card {

@@ -1,0 +1,38 @@
+.selectWrapper {
+  position: relative;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  min-width: 140px;
+  transition: background-color 0.2s ease;
+}
+
+.selectWrapper:hover {
+  background: var(--cream);
+}
+
+.select {
+  appearance: none;
+  width: 100%;
+  border: none;
+  background: none;
+  font-family: 'Cairo', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 14px 16px 14px 45px;
+  cursor: pointer;
+  outline: none;
+  direction: rtl;
+}
+
+.icon {
+  position: absolute;
+  left: 15px;
+  pointer-events: none;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -31,6 +31,8 @@ export default function UserDashboardPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
+  const [country, setCountry] = useState('all');
+  const [timeFilter, setTimeFilter] = useState('all');
   const [visibleCount, setVisibleCount] = useState(0);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
 
@@ -180,6 +182,10 @@ export default function UserDashboardPage() {
             savedJobs={savedJobs}
             onToggleSave={toggleSave}
             onSaveAllVisible={saveAllVisible}
+            country={country}
+            onCountryChange={setCountry}
+            timeFilter={timeFilter}
+            onTimeFilterChange={setTimeFilter}
           />
         );
       case 'saved':

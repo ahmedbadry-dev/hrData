@@ -11,7 +11,19 @@
   display: block;
 }
 
+.search-flex {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.city-select,
+.time-select {
+  flex: 1;
+}
+
 .search-box {
+  flex: 3;
   display: flex;
   border: 2px solid var(--ink);
   background: var(--paper);
@@ -306,6 +318,16 @@
 }
 
 @media (max-width: 600px) {
+  .search-flex {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .city-select,
+  .time-select {
+    width: 100%;
+  }
+
   .search-box {
     flex-direction: column;
   }

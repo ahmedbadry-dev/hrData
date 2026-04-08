@@ -237,25 +237,31 @@ export default function UserAutoApplySection({
         </div>
       ) : (
         <div className={styles['results-list']}>
-          {savedJobs.map((job, index) => (
-            <label className={styles['recipient-row']} key={`${job.company}-${job.role}-${index}`}>
-              <input
-                type="checkbox"
-                checked={!!selectedMap[index]}
-                onChange={(e) =>
-                  setSelectedMap((prev) => ({
-                    ...prev,
-                    [index]: e.target.checked,
-                  }))
-                }
-              />
-              <div>
-                <div className={styles['company-tag']}>{job.company}</div>
-                <div className={styles['job-title']}>{job.role}</div>
-                <div className={styles['connected-email']}>{job.email}</div>
-              </div>
-            </label>
-          ))}
+          <span className={styles['search-label']}>الوظائف المختارة</span>
+          <div className={styles['results-list']}>
+            {savedJobs.map((job, index) => (
+              <label
+                className={styles['recipient-row']}
+                key={`${job.company}-${job.role}-${index}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={!!selectedMap[index]}
+                  onChange={(e) =>
+                    setSelectedMap((prev) => ({
+                      ...prev,
+                      [index]: e.target.checked,
+                    }))
+                  }
+                />
+                <div>
+                  <div className={styles['company-tag']}>{job.company}</div>
+                  <div className={styles['job-title']}>{job.role}</div>
+                  <div className={styles['connected-email']}>{job.email}</div>
+                </div>
+              </label>
+            ))}
+          </div>
         </div>
       )}
 

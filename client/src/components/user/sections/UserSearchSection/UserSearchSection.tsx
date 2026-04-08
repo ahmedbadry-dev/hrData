@@ -1,5 +1,5 @@
 import type { SavedJob, UserJob } from '@/components/user/sections/userData';
-import { EmptyState, SearchBox } from '@/components/common';
+import { EmptyState, SearchBox, Select } from '@/components/common';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import styles from './UserSearchSection.module.css';
@@ -17,7 +17,29 @@ interface UserSearchSectionProps {
   savedJobs: SavedJob[];
   onToggleSave: (job: UserJob) => void;
   onSaveAllVisible: () => void;
+  country: string;
+  onCountryChange: (value: string) => void;
+  timeFilter: string;
+  onTimeFilterChange: (value: string) => void;
 }
+
+const cityOptions = [
+  { value: 'all', label: 'كل المدن' },
+  { value: 'riyadh', label: 'الرياض' },
+  { value: 'jeddah', label: 'جدة' },
+  { value: 'dammam', label: 'الدمام' },
+  { value: 'khobar', label: 'الخبر' },
+  { value: 'mecca', label: 'مكة المكرمة' },
+  { value: 'medina', label: 'المدينة المنورة' },
+  { value: 'tabuk', label: 'تبوك' },
+];
+
+const timeOptions = [
+  { value: 'all', label: 'كل الأوقات' },
+  { value: 'day', label: 'آخر ٢٤ ساعة' },
+  { value: 'week', label: 'آخر أسبوع' },
+  { value: 'month', label: 'آخر شهر' },
+];
 
 export default function UserSearchSection({
   searchQuery,
@@ -32,24 +54,42 @@ export default function UserSearchSection({
   savedJobs,
   onToggleSave,
   onSaveAllVisible,
+  country,
+  onCountryChange,
+  timeFilter,
+  onTimeFilterChange,
 }: UserSearchSectionProps) {
   const visibleJobs = jobs.slice(0, visibleCount);
 
   const isSaved = (job: UserJob) =>
-    savedJobs.some((s) => s.company === job.company && s.role === job.role);
+    savedJobs.some((s: SavedJob) => s.company === job.company && s.role === job.role);
 
   return (
     <section>
       <div className={styles['search-wrapper']}>
         <span className={styles['search-label']}>البحث عن وظيفة</span>
-        <SearchBox
-          value={searchQuery}
-          placeholder="مسمى وظيفي، تخصص، مدينة..."
-          onChange={onSearchQueryChange}
-          onSubmit={onSearch}
-          buttonLabel="بحث"
-          className={styles['search-box']}
-        />
+        <div className={styles['search-flex']}>
+          <SearchBox
+            value={searchQuery}
+            placeholder="مسمى وظيفي، تخصص، مدينة..."
+            onChange={onSearchQueryChange}
+            onSubmit={onSearch}
+            buttonLabel="بحث"
+            className={styles['search-box']}
+          />
+          <Select
+            options={cityOptions}
+            value={country}
+            onValueChange={onCountryChange}
+            containerClassName={styles['city-select']}
+          />
+          <Select
+            options={timeOptions}
+            value={timeFilter}
+            onValueChange={onTimeFilterChange}
+            containerClassName={styles['time-select']}
+          />
+        </div>
       </div>
 
       {!hasSearched ? (
