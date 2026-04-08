@@ -28,7 +28,7 @@ export default function UserNavbar({ onToggleSidebar }: UserNavbarProps) {
           <a className={styles.logo} href="#">
             كُـفُـؤ<span>.</span>
           </a>
-          
+
           <span className={styles['logo-tagline']}>منصة التوظيف المباشر</span>
         </div>
         <span className={styles['user-badge']}>باحث عن عمل</span>

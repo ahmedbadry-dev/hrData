@@ -31,7 +31,7 @@ export default function AdminAnnouncementsSection({
         titleClassName={styles['section-headline']}
       />
 
-      <div className={styles['announce-top']}> 
+      <div className={styles['announce-top']}>
         <span className={styles['announce-count']}>{announcements.length} إشعار / إعلان</span>
         <Button className={styles['btn-primary']} onClick={onOpenCreate}>
           + إرسال إشعار جديد
@@ -40,7 +40,11 @@ export default function AdminAnnouncementsSection({
 
       <div>
         {announcements.map((a, i) => (
-          <div className={cn(styles['announce-card'], styles[a.type])} style={{ animationDelay: `${i * 0.07}s` }} key={a.id}>
+          <div
+            className={cn(styles['announce-card'], styles[a.type])}
+            style={{ animationDelay: `${i * 0.07}s` }}
+            key={a.id}
+          >
             <div className={styles['announce-head']}>
               <div>
                 <div className={styles['announce-title']}>{a.title}</div>
@@ -51,7 +55,10 @@ export default function AdminAnnouncementsSection({
 
               <div className={styles['announce-actions']}>
                 <Badge className={styles['type-badge']}>{typeLabels[a.type]}</Badge>
-                <Button className={cn(styles['action-btn'], styles.danger)} onClick={() => onDelete(a.id)}>
+                <Button
+                  className={cn(styles['action-btn'], styles.danger)}
+                  onClick={() => onDelete(a.id)}
+                >
                   حذف
                 </Button>
               </div>

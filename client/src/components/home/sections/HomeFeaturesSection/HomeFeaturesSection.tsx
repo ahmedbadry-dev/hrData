@@ -43,8 +43,7 @@ export default function HomeFeaturesSection() {
           </div>
           <div className={styles['feature-title']}>بحث سريع ودقيق</div>
           <div className={styles['feature-body']}>
-            ابحث بالمسمى الوظيفي أو التخصص أو المدينة. نتائج فورية بدون انتظار وبدون إعلانات
-            مزعجة.
+            ابحث بالمسمى الوظيفي أو التخصص أو المدينة. نتائج فورية بدون انتظار وبدون إعلانات مزعجة.
           </div>
         </div>
 
@@ -57,8 +56,8 @@ export default function HomeFeaturesSection() {
           </div>
           <div className={styles['feature-title']}>مجاني تماماً</div>
           <div className={styles['feature-body']}>
-            كُفُـؤ مجانية للباحثين عن عمل بالكامل — لا اشتراكات، لا رسوم خفية، لا إعلانات. فقط
-            فرصة حقيقية.
+            كُفُـؤ مجانية للباحثين عن عمل بالكامل — لا اشتراكات، لا رسوم خفية، لا إعلانات. فقط فرصة
+            حقيقية.
           </div>
         </div>
       </div>

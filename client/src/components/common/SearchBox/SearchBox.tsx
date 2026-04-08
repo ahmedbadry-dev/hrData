@@ -39,7 +39,12 @@ export function SearchBox({
         variant="search"
         className={cn(styles.input, inputClassName)}
       />
-      <Button type="submit" variant="primary" size="md" className={cn(styles.button, buttonClassName)}>
+      <Button
+        type="submit"
+        variant="primary"
+        size="md"
+        className={cn(styles.button, buttonClassName)}
+      >
         {buttonLabel}
       </Button>
     </form>

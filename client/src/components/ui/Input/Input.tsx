@@ -14,5 +14,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { variant = 'default', uiSize = 'md', className, ...props },
   ref
 ) {
-  return <input ref={ref} className={cn(styles.input, styles[variant], styles[uiSize], className)} {...props} />;
+  return (
+    <input
+      ref={ref}
+      className={cn(styles.input, styles[variant], styles[uiSize], className)}
+      {...props}
+    />
+  );
 });

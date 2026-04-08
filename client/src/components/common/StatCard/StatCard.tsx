@@ -32,7 +32,9 @@ export function StatCard({
       <div className={cn(styles.value, valueClassName)}>{value}</div>
       <div className={cn(styles.title, titleClassName)}>{title}</div>
       {trend ? (
-        <div className={cn(styles.trend, styles[trend.direction], trendClassName)}>{trend.value}</div>
+        <div className={cn(styles.trend, styles[trend.direction], trendClassName)}>
+          {trend.value}
+        </div>
       ) : null}
     </div>
   );

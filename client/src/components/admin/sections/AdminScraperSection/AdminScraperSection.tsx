@@ -47,7 +47,12 @@ export default function AdminScraperSection({
         <div className={styles['scraper-head']}>
           <div className={styles['status-col']}>
             <div className={styles['status-mini']}>الحالة الحالية</div>
-            <div className={cn(styles['scraper-status-big'], scraperRunning ? styles.running : styles.stopped)}>
+            <div
+              className={cn(
+                styles['scraper-status-big'],
+                scraperRunning ? styles.running : styles.stopped
+              )}
+            >
               {scraperRunning ? '● شغال' : '○ متوقف'}
             </div>
             <div className={styles['status-desc']}>
@@ -59,7 +64,10 @@ export default function AdminScraperSection({
 
           <div>
             <Button
-              className={cn(styles['toggle-scraper-btn'], scraperRunning ? styles.stop : styles.start)}
+              className={cn(
+                styles['toggle-scraper-btn'],
+                scraperRunning ? styles.stop : styles.start
+              )}
               onClick={onToggleScraper}
             >
               {scraperRunning ? 'إيقاف السكراب' : 'تشغيل السكراب'}
@@ -127,7 +135,9 @@ export default function AdminScraperSection({
               <div className={styles['source-name']}>{src.name}</div>
               <div className={styles['source-jobs']}>{src.jobs} وظيفة مجموعة اليوم</div>
             </div>
-            <Badge className={cn(styles['status-badge'], src.status ? styles.active : styles.suspended)}>
+            <Badge
+              className={cn(styles['status-badge'], src.status ? styles.active : styles.suspended)}
+            >
               {src.status ? 'نشط' : 'متوقف'}
             </Badge>
           </div>

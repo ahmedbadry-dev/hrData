@@ -72,7 +72,8 @@ export default function AdminDashboardPage() {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter(
-        (u) => u.name.includes(searchQuery) || u.email.toLowerCase().includes(q) || u.phone.includes(q)
+        (u) =>
+          u.name.includes(searchQuery) || u.email.toLowerCase().includes(q) || u.phone.includes(q)
       );
     }
 
@@ -96,9 +97,7 @@ export default function AdminDashboardPage() {
   const saveEditedUser = () => {
     if (editingUserId === null) return;
 
-    setUsers((prev) =>
-      prev.map((u) => (u.id === editingUserId ? { ...u, ...editForm } : u))
-    );
+    setUsers((prev) => prev.map((u) => (u.id === editingUserId ? { ...u, ...editForm } : u)));
 
     setEditOpen(false);
     setEditingUserId(null);
@@ -113,7 +112,9 @@ export default function AdminDashboardPage() {
     if (!window.confirm(`هل تريد ${action} حساب ${user.name}؟`)) return;
 
     setUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, status: u.status === 'active' ? 'suspended' : 'active' } : u))
+      prev.map((u) =>
+        u.id === id ? { ...u, status: u.status === 'active' ? 'suspended' : 'active' } : u
+      )
     );
 
     showToast(`تم ${action} الحساب`);

@@ -10,7 +10,9 @@ export default function HomeCtaSection() {
           <br />
           رحلتك الوظيفية؟
         </div>
-        <div className={styles['cta-sub']}>أكثر من ٢٠ وظيفة بانتظارك الآن من شركات موثوقة في المملكة</div>
+        <div className={styles['cta-sub']}>
+          أكثر من ٢٠ وظيفة بانتظارك الآن من شركات موثوقة في المملكة
+        </div>
       </div>
       <div className={styles['cta-buttons']}>
         <Link className={styles['btn-primary']} to="/dashboard">

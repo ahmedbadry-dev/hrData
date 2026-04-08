@@ -17,7 +17,13 @@ export default function AdminToast({ message, type, visible, onHide }: AdminToas
   }, [visible, onHide]);
 
   return (
-    <div className={cn(styles.toast, visible && styles.show, type === 'success' ? styles.success : styles.error)}>
+    <div
+      className={cn(
+        styles.toast,
+        visible && styles.show,
+        type === 'success' ? styles.success : styles.error
+      )}
+    >
       {message}
     </div>
   );

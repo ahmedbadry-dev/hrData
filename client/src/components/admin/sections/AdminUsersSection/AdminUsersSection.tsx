@@ -108,16 +108,25 @@ export default function AdminUsersSection({
                   </Badge>
                 </td>
                 <td>
-                  <Button className={cn(styles['action-btn'], styles.gold)} onClick={() => onToggleActivity(u.id)}>
+                  <Button
+                    className={cn(styles['action-btn'], styles.gold)}
+                    onClick={() => onToggleActivity(u.id)}
+                  >
                     نشاط
                   </Button>
                   <Button className={styles['action-btn']} onClick={() => onEditUser(u.id)}>
                     تعديل
                   </Button>
-                  <Button className={cn(styles['action-btn'], styles.success)} onClick={() => onToggleStatus(u.id)}>
+                  <Button
+                    className={cn(styles['action-btn'], styles.success)}
+                    onClick={() => onToggleStatus(u.id)}
+                  >
                     {u.status === 'active' ? 'إيقاف' : 'تفعيل'}
                   </Button>
-                  <Button className={cn(styles['action-btn'], styles.danger)} onClick={() => onDeleteUser(u.id)}>
+                  <Button
+                    className={cn(styles['action-btn'], styles.danger)}
+                    onClick={() => onDeleteUser(u.id)}
+                  >
                     حذف
                   </Button>
                 </td>

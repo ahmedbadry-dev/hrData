@@ -100,10 +100,7 @@ export default function AdminSidebar({
             </li>
             <li>
               <button
-                className={cn(
-                  styles['nav-link'],
-                  activePage === 'announcements' && styles.active
-                )}
+                className={cn(styles['nav-link'], activePage === 'announcements' && styles.active)}
                 onClick={() => onNavigate('announcements')}
               >
                 <svg

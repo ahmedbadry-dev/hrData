@@ -132,7 +132,9 @@ export default function AdminSettingsSection({
         />
 
         <div className={styles['settings-input-wrap']}>
-          <div className={styles['settings-input-label']}>الفترة الزمنية بين الجولات (بالدقائق)</div>
+          <div className={styles['settings-input-label']}>
+            الفترة الزمنية بين الجولات (بالدقائق)
+          </div>
           <div className={styles['token-input-row']}>
             <Input
               type="number"
@@ -155,17 +157,25 @@ export default function AdminSettingsSection({
             <div className={cn(styles['settings-row-label'], styles.danger)}>مسح جميع السجلات</div>
             <div className={styles['settings-row-desc']}>حذف كافة سجلات النظام نهائياً</div>
           </div>
-          <Button className={cn(styles['action-btn'], styles.danger)} onClick={() => onDangerAction('clear-logs')}>
+          <Button
+            className={cn(styles['action-btn'], styles.danger)}
+            onClick={() => onDangerAction('clear-logs')}
+          >
             مسح الكل
           </Button>
         </div>
 
         <div className={styles['settings-row']}>
           <div className={styles['settings-row-info']}>
-            <div className={cn(styles['settings-row-label'], styles.danger)}>إعادة ضبط الإعدادات</div>
+            <div className={cn(styles['settings-row-label'], styles.danger)}>
+              إعادة ضبط الإعدادات
+            </div>
             <div className={styles['settings-row-desc']}>استعادة الإعدادات الافتراضية للنظام</div>
           </div>
-          <Button className={cn(styles['action-btn'], styles.danger)} onClick={() => onDangerAction('reset-settings')}>
+          <Button
+            className={cn(styles['action-btn'], styles.danger)}
+            onClick={() => onDangerAction('reset-settings')}
+          >
             إعادة ضبط
           </Button>
         </div>

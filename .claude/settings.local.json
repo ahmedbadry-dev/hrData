@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash .specify/scripts/bash/create-new-feature.sh \"Set up Turborepo monorepo with pnpm workspaces, three apps \\(api, web, admin\\), shared packages, Express server with middleware stack, Prisma schema with all 10 tables, health check endpoints, and all config singletons\" --json --short-name \"foundation-monorepo-setup\")"
+    ]
+  }
+}

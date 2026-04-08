@@ -202,7 +202,11 @@ export default function AdminHomeSection({ logs }: AdminHomeSectionProps) {
 
         <div className={styles['log-list']}>
           {logs.map((log, i) => (
-            <div className={styles['log-item']} style={{ animationDelay: `${i * 0.06}s` }} key={log.text}>
+            <div
+              className={styles['log-item']}
+              style={{ animationDelay: `${i * 0.06}s` }}
+              key={log.text}
+            >
               <div className={cn(styles['log-dot'], styles[log.type])} />
               <span className={styles['log-text']}>{log.text}</span>
               <span

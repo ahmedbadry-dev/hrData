@@ -27,7 +27,9 @@ export function EmptyState({
     <div className={cn(styles.emptyState, className)}>
       <div className={cn(styles.symbol, symbolClassName)}>{symbol}</div>
       <p className={cn(styles.title, titleClassName)}>{title}</p>
-      {description ? <p className={cn(styles.description, descriptionClassName)}>{description}</p> : null}
+      {description ? (
+        <p className={cn(styles.description, descriptionClassName)}>{description}</p>
+      ) : null}
       {action ? <div className={styles.action}>{action}</div> : null}
     </div>
   );

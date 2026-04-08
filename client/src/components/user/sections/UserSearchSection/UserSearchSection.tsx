@@ -147,7 +147,11 @@ export default function UserSearchSection({
 
                   <div className={styles['card-email']}>
                     <span className={styles['email-hint']}>أرسل سيرتك إلى</span>
-                    <a className={styles['email-link']} href={`mailto:${job.email}`} onClick={(e) => e.stopPropagation()}>
+                    <a
+                      className={styles['email-link']}
+                      href={`mailto:${job.email}`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       📧 {job.email}
                     </a>
                   </div>

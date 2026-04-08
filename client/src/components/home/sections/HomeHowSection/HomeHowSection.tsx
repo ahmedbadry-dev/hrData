@@ -21,8 +21,8 @@ export default function HomeHowSection() {
           <div className={styles['step-accent']} />
           <div className={styles['step-title']}>تواصل مباشرةً</div>
           <div className={styles['step-body']}>
-            أرسل سيرتك الذاتية مباشرةً على بريد الشركة — بدون نماذج معقدة أو انتظار طويل. تواصل
-            شخصي وحقيقي.
+            أرسل سيرتك الذاتية مباشرةً على بريد الشركة — بدون نماذج معقدة أو انتظار طويل. تواصل شخصي
+            وحقيقي.
           </div>
         </div>
 

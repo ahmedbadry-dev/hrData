@@ -1,6 +1,8 @@
 import { type ReactNode } from 'react';
 import AdminNavbar from '@/components/admin/layout/AdminNavbar/AdminNavbar';
-import AdminSidebar, { type AdminPageKey } from '@/components/admin/layout/AdminSidebar/AdminSidebar';
+import AdminSidebar, {
+  type AdminPageKey,
+} from '@/components/admin/layout/AdminSidebar/AdminSidebar';
 import { cn } from '@/lib/utils';
 import styles from './AdminLayout.module.css';
 

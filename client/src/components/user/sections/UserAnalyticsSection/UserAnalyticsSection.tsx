@@ -44,7 +44,11 @@ export default function UserAnalyticsSection({ applications }: UserAnalyticsSect
           const dateStr = new Date(app.date).toLocaleDateString('ar-SA');
 
           return (
-            <div className={styles['job-card']} style={{ animationDelay: `${index * 0.08}s` }} key={`${app.company}-${app.role}-${app.date}`}>
+            <div
+              className={styles['job-card']}
+              style={{ animationDelay: `${index * 0.08}s` }}
+              key={`${app.company}-${app.role}-${app.date}`}
+            >
               <div className={styles['card-top']}>
                 <div className={styles['card-main']}>
                   <div className={styles['company-tag']}>{app.company}</div>

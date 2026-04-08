@@ -13,5 +13,7 @@ interface BadgeProps {
 }
 
 export function Badge({ children, variant = 'neutral', size = 'sm', className }: BadgeProps) {
-  return <span className={cn(styles.badge, styles[variant], styles[size], className)}>{children}</span>;
+  return (
+    <span className={cn(styles.badge, styles[variant], styles[size], className)}>{children}</span>
+  );
 }

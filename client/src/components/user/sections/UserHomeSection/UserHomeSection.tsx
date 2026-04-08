@@ -122,16 +122,14 @@ export default function UserHomeSection({ savedCount }: UserHomeSectionProps) {
           value={replies}
           title="الوظائف المتاحه"
         />
-  
-
       </div>
 
-        <div className={styles['chart-container']}>
-          <div className={styles['chart-header']}>
-            <div className={styles['chart-title']}>نشاط الإرسال خلال الأسبوع</div>
-          </div>
-          <div className={styles['chart-wrap']}>
-            <canvas ref={chartRef} />
+      <div className={styles['chart-container']}>
+        <div className={styles['chart-header']}>
+          <div className={styles['chart-title']}>نشاط الإرسال خلال الأسبوع</div>
+        </div>
+        <div className={styles['chart-wrap']}>
+          <canvas ref={chartRef} />
         </div>
       </div>
     </section>

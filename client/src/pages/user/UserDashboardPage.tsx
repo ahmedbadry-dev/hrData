@@ -27,7 +27,9 @@ export default function UserDashboardPage() {
 
   const [savedJobs, setSavedJobsState] = useState<SavedJob[]>([]);
   const [applications, setApplicationsState] = useState(getApplications());
-  const [gmailConnected, setGmailConnected] = useState(localStorage.getItem('gmailConnected') === 'true');
+  const [gmailConnected, setGmailConnected] = useState(
+    localStorage.getItem('gmailConnected') === 'true'
+  );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [hasSearched, setHasSearched] = useState(false);

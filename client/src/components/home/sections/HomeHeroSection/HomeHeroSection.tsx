@@ -56,25 +56,19 @@ export default function HomeHeroSection() {
             <div className={styles['hcp-meta']}>📍 الظهران · 🎓 علوم حاسب</div>
             <div className={styles['hcp-email']}>📧 jobs@aramco.com</div>
           </div>
-          <div
-            className={`${styles['hero-card-preview']} `}
-          >
+          <div className={`${styles['hero-card-preview']} `}>
             <div className={styles['hcp-tag']}>مجموعة شاكر</div>
             <div className={styles['hcp-title']}>أخصائي مبيعات</div>
             <div className={styles['hcp-meta']}>📍 الرياض · 🎓 إدارة أعمال</div>
             <div className={styles['hcp-email']}>📧 recruitment@shaker.com</div>
           </div>
-          <div
-            className={`${styles['hero-card-preview']} `}
-          >
+          <div className={`${styles['hero-card-preview']} `}>
             <div className={styles['hcp-tag']}>شركة نيوم</div>
             <div className={styles['hcp-title']}>مدير مشاريع</div>
             <div className={styles['hcp-meta']}>📍 تبوك · 🎓 هندسة مدنية</div>
             <div className={styles['hcp-email']}>📧 careers@neom.com</div>
           </div>
-          <div
-            className={`${styles['hero-card-preview']} `}
-          >
+          <div className={`${styles['hero-card-preview']} `}>
             <div className={styles['hcp-tag']}>مصرف الراجحي</div>
             <div className={styles['hcp-title']}>محلل مالي</div>
             <div className={styles['hcp-meta']}>📍 جدة · 🎓 مالية ومحاسبة</div>
