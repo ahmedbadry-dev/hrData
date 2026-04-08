@@ -12,6 +12,7 @@ specs/
 AGENTS.md
 CLAUDE.md
 *.agent.md
+PLAN.md
 
 # Generated Prisma Client
 generated/
