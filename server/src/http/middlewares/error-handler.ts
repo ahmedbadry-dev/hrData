@@ -1,37 +1,61 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import { ZodError, ZodIssue } from 'zod';
 import { AppError } from '@/shared/errors/AppError';
+import { InternalServerError } from '@/shared/errors/InternalServerError';
+import { ErrorResponse, FieldError } from '@/shared/utils/api-response';
+import { appConfig } from '@/config/env';
 import logger from '@/shared/utils/logger.util';
-import { env } from '@/config/env';
+import { HTTP_STATUS } from '@/shared/constants/http-status.constants';
 
-export const errorHandler = (
-  err: Error,
-  _req: Request,
+const formatZodErrors = (error: ZodError): FieldError[] => {
+  return error.issues.map((err: ZodIssue) => ({
+    field: err.path.join('.'),
+    message: err.message,
+  }));
+};
+
+const handleOperationalError = (req: Request, error: AppError): ErrorResponse => {
+  return {
+    success: false,
+    statusCode: error.statusCode,
+    message: error.message,
+    errors: error.errors?.length ? error.errors : undefined,
+    stack: appConfig.isDevelopment ? error.stack : undefined,
+    timestamp: new Date().toISOString(),
+    path: req.path,
+  };
+};
+
+export function errorHandlerMiddleware(
+  error: Error | AppError,
+  req: Request,
   res: Response,
   _next: NextFunction
-): void => {
-  if (err instanceof AppError) {
-    logger.warn(`${err.code}: ${err.message}`);
-    res.status(err.statusCode).json({
-      success: false,
-      message: err.message,
-      error: { code: err.code, status: err.statusCode },
-    });
-    return;
+): Response {
+  let appError: AppError;
+
+  if (error instanceof AppError) {
+    appError = error;
+  } else if (error instanceof ZodError) {
+    const fieldErrors = formatZodErrors(error);
+    appError = new AppError(
+      'Validation failed',
+      HTTP_STATUS.BAD_REQUEST,
+      'VALIDATION_ERROR',
+      true,
+      fieldErrors
+    );
+  } else {
+    appError = new InternalServerError(error.message || 'An unexpected error occurred');
+    if (error.stack) appError.stack = error.stack;
   }
 
-  if (err.name === 'ZodError') {
-    res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      error: { code: 'VALIDATION_ERROR', status: 400 },
-    });
-    return;
+  if (!(appError instanceof AppError) || !appError.isOperational) {
+    logger.error(`${appError.message}\n${appError.stack}`);
   }
 
-  logger.error(`${err.message}\n${err.stack}`);
-  res.status(500).json({
-    success: false,
-    message: env.NODE_ENV === 'production' ? 'Internal server error' : err.message,
-    error: { code: 'INTERNAL_ERROR', status: 500 },
-  });
-};
+  const response = handleOperationalError(req, appError);
+  return res.status(appError.statusCode).json(response);
+}
+
+export const errorHandler = errorHandlerMiddleware;

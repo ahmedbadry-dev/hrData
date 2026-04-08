@@ -37,8 +37,6 @@ export default function UserHomeSection({ savedCount }: UserHomeSectionProps) {
   const openRate = useAnimatedCounter(68, '%');
   const saved = useAnimatedCounter(savedCount);
   const replies = useAnimatedCounter(20);
-  const profileStrength = useAnimatedCounter(80, '%');
-  const activeApps = useAnimatedCounter(7);
 
   useEffect(() => {
     if (!chartRef.current) return;

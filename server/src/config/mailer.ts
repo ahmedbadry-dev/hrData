@@ -1,12 +1,12 @@
 import nodemailer from 'nodemailer';
-import { env } from '@/config/env';
+import { emailConfig } from '@/config/env';
 import logger from '@/shared/utils/logger.util';
 
 export const mailer = nodemailer.createTransport({
-  host: env.SMTP_HOST,
-  port: env.SMTP_PORT,
-  secure: env.SMTP_PORT === 465,
-  auth: env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASS } : undefined,
+  host: emailConfig.host,
+  port: emailConfig.port,
+  secure: emailConfig.port === 465,
+  auth: emailConfig.user ? { user: emailConfig.user, pass: emailConfig.password } : undefined,
 });
 
 logger.info('Mailer transport created');

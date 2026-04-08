@@ -5,3 +5,14 @@ build
 .env.local
 *.log
 .DS_Store
+
+# AI / Agent files
+.claude/
+.specify/
+specs/
+AGENTS.md
+CLAUDE.md
+*.agent.md
+
+# Generated Prisma Client
+generated/

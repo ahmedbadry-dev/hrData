@@ -1,12 +1,14 @@
-import { env } from '@/config/env';
+import { getEnvVariable } from '@/config/env';
 import logger from '@/shared/utils/logger.util';
 
+const llmApiKey = getEnvVariable('LLM_API_KEY', '');
+
 export const llmClient = {
-  isConfigured: Boolean(env.LLM_API_KEY),
-  apiKey: env.LLM_API_KEY,
-  baseUrl: env.LLM_BASE_URL,
+  isConfigured: Boolean(llmApiKey),
+  apiKey: llmApiKey,
+  baseUrl: getEnvVariable('LLM_BASE_URL', ''),
 };
 
-if (!env.LLM_API_KEY) {
+if (!llmApiKey) {
   logger.warn('LLM API key not configured — LLM features will be unavailable');
 }

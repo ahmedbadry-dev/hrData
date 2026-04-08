@@ -13,7 +13,7 @@ interface UserSidebarProps {
 export default function UserSidebar({
   activePage,
   onNavigate,
-  savedCount,
+  savedCount: _savedCount,
   isMobileOpen,
 }: UserSidebarProps) {
   return (

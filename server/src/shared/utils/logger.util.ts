@@ -1,11 +1,11 @@
 import { createLogger, format, transports } from 'winston';
-import { env } from '@/config/env';
+import { appConfig } from '@/config/env';
 
 const logger = createLogger({
   level: 'info',
   format: format.combine(
     format.timestamp(),
-    env.NODE_ENV === 'development' ? format.colorize() : format.uncolorize(),
+    appConfig.isDevelopment ? format.colorize() : format.uncolorize(),
     format.splat(),
     format.printf(({ timestamp, level, message }) => {
       return `${timestamp} [${level}]: ${message}`;
@@ -15,7 +15,7 @@ const logger = createLogger({
     new transports.Console({
       format: format.combine(
         format.timestamp(),
-        env.NODE_ENV === 'development' ? format.colorize() : format.uncolorize(),
+        appConfig.isDevelopment ? format.colorize() : format.uncolorize(),
         format.splat(),
         format.printf(({ timestamp, level, message }) => {
           return `${timestamp} [${level}]: ${message}`;
