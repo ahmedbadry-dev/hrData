@@ -2,10 +2,11 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { appConfig } from '@/config/env';
-import v1Router from '@/router';
-import { errorHandler } from '@/http/middlewares/error-handler';
-import { requestLogger } from '@/http/middlewares/request-logger';
+import { appConfig } from './config/env';
+import v1Router from './router';
+import { errorHandler } from './http/middlewares/error-handler';
+import { requestLogger } from './http/middlewares/request-logger';
+
 
 const app: Application = express();
 

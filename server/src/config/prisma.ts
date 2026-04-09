@@ -8,4 +8,5 @@ const prisma = new PrismaClient({ adapter });
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
+export type PrismaClientType = PrismaClient;
 export default prisma;
