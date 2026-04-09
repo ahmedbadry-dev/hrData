@@ -28,7 +28,7 @@ export class AuthController {
       res,
       {
         user: data.user,
-        tokens: { accessToken: data.tokens.accessToken },
+        tokens: { accessToken: data.tokens.accessToken, refreshToken: data.tokens.refreshToken },
       },
       'User logged in successfully',
       req.path

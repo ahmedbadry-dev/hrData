@@ -1,4 +1,6 @@
-import jwt, { JsonWebTokenError, SignOptions, TokenExpiredError } from 'jsonwebtoken';
+import jwt, { type SignOptions } from 'jsonwebtoken';
+
+const { JsonWebTokenError, TokenExpiredError } = jwt;
 import {
   AccessTokenPayload,
   RefreshTokenPayload,
@@ -13,6 +15,7 @@ export const generateAccessToken = (payload: AccessTokenPayload): string => {
   const accessToken = jwt.sign(
     {
       userId: payload.userId,
+      tokenId: payload.tokenId,
       email: payload.email,
       role: payload.role,
       type: 'ACCESS',
@@ -62,6 +65,7 @@ export const generateTokenPair = (payload: {
 }): TokenPair => {
   const accessToken = generateAccessToken({
     userId: payload.userId,
+    tokenId: payload.tokenId,
     email: payload.email,
     role: payload.role,
     type: 'ACCESS',

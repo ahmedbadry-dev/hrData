@@ -75,11 +75,7 @@ export class AuthService {
       },
     });
 
-    await this.emailService.sendVerificationEmail(
-      firstName + ' ' + lastName,
-      email,
-      emailVerifyToken
-    );
+    this.emailService.sendVerificationEmail(firstName + ' ' + lastName, email, emailVerifyToken);
 
     return { user: excludePassword(user) };
   }
@@ -105,7 +101,7 @@ export class AuthService {
 
     const updatedUser = await this.prisma.user.update({
       where: { id: userExists.id },
-      data: { emailVerified: true, verificationToken: null },
+      data: { emailVerified: true, verificationToken: null, status: UserStatus.ACTIVE },
     });
 
     return excludePassword(updatedUser);

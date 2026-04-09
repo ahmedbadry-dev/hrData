@@ -24,9 +24,15 @@ export async function authenticationMiddleware(req: Request, _res: Response, nex
       status: UserStatus.ACTIVE,
       emailVerified: true,
     },
+    include: {
+      sessions: {
+        where: { id: verified.payload.tokenId },
+      },
+    },
   });
-  if (!user) {
-    throw new UnauthorizedException('User not found');
+
+  if (!user || user.sessions.length === 0) {
+    throw new UnauthorizedException('User not found or session expired. Please login again.');
   }
   req.user = user;
   next();

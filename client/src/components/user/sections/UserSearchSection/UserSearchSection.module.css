@@ -198,7 +198,7 @@
   flex-shrink: 0;
   width: 36px;
   height: 36px;
-  border: 1.5px solid var(--warm);
+  border: 1.5px solid #d1c7b7; /* Subtle beige border from Photo 1 */
   background: none;
   border-radius: 50%;
   cursor: pointer;
@@ -207,19 +207,27 @@
   justify-content: center;
   transition: all 0.2s;
   padding: 0;
-  color: var(--warm);
+  color: #d1c7b7; /* Subtle beige icon from Photo 1 */
 }
 
 .save-btn:hover {
-  border-color: var(--gold);
-  color: var(--gold);
+  background: none;
+  border-color: #b8860b; /* Gold border from Photo 2 */
+  color: #b8860b; /* Gold icon from Photo 2 */
+}
+
+.save-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  fill: currentColor;
 }
 
 .save-btn.saved,
 .saved {
-  background: var(--gold);
-  border-color: var(--gold);
-  color: white;
+  background: #b8860b; /* Solid gold background from Photo 3 */
+  border-color: #b8860b;
+  color: #ffffff; /* White icon from Photo 3 */
 }
 
 .card-email {

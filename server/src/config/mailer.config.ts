@@ -6,10 +6,13 @@ export const transporterSingleton = nodemailer.createTransport({
   host: emailConfig.host,
   port: emailConfig.port,
   secure: emailConfig.port === 465, // true for 465, false for 587
-  auth: {
-    user: emailConfig.user,
-    pass: emailConfig.password,
-  },
+  ...(emailConfig.user &&
+    emailConfig.password && {
+      auth: {
+        user: emailConfig.user,
+        pass: emailConfig.password,
+      },
+    }),
 });
 
 // Verify connection on startup

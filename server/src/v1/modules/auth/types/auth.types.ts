@@ -3,6 +3,7 @@ import { SafeUser } from '../../users/types/user.types';
 
 export interface AccessTokenPayload {
   userId: string;
+  tokenId: string;
   email: string;
   role: UserRole;
   type: 'ACCESS';

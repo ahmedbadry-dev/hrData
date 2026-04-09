@@ -79,7 +79,7 @@ export const emailConfig = {
   host: getEnvVariable('SMTP_HOST', 'smtp.ethereal.email'),
   port: getEnvVarAsNumber('SMTP_PORT', 587),
   user: getEnvVariable('SMTP_USER', ''),
-  password: getEnvVariable('SMTP_PASS', ''),
+  password: getEnvVariable('SMTP_PASSWORD', ''),
   from: getEnvVariable('EMAIL_FROM', 'noreply@kafoo.com'),
 };
 
