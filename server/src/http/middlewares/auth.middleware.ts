@@ -1,38 +1,45 @@
-import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '@/shared/utils/jwt.util';
-import { jwtConfig } from '@/config/env';
-import { UnauthorizedException } from '@/shared/errors/UnauthorizedException';
+import { NextFunction, Request, Response } from 'express';
+import { UnauthorizedException } from '../../shared/errors/UnauthorizedException';
+import { verifyAccessToken } from '@/shared/utils/jwt.util';
+import prisma from '@/config/db.config';
+import { UserRole, UserStatus } from 'generated/prisma';
 
-export interface AuthRequest extends Request {
-  user?: {
-    userId: string;
-    role: string;
-  };
+export async function authenticationMiddleware(req: Request, _res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  const [type, token] = authHeader?.split(' ') || [];
+
+  if (!token || type !== 'Bearer') {
+    throw new UnauthorizedException('Authentication required. Please provide a valid token.');
+  }
+
+  const verified = verifyAccessToken(token);
+
+  if (!verified.valid) {
+    throw new UnauthorizedException(verified.error || 'Invalid access token');
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id: verified.payload.userId,
+      status: UserStatus.ACTIVE,
+      emailVerified: true,
+    },
+  });
+  if (!user) {
+    throw new UnauthorizedException('User not found');
+  }
+  req.user = user;
+  next();
 }
 
-export const authenticationMiddleware = (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-): void => {
-  try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('No token provided');
+export const authorizationMiddleware = (...roles: Array<UserRole>) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    if (!req.user) {
+      throw new UnauthorizedException('User not found');
     }
-
-    const token = authHeader.split(' ')[1];
-    const decoded = verifyToken(token, jwtConfig.accessSecret);
-
-    req.user = {
-      userId: decoded.userId,
-      role: decoded.role,
-    };
-
+    if (!roles.includes(req.user.role)) {
+      throw new UnauthorizedException('This action is not allowed for this user');
+    }
     next();
-  } catch (error) {
-    next(error);
-  }
+  };
 };
-

@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import app from './app';
-import { appConfig, getEnvVarAsNumber } from './config/env';
+import { appConfig, getEnvVarAsNumber } from './config/env.config';
 import logger from '@/shared/utils/logger.util';
-import prisma from './config/prisma';
+import prisma from './config/db.config';
 
 const PORT = getEnvVarAsNumber('PORT', 5000);
 

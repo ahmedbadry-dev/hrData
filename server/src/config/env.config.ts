@@ -35,30 +35,44 @@ export const getEnvVarAsBoolean = (key: string, defaultValue?: boolean): boolean
   return value === 'true';
 };
 
-export const jwtConfig = {
-  accessSecret: getEnvVariable('JWT_ACCESS_SECRET'),
-  accessExpiresIn: getEnvVariable('JWT_ACCESS_EXPIRES_IN', '15m'),
-  refreshSecret: getEnvVariable('JWT_REFRESH_SECRET'),
-  refreshExpiresIn: getEnvVariable('JWT_REFRESH_EXPIRES_IN', '30d'),
-  verificationSecret: getEnvVariable(
-    'JWT_VERIFICATION_TEMP_SECRET',
-    'kafoo-verification-secret-123'
-  ),
-  verificationExpiresIn: getEnvVariable('JWT_VERIFICATION_EXPIRES_IN', '15m'),
-};
+const nodeEnv = getEnvVariable('NODE_ENV', 'development');
 
 export const appConfig = {
   appUrl: getEnvVariable('APP_URL', 'http://localhost:5173'),
   port: getEnvVarAsNumber('PORT', 5000),
-  nodeEnv: getEnvVariable('NODE_ENV', 'development'),
+  nodeEnv,
   apiVersion: 'v1',
-  isDevelopment: getEnvVariable('NODE_ENV', 'development') === 'development',
-  isProduction: getEnvVariable('NODE_ENV', 'development') === 'production',
-  isTest: getEnvVariable('NODE_ENV', 'development') === 'test',
+  isDevelopment: nodeEnv === 'development',
+  isProduction: nodeEnv === 'production',
+  isTest: nodeEnv === 'test',
+};
+
+export const jwtConfig = {
+  accessSecret: getEnvVariable('JWT_ACCESS_SECRET'),
+  accessExpiresIn: getEnvVariable('JWT_ACCESS_EXPIRES_IN', '15m'),
+  refreshSecret: getEnvVariable('JWT_REFRESH_SECRET'),
+  refreshExpiresIn: getEnvVariable('JWT_REFRESH_EXPIRES_IN', '7d'),
+  verificationSecret: getEnvVariable(
+    'JWT_VERIFICATION_TEMP_SECRET',
+    appConfig.isProduction ? undefined : 'kafoo-verification-secret-123'
+  ),
+  verificationExpiresIn: getEnvVariable('JWT_VERIFICATION_EXPIRES_IN', '15m'),
 };
 
 export const dbConfig = {
   databaseUrl: getEnvVariable('DATABASE_URL'),
+};
+
+export const redisConfig = {
+  host: getEnvVariable('REDIS_HOST', 'localhost'),
+  port: getEnvVarAsNumber('REDIS_PORT', 6379),
+};
+
+export const corsConfig = {
+  allowedOrigins: getEnvVariable('CORS_ALLOWED_ORIGINS', appConfig.appUrl)
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean),
 };
 
 export const emailConfig = {
@@ -76,6 +90,8 @@ export const encryptionConfig = {
 export const env = {
   appConfig,
   dbConfig,
+  redisConfig,
+  corsConfig,
   emailConfig,
   encryptionConfig,
 };

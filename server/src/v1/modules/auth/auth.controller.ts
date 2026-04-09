@@ -1,87 +1,111 @@
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { AuthRequest } from '@/http/middlewares/auth.middleware';
+import { AUTH_CONSTANTS } from './auth.constants';
 import ResponseHelper from '@/shared/utils/api-response';
-import { CreateUserDto } from './dto/create-user.dto';
-import { VerifyEmailDto } from './dto/verify-email.dto';
-import { LoginDto } from './dto/login.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { RevokeSessionDto } from './dto/revoke-session.dto';
-
+import { UAParser } from 'ua-parser-js';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  async register(req: Request, res: Response): Promise<Response> {
-    const dto: CreateUserDto = req.body;
-    const result = await this.authService.register(
-      dto.email,
-      dto.password,
-      dto.firstName,
-      dto.lastName
+  register = async (req: Request, res: Response): Promise<Response> => {
+    const { user } = await this.authService.register(req.body);
+    return ResponseHelper.created(res, { user }, 'User registered successfully', req.path);
+  };
+
+  verifyEmail = async (req: Request, res: Response): Promise<Response> => {
+    const user = await this.authService.verifyEmail({
+      token: req.query.token as string,
+    });
+    return ResponseHelper.ok(res, user, 'User verified successfully', req.path);
+  };
+
+  login = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.authService.login(req.body, this.getDeviceInfo(req));
+    if ('requestTwoFactor' in data) {
+      return ResponseHelper.ok(res, data, 'Two factor authentication required', req.path);
+    }
+    this.setRefreshTokenCookie(res, data.tokens.refreshToken);
+    return ResponseHelper.ok(
+      res,
+      {
+        user: data.user,
+        tokens: { accessToken: data.tokens.accessToken },
+      },
+      'User logged in successfully',
+      req.path
     );
-    return ResponseHelper.created(res, result, 'Registration successful', req.path);
-  }
+  };
 
-  async verifyEmail(req: Request, res: Response): Promise<Response> {
-    const { token } = req.query as VerifyEmailDto;
-    const result = await this.authService.verifyEmail(token);
-    return ResponseHelper.ok(res, result, 'Email verified', req.path);
-  }
+  logout = async (req: Request, res: Response): Promise<Response> => {
+    await this.authService.logout(req.user!.id, req.cookies.refreshToken);
+    res.clearCookie('refreshToken');
+    return ResponseHelper.ok(res, {}, 'User logged out successfully', req.path);
+  };
 
-  async login(req: Request, res: Response): Promise<Response> {
-    const dto: LoginDto = req.body;
-    const result = await this.authService.login(dto.email, dto.password);
-    return ResponseHelper.ok(res, result, 'Login successful', req.path);
-  }
+  logoutAll = async (req: Request, res: Response): Promise<Response> => {
+    await this.authService.logoutAll(req.user!.id);
+    res.clearCookie('refreshToken');
+    return ResponseHelper.ok(res, {}, 'User logged out from all devices successfully', req.path);
+  };
 
-  async logout(req: AuthRequest, res: Response): Promise<Response> {
-    const userId = req.user!.userId;
-    const result = await this.authService.logout(userId);
-    return ResponseHelper.ok(res, result, 'Logged out', req.path);
-  }
-
-  async logoutAll(req: AuthRequest, res: Response): Promise<Response> {
-    const userId = req.user!.userId;
-    const result = await this.authService.logoutAll(userId);
-    return ResponseHelper.ok(res, result, 'Logged out from all sessions', req.path);
-  }
-
-  async refresh(req: Request, res: Response): Promise<Response> {
-    const { refreshToken } = req.body as { refreshToken: string };
-    const result = await this.authService.refresh(refreshToken);
-    return ResponseHelper.ok(res, result, 'Token refreshed', req.path);
-  }
-
-  async forgotPassword(req: Request, res: Response): Promise<Response> {
-    const dto: ForgotPasswordDto = req.body;
-    const result = await this.authService.forgotPassword(dto.email);
-    return ResponseHelper.ok(res, result, 'Password reset email sent', req.path);
-  }
-
-  async resetPassword(req: Request, res: Response): Promise<Response> {
-    const token = (req.query as { token: string }).token;
-    const { password } = req.body as { password: string };
-    const result = await this.authService.resetPassword(token, password);
-    return ResponseHelper.ok(res, result, 'Password reset successful', req.path);
-  }
-
-  async changePassword(req: AuthRequest, res: Response): Promise<Response> {
-    const userId = req.user!.userId;
-    const dto: ChangePasswordDto = req.body;
-    const result = await this.authService.changePassword(
-      userId,
-      dto.currentPassword,
-      dto.newPassword
+  refresh = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.authService.refresh(req.cookies.refreshToken, this.getDeviceInfo(req));
+    this.setRefreshTokenCookie(res, data.tokens.refreshToken);
+    return ResponseHelper.ok(
+      res,
+      {
+        user: data.user,
+        tokens: { accessToken: data.tokens.accessToken },
+      },
+      'Tokens refreshed successfully',
+      req.path
     );
-    return ResponseHelper.ok(res, result, 'Password changed successfully', req.path);
+  };
+
+  forgotPassword = async (req: Request, res: Response): Promise<Response> => {
+    const { user } = await this.authService.forgotPassword(req.body);
+
+    return ResponseHelper.ok(res, { user }, 'Password reset token sent successfully', req.path);
+  };
+
+  resetPassword = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.authService.resetPassword(req.body, {
+      token: req.query.token as string,
+    });
+    this.clearRefreshTokenCookie(res);
+    return ResponseHelper.ok(res, data, 'Password reset successfully', req.path);
+  };
+
+  changePassword = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.authService.changePassword(req.user!.id, req.body);
+    this.clearRefreshTokenCookie(res);
+    return ResponseHelper.ok(res, data, 'Password changed successfully', req.path);
+  };
+
+  // Helper methods
+
+  private getDeviceInfo(req: Request) {
+    const userAgent = req.get('User-Agent') || '';
+    const parser = new UAParser(userAgent);
+    const result = parser.getResult();
+    const deviceName = `${result.browser.name || 'Unknown Browser'} on ${result.os.name || 'Unknown OS'}`;
+
+    return {
+      ipAddress: req.ip!,
+      userAgent,
+      deviceName,
+    };
   }
 
-  async revokeSession(req: AuthRequest, res: Response): Promise<Response> {
-    const userId = req.user!.userId;
-    const { sessionId } = req.params as RevokeSessionDto;
-    const result = await this.authService.revokeSession(userId, sessionId);
-    return ResponseHelper.ok(res, result, 'Session revoked', req.path);
+  private setRefreshTokenCookie(res: Response, token: string) {
+    res.cookie(AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_NAME, token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
+    });
+  }
+
+  private clearRefreshTokenCookie(res: Response) {
+    res.clearCookie(AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_NAME);
   }
 }

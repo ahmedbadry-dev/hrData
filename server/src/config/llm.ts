@@ -1,4 +1,4 @@
-import { getEnvVariable } from '@/config/env';
+import { getEnvVariable } from '@/config/env.config';
 import logger from '@/shared/utils/logger.util';
 
 const llmApiKey = getEnvVariable('LLM_API_KEY', '');

@@ -1,17 +1,11 @@
 import { Router } from 'express';
-import healthRoutes from '@/v1/modules/health/health.routes';
-import { authRoutes } from '@/v1/modules/auth/auth.routes';
-import prisma from '@/config/prisma';
-import { AuthService } from '@/v1/modules/auth/auth.service';
-import { AuthController } from '@/v1/modules/auth/auth.controller';
+import { v1Routes } from './v1/routes';
+import { healthRoutes } from './v1/modules/health/health.routes';
 
-const v1Router = Router();
+const router = Router();
 
-v1Router.use('/health', healthRoutes);
+router.use('/health', healthRoutes());
 
-const authService = new AuthService(prisma);
-const authController = new AuthController(authService);
+router.use('/v1', v1Routes());
 
-v1Router.use('/auth', authRoutes(authController));
-
-export default v1Router;
+export default router;

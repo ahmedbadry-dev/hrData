@@ -3,7 +3,6 @@ import { AuthController } from './auth.controller';
 import {
   validateAllMiddleware,
   validateBodyMiddleware,
-  validateParamsMiddleware,
   validateQueryMiddleware,
 } from '../../../http/middlewares/validation.middleware';
 import { CreateUserDtoSchema } from './dto/create-user.dto';
@@ -13,7 +12,6 @@ import { authenticationMiddleware } from '../../../http/middlewares/auth.middlew
 import { ForgotPasswordDtoSchema } from './dto/forgot-password.dto';
 import { ResetPasswordDtoSchema } from './dto/reset-password.dto';
 import { ChangePasswordDtoSchema } from './dto/change-password.dto';
-import { RevokeSessionDtoSchema } from './dto/revoke-session.dto';
 
 export const authRoutes = (authController: AuthController) => {
   const router = Router();
@@ -44,13 +42,5 @@ export const authRoutes = (authController: AuthController) => {
     validateBodyMiddleware(ChangePasswordDtoSchema),
     authController.changePassword
   );
-
-  router.delete(
-    '/sessions/:sessionId',
-    authenticationMiddleware,
-    validateParamsMiddleware(RevokeSessionDtoSchema),
-    authController.revokeSession
-  );
-
   return router;
 };

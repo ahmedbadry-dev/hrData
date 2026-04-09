@@ -1,10 +1,20 @@
 import bcrypt from 'bcrypt';
-import { APP_CONSTANTS } from '@/config/constants';
+import crypto from 'crypto';
+const SALT_ROUNDS = 12;
 
-export const hashPassword = async (password: string): Promise<string> => {
-  return bcrypt.hash(password, APP_CONSTANTS.BCRYPT_SALT_ROUNDS);
+export const generateHash = async (
+  textToHash: string,
+): Promise<string> => {
+  return await bcrypt.hash(textToHash, SALT_ROUNDS);
 };
 
-export const comparePassword = async (password: string, hash: string): Promise<boolean> => {
-  return bcrypt.compare(password, hash);
+export const compareHash = async (
+  textToCompare: string,
+  hash: string,
+): Promise<boolean> => {
+  return await bcrypt.compare(textToCompare, hash);
+};
+
+export const generateHashedWithSha256 = (text: string): string => {
+  return crypto.createHash('sha256').update(text).digest('hex');
 };

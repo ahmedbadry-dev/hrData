@@ -1,10 +1,10 @@
 import Redis from 'ioredis';
-import { appConfig, getEnvVarAsNumber } from '@/config/env';
+import { redisConfig } from '@/config/env.config';
 import logger from '@/shared/utils/logger.util';
 
 export const redis = new Redis({
-  host: appConfig.isDevelopment ? 'localhost' : 'localhost',
-  port: getEnvVarAsNumber('REDIS_PORT', 6379),
+  host: redisConfig.host,
+  port: redisConfig.port,
   maxRetriesPerRequest: null,
 });
 

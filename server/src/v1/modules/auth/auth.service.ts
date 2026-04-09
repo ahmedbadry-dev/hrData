@@ -1,253 +1,398 @@
-import { PrismaClient } from '../../../../generated/prisma/client';
+import { PrismaClient, User, UserStatus } from 'generated/prisma';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
-import { AppError } from '@/shared/errors/AppError';
 import { BadRequestException } from '@/shared/errors/BadRequestException';
 import { UnauthorizedException } from '@/shared/errors/UnauthorizedException';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
 import { ConflictException } from '@/shared/errors/ConflictException';
-import { signAccessToken, signRefreshToken, verifyToken } from '@/shared/utils/jwt.util';
-import { HTTP_STATUS } from '@/shared/constants/http-status.constants';
+import { ForbiddenException } from '@/shared/errors/ForbiddenException';
+import { APP_CONSTANTS } from '@/config/constants';
+import { CreateUserDto } from './dto/create-user.dto';
+import { generateHash, compareHash, generateHashedWithSha256 } from '@/shared/utils/hash.util';
+import {
+  generateTempToken,
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+  verifyTempToken,
+  generateTokenPair,
+} from '@/shared/utils/jwt.util';
+import { excludePassword } from '@/shared/utils/exclude-password.utils';
+import { env, appConfig, jwtConfig, emailConfig } from '@/config/env.config';
+import { NotificationsService, notificationsService } from '@/notifications/notifications.service';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { LoginDto } from './dto/login.dto';
+import {
+  AuthResponseWithTokens,
+  AuthResponseWithTwoFactor,
+  AuthResponseWithoutTokens,
+  DeviceInfo,
+} from './types/auth.types';
+// Prisma types now imported from Line 1
+import { AUTH_CONSTANTS } from './auth.constants';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 export class AuthService {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly emailService: NotificationsService = notificationsService
+  ) {}
 
-  async register(email: string, password: string, firstName: string, lastName: string) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email },
+  async register(data: CreateUserDto['body']) {
+    const { firstName, lastName, email, phone, password } = data;
+
+    const phoneExists = await this.prisma.user.findUnique({
+      where: { phone },
     });
-
-    if (existingUser) {
-      throw new ConflictException('Email already registered');
+    if (phoneExists) {
+      throw new BadRequestException('Phone already exists');
     }
 
-    const passwordHash = await bcrypt.hash(password, 12);
-    const verificationToken = uuidv4();
-    const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const emailExists = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (emailExists) {
+      throw new BadRequestException('Email already exists');
+    }
+
+    const hashedPassword = await generateHash(password);
+    const emailVerifyToken = generateTempToken({
+      email,
+      type: 'VERIFICATION',
+    });
+    const hashedVerificationToken = generateHashedWithSha256(emailVerifyToken);
 
     const user = await this.prisma.user.create({
       data: {
+        firstName,
+        lastName,
         email,
-        passwordHash,
-        fullName: `${firstName} ${lastName}`,
-        verificationToken,
-        verificationTokenExpiresAt,
+        passwordHash: hashedPassword,
+        verificationToken: hashedVerificationToken,
+        phone,
       },
     });
 
-    const accessToken = signAccessToken({ userId: user.id, role: user.role });
-    const refreshToken = signRefreshToken({ userId: user.id });
+    await this.emailService.sendVerificationEmail(
+      firstName + ' ' + lastName,
+      email,
+      emailVerifyToken
+    );
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { refreshToken },
-    });
-
-    return { user: { id: user.id, email: user.email, role: user.role }, accessToken, refreshToken };
+    return { user: excludePassword(user) };
   }
 
-  async verifyEmail(token: string) {
-    const user = await this.prisma.user.findFirst({
+  async verifyEmail(data: VerifyEmailDto['query']) {
+    const { token } = data;
+    const hashedToken = generateHashedWithSha256(token);
+
+    const userExists = await this.prisma.user.findFirst({
       where: {
-        verificationToken: token,
-        verificationTokenExpiresAt: { gt: new Date() },
+        verificationToken: hashedToken,
+        emailVerified: false,
       },
     });
-
-    if (!user) {
-      throw new BadRequestException('Invalid or expired verification token');
+    if (!userExists) {
+      throw new BadRequestException('Invalid verification token');
     }
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        emailVerified: true,
-        status: 'ACTIVE',
-        verificationToken: null,
-        verificationTokenExpiresAt: null,
-      },
+    const verificationToken = verifyTempToken(token);
+    if (!verificationToken.valid) {
+      throw new BadRequestException('Invalid verification token');
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userExists.id },
+      data: { emailVerified: true, verificationToken: null },
     });
 
-    return { message: 'Email verified successfully' };
+    return excludePassword(updatedUser);
   }
 
-  async login(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({
+  async login(
+    data: LoginDto['body'],
+    deviceInfo: DeviceInfo
+  ): Promise<AuthResponseWithTokens | AuthResponseWithTwoFactor> {
+    const { email, password } = data;
+    const userExists = await this.prisma.user.findUnique({
       where: { email },
     });
 
-    if (!user) {
+    if (!userExists || !userExists.passwordHash) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if (user.lockedUntil && user.lockedUntil > new Date()) {
-      throw new UnauthorizedException('Account is temporarily locked');
-    }
+    this.checkAccountLockout(userExists);
 
-    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
-
-    if (!isValidPassword) {
-      const failedAttempts = user.failedLoginAttempts + 1;
-      let updateData: Record<string, unknown> = { failedLoginAttempts: failedAttempts };
-
-      if (failedAttempts >= 5) {
-        updateData.lockedUntil = new Date(Date.now() + 15 * 60 * 1000);
-      }
-
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: updateData,
-      });
-
+    const isPasswordCorrect = await compareHash(password, userExists.passwordHash);
+    if (!isPasswordCorrect) {
+      await this.incrementFailedLoginAttempts(userExists);
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { failedLoginAttempts: 0, lockedUntil: null },
-    });
+    await this.resetFailedLoginAttempts(userExists);
 
-    const accessToken = signAccessToken({ userId: user.id, role: user.role });
-    const refreshToken = signRefreshToken({ userId: user.id });
+    this.validateUserStatus(userExists);
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { refreshToken },
-    });
-
-    return { user: { id: user.id, email: user.email, role: user.role }, accessToken, refreshToken };
+    return this.createTokenPairAndSession(userExists, deviceInfo);
   }
 
-  async logout(userId: string) {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { refreshToken: null },
+  async logout(userId: string, refreshToken: string): Promise<void> {
+    if (!refreshToken) {
+      throw new BadRequestException('Refresh token is required');
+    }
+    const hashedRefreshToken = generateHashedWithSha256(refreshToken);
+    const session = await this.prisma.session.findUnique({
+      where: { tokenHash: hashedRefreshToken, userId },
     });
-
-    return { message: 'Logged out successfully' };
+    if (!session) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+    await this.prisma.session.delete({
+      where: { tokenHash: hashedRefreshToken, userId },
+    });
   }
 
-  async logoutAll(userId: string) {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { refreshToken: null },
-    });
-
-    return { message: 'Logged out from all sessions' };
+  async logoutAll(userId: string): Promise<void> {
+    await this.prisma.session.deleteMany({ where: { userId } });
   }
 
-  async refresh(refreshToken: string) {
-    const decoded = verifyToken(refreshToken, process.env.JWT_REFRESH_SECRET!);
-    const user = await this.prisma.user.findUnique({
-      where: { id: decoded.userId },
-    });
+  async refresh(refreshToken: string, deviceInfo: DeviceInfo): Promise<AuthResponseWithTokens> {
+    if (!refreshToken) {
+      throw new BadRequestException('Refresh token is required');
+    }
 
-    if (!user || user.refreshToken !== refreshToken) {
+    const verifiedToken = verifyRefreshToken(refreshToken);
+    if (!verifiedToken.valid || verifiedToken.payload.type !== 'REFRESH') {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const newAccessToken = signAccessToken({ userId: user.id, role: user.role });
-    const newRefreshToken = signRefreshToken({ userId: user.id });
-
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { refreshToken: newRefreshToken },
+    const tokenHash = generateHashedWithSha256(refreshToken);
+    const session = await this.prisma.session.findUnique({
+      where: { tokenHash, userId: verifiedToken.payload.userId },
     });
 
-    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
-  }
+    if (!session || session.expiresAt < new Date()) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
 
-  async forgotPassword(email: string) {
     const user = await this.prisma.user.findUnique({
-      where: { email },
+      where: { id: verifiedToken.payload.userId },
     });
-
     if (!user) {
-      return { message: 'If the email exists, a reset link will be sent' };
+      throw new UnauthorizedException('User not found');
     }
 
-    const resetToken = uuidv4();
-    const resetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
+    this.validateUserStatus(user);
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { resetToken, resetTokenExpiresAt },
-    });
+    await this.prisma.session.delete({ where: { id: session.id } });
 
-    return { message: 'If the email exists, a reset link will be sent' };
+    return this.createTokenPairAndSession(user, deviceInfo);
   }
 
-  async resetPassword(token: string, password: string) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        resetToken: token,
-        resetTokenExpiresAt: { gt: new Date() },
-      },
+  async forgotPassword(data: ForgotPasswordDto['body']) {
+    const { email } = data;
+    const userExists = await this.prisma.user.findUnique({
+      where: { email, status: UserStatus.ACTIVE },
     });
 
-    if (!user) {
-      throw new BadRequestException('Invalid or expired reset token');
+    if (!userExists) {
+      throw new BadRequestException('User not found or inactive');
+    }
+    if (!userExists.emailVerified) {
+      throw new BadRequestException('Please verify your email first');
     }
 
-    const passwordHash = await bcrypt.hash(password, 12);
+    const resetToken = generateTempToken({
+      email: userExists.email,
+      type: 'PASSWORD_RESET',
+    });
+    const hashedResetToken = generateHashedWithSha256(resetToken);
 
-    await this.prisma.user.update({
-      where: { id: user.id },
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userExists.id },
       data: {
-        passwordHash,
-        resetToken: null,
-        resetTokenExpiresAt: null,
-        refreshToken: null,
+        resetToken: hashedResetToken,
+        resetTokenExpiresAt: new Date(Date.now() + 30 * 60 * 1000),
       },
     });
 
-    return { message: 'Password reset successfully' };
+    this.emailService.sendPasswordResetEmail(
+      updatedUser.firstName + ' ' + updatedUser.lastName,
+      updatedUser.email,
+      resetToken
+    );
+
+    return { user: excludePassword(updatedUser) };
   }
 
-  async changePassword(userId: string, currentPassword: string, newPassword: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+  async resetPassword(
+    data: ResetPasswordDto['body'],
+    query: ResetPasswordDto['query']
+  ): Promise<AuthResponseWithoutTokens> {
+    const { token } = query;
+    const { password } = data;
 
+    const verifiedToken = verifyTempToken(token);
+    if (!verifiedToken.valid) {
+      throw new UnauthorizedException('Invalid reset token');
+    }
+    if (verifiedToken.payload.type !== 'PASSWORD_RESET') {
+      throw new UnauthorizedException('Invalid reset token');
+    }
+
+    const hashedToken = generateHashedWithSha256(token);
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: verifiedToken.payload.email,
+        resetToken: hashedToken,
+      },
+    });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new UnauthorizedException('Invalid reset token');
     }
 
-    const isValidPassword = await bcrypt.compare(currentPassword, user.passwordHash);
+    this.validateUserStatus(user);
 
-    if (!isValidPassword) {
-      throw new UnauthorizedException('Current password is incorrect');
+    if (user.passwordHash) {
+      const isPasswordSame = await compareHash(password, user.passwordHash);
+      if (isPasswordSame) {
+        throw new BadRequestException('Password is same as current password');
+      }
     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 12);
+    const hashedPassword = await generateHash(password);
 
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { passwordHash, refreshToken: null },
+    const updatedUser = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({
+        where: { id: user.id },
+        data: { passwordHash: hashedPassword, resetToken: null, resetTokenExpiresAt: null },
+      });
+      await tx.session.deleteMany({ where: { userId: user.id } });
+      return updated;
     });
 
-    return { message: 'Password changed successfully' };
+    return { user: excludePassword(updatedUser) };
   }
 
-  async getUserSessions(userId: string) {
+  async changePassword(userId: string, data: ChangePasswordDto['body']) {
+    const { currentPassword, newPassword } = data;
+
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, refreshToken: true },
+    });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    this.validateUserStatus(user);
+
+    if (user.passwordHash) {
+      const isCurrentPasswordValid = await compareHash(currentPassword, user.passwordHash);
+      if (!isCurrentPasswordValid) {
+        throw new BadRequestException('Current password is not correct');
+      }
+    }
+
+    if (currentPassword === newPassword) {
+      throw new BadRequestException('New password is same as current password');
+    }
+
+    const hashedPassword = await generateHash(newPassword);
+
+    const updatedUser = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({
+        where: { id: user.id },
+        data: { passwordHash: hashedPassword },
+      });
+      await tx.session.deleteMany({ where: { userId: user.id } });
+      return updated;
     });
 
-    return { sessions: [{ id: user?.id, current: true }] };
+    return { user: excludePassword(updatedUser) };
   }
 
-  async revokeSession(userId: string, sessionId: string) {
-    if (sessionId !== userId) {
-      throw new BadRequestException('Invalid session');
+  // HELPER FUNCTIONS
+  private generateSessionId = (): string => crypto.randomUUID();
+
+  private validateUserStatus(user: { status: UserStatus; emailVerified: boolean }) {
+    if (user.status === UserStatus.SUSPENDED) {
+      throw new UnauthorizedException('Account is suspended');
+    }
+    if (!user.emailVerified) {
+      throw new BadRequestException('Please verify your email first');
+    }
+  }
+
+  private checkAccountLockout(user: User): void {
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      const remainingMs = user.lockedUntil.getTime() - Date.now();
+      const remainingMinutes = Math.ceil(remainingMs / 60000);
+      throw new UnauthorizedException(
+        `Account is temporarily locked. Try again in ${remainingMinutes} minute(s).`
+      );
+    }
+  }
+
+  private async incrementFailedLoginAttempts(user: User): Promise<void> {
+    const newAttempts = user.failedLoginAttempts + 1;
+    const updateData: {
+      failedLoginAttempts: number;
+      lockedUntil?: Date;
+    } = {
+      failedLoginAttempts: newAttempts,
+    };
+
+    if (newAttempts >= AUTH_CONSTANTS.MAX_FAILED_LOGIN_ATTEMPTS) {
+      updateData.lockedUntil = new Date(Date.now() + AUTH_CONSTANTS.LOCKOUT_DURATION_MS);
     }
 
     await this.prisma.user.update({
-      where: { id: userId },
-      data: { refreshToken: null },
+      where: { id: user.id },
+      data: updateData,
+    });
+  }
+
+  private async resetFailedLoginAttempts(user: User): Promise<void> {
+    if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { failedLoginAttempts: 0, lockedUntil: null },
+      });
+    }
+  }
+
+  private async createTokenPairAndSession(
+    user: User,
+    deviceInfo: DeviceInfo
+  ): Promise<AuthResponseWithTokens> {
+    const tokenId = this.generateSessionId();
+    const tokenPair = generateTokenPair({
+      userId: user.id,
+      tokenId,
+      role: user.role,
+      email: user.email,
     });
 
-    return { message: 'Session revoked successfully' };
+    const hashedRefreshToken = generateHashedWithSha256(tokenPair.refreshToken);
+    const refreshTokenExpiresAt = new Date(
+      Date.now() + AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE
+    );
+
+    await this.prisma.session.create({
+      data: {
+        id: tokenId,
+        userId: user.id,
+        tokenHash: hashedRefreshToken,
+        expiresAt: refreshTokenExpiresAt,
+        deviceName: deviceInfo.deviceName,
+        ipAddress: deviceInfo.ipAddress,
+        userAgent: deviceInfo.userAgent,
+      },
+    });
+
+    return { user: excludePassword(user), tokens: tokenPair };
   }
 }

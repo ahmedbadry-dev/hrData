@@ -12,7 +12,9 @@
     "build": "tsc --project tsconfig.json",
     "start": "node dist/main.js",
     "type-check": "tsc --noEmit",
-    "db:seed": "npx prisma db seed"
+    "db:seed": "npx prisma db seed",
+    "test": "tsx --test \"tests/**/*.test.ts\"",
+    "test:watch": "tsx --test --watch \"tests/**/*.test.ts\""
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.7.0",
@@ -28,6 +30,7 @@
     "morgan": "latest",
     "nodemailer": "^8.0.5",
     "pg": "^8.20.0",
+    "ua-parser-js": "^2.0.9",
     "uuid": "^13.0.0",
     "winston": "^3.19.0",
     "zod": "^4.3.6"

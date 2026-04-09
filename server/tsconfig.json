@@ -21,6 +21,6 @@
     },
     "ignoreDeprecations": "6.0"
   },
-  "include": ["src/**/*", "generated/**/*"],
+  "include": ["src/**/*", "generated/**/*", "src/shared/types/**/*"],
   "exclude": ["node_modules", "dist"]
 }

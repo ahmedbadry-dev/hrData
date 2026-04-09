@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import { healthController } from './health.controller';
 
-const router = Router();
+export const healthRoutes = () => {
+  const router = Router();
 
-router.get('/', healthController.getHealth);
-router.get('/db', healthController.getDatabaseHealth);
+  router.get('/', healthController.getHealth);
+  router.get('/db', healthController.getDatabaseHealth);
 
-export default router;
+  return router;
+};

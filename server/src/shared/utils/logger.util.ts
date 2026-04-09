@@ -1,5 +1,5 @@
 import { createLogger, format, transports } from 'winston';
-import { appConfig } from '@/config/env';
+import { appConfig } from '@/config/env.config';
 
 const logger = createLogger({
   level: 'info',
