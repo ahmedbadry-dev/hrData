@@ -1,0 +1,193 @@
+.container {
+  background-color: var(--paper);
+  width: 100%;
+  max-width: 480px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  padding: 1.5rem 2rem;
+  box-shadow: 0 10px 25px var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1rem auto;
+  position: relative;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.logo {
+  font-family: 'Cairo', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoPoint {
+  color: var(--accent);
+}
+
+.subtitle {
+  color: var(--warm);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.errorBox {
+  width: 100%;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  background-color: rgba(192, 57, 43, 0.05);
+}
+
+.form {
+  width: 100%;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.label {
+  font-size: 0.8rem;
+  color: var(--warm);
+  font-weight: 600;
+  text-align: right;
+}
+
+.inputCustom {
+  border: 1px solid var(--ink) !important;
+  background-color: #ffffff !important;
+  border-radius: 2px !important;
+  padding: 0.6rem 0.75rem !important;
+  font-size: 0.95rem !important;
+  width: 100%;
+}
+
+.submitButton {
+  background-color: var(--ink) !important;
+  color: #ffffff !important;
+  border-radius: 2px !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  height: 3rem !important;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submitButton:hover {
+  background-color: var(--accent) !important;
+}
+
+.submitButtonError {
+  background-color: var(--accent) !important;
+}
+
+.footer {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.registerLink {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+  margin-right: 0.25rem;
+}
+
+.registerLink:hover {
+  text-decoration: underline;
+}
+
+.adminHint {
+  margin-top: 1rem;
+  background-color: #f7f3eb;
+  border-right: 4px solid var(--gold);
+  padding: 0.5rem;
+  width: 100%;
+  font-size: 0.8rem;
+  color: var(--warm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.hintTag {
+  background-color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 2px;
+  color: var(--muted);
+  font-family: monospace;
+}
+
+.hintTitle {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* Toast Styles */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background-color: #0d0d0d;
+  color: #ffffff;
+  padding: 1rem 1.5rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+  border-right: 4px solid var(--accent);
+  animation: slideIn 0.3s ease-out;
+}
+
+.toastIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

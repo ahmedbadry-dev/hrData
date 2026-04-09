@@ -17,8 +17,11 @@ export default function HomeNavbar() {
         <a className={styles['nav-link']} href="#cta">
           للشركات
         </a>
-        <Link className={styles['btn-login']} to="/dashboard">
-          دخول لوحة التحكم ←
+        <Link className={styles['btn-login-navbar']} to="/login">
+          تسجيل الدخول
+        </Link>
+        <Link className={styles['btn-register']} to="/register">
+          إنشاء حساب ←
         </Link>
       </div>
     </nav>

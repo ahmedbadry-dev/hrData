@@ -50,10 +50,32 @@
   color: var(--accent);
 }
 
-.btn-login {
+.btn-register {
   background: var(--ink);
   color: var(--paper);
   border: none;
+  padding: 10px 24px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.btn-register:hover {
+  background: var(--accent);
+}
+
+.btn-login-navbar {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--ink);
   padding: 10px 24px;
   font-family: 'Cairo', sans-serif;
   font-size: 13px;
@@ -66,12 +88,8 @@
   white-space: nowrap;
 }
 
-.btn-login:hover {
-  background: var(--accent);
-}
-
-.btn-login:active {
-  transform: scale(0.98);
+.btn-login-navbar:hover {
+  background: var(--cream);
 }
 
 .hero {
