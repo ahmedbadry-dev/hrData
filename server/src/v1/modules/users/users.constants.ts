@@ -1,0 +1,26 @@
+export const USERS_CONSTANTS = {
+  PAGINATION: {
+    MIN_PAGE: 1,
+    DEFAULT_PAGE: 1,
+    MIN_LIMIT: 1,
+    DEFAULT_LIMIT: 20,
+    MAX_LIMIT: 100,
+  },
+  ORDER_BY: {
+    CREATED_AT_DESC: { createdAt: 'desc' as const },
+  },
+  TEXT_SEARCH_MODE: 'insensitive' as const,
+  MESSAGES: {
+    USERS_FETCHED_SUCCESSFULLY: 'Users fetched successfully',
+    USER_FETCHED_SUCCESSFULLY: 'User fetched successfully',
+    USER_UPDATED_SUCCESSFULLY: 'User updated successfully',
+    USER_SUSPENDED_SUCCESSFULLY: 'User suspended successfully',
+    USER_ACTIVATED_SUCCESSFULLY: 'User activated successfully',
+    USER_DELETED_SUCCESSFULLY: 'User deleted successfully',
+    USER_NOT_FOUND: 'User not found',
+    INVALID_USER_ID: 'Invalid user ID',
+    USER_ALREADY_SUSPENDED: 'User is already suspended',
+    USER_ALREADY_ACTIVE: 'User is already active',
+    CANNOT_SUSPEND_ADMIN: 'Cannot suspend admin users',
+  },
+} as const;
