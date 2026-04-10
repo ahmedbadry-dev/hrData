@@ -42,6 +42,22 @@ enum NotificationTarget {
   USER
 }
 
+enum JobLocation {
+  RIYADH
+  JEDDAH
+  DAMMAM
+  KHOBAR
+  MECCA
+  MEDINA
+  TABUK
+}
+
+enum DateFilter {
+  DAY
+  WEEK
+  MONTH
+}
+
 model User {
   id                         String     @id @default(uuid())
   firstName                  String     @map("first_name")
@@ -106,21 +122,21 @@ model GmailToken {
 }
 
 model Job {
-  id          String    @id @default(uuid())
+  id          String       @id @default(uuid())
   title       String
-  companyName String    @map("company_name")
-  location    String?
+  companyName String       @map("company_name")
+  location    JobLocation?
   category    String?
   description String?
-  hrEmail     String?   @map("hr_email")
+  hrEmail     String?      @map("hr_email")
   source      String
-  sourceUrl   String?   @map("source_url")
-  language    String    @default("ar")
-  postedAt    DateTime? @map("posted_at")
-  expiresAt   DateTime? @map("expires_at")
-  isExpired   Boolean   @default(false) @map("is_expired")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  sourceUrl   String?      @map("source_url")
+  language    String       @default("ar")
+  postedAt    DateTime?    @map("posted_at")
+  expiresAt   DateTime?    @map("expires_at")
+  isExpired   Boolean      @default(false) @map("is_expired")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
 
   savedJobs    SavedJob[]
   applications Application[]

@@ -1,0 +1,33 @@
+export const JOBS_CONSTANTS = {
+  PAGINATION: {
+    MIN_PAGE: 1,
+    DEFAULT_PAGE: 1,
+    MIN_LIMIT: 1,
+    DEFAULT_LIMIT: 20,
+    MAX_LIMIT: 100,
+  },
+  DATE_FILTER_MS: {
+    DAY: 24 * 60 * 60 * 1000,
+    WEEK: 7 * 24 * 60 * 60 * 1000,
+    MONTH: 30 * 24 * 60 * 60 * 1000,
+  },
+  ORDER_BY: {
+    CREATED_AT_DESC: { createdAt: 'desc' as const },
+  },
+  TEXT_SEARCH_MODE: 'insensitive' as const,
+  MESSAGES: {
+    JOBS_FETCHED_SUCCESSFULLY: 'Jobs fetched successfully',
+    SAVED_JOBS_FETCHED_SUCCESSFULLY: 'Saved jobs fetched successfully',
+    JOB_FETCHED_SUCCESSFULLY: 'Job fetched successfully',
+    JOB_SAVED_SUCCESSFULLY: 'Job saved successfully',
+    JOB_ALREADY_EXISTS: 'Job already exist',
+    JOB_REMOVED_FROM_SAVED_LIST: 'Job removed from saved list',
+    JOB_NOT_FOUND: 'Job not found',
+    JOB_ALREADY_SAVED: 'Job already saved',
+    SAVED_JOB_NOT_FOUND: 'Saved job not found',
+    INVALID_JOB_ID: 'Invalid job ID',
+    JOB_CREATED_SUCCESSFULLY: 'Job created successfully',
+    JOBS_CREATED_SUCCESSFULLY: 'Jobs created successfully',
+    BULK_CREATE_PARTIAL_SUCCESS: 'Some jobs were created but some failed due to duplicates',
+  },
+} as const;
