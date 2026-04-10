@@ -1,26 +1,59 @@
 import { useMemo, useState } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { AdminLayout, type AdminPageKey } from '@/components/admin/layout';
 import {
-  AdminAnnouncementsSection,
-  AdminAnalyticsSection,
-  AdminHomeSection,
   AdminModals,
+  AdminToast,
   type AnnouncementForm,
   type EditUserForm,
-  AdminScraperSection,
-  AdminSettingsSection,
-  AdminToast,
-  AdminUsersSection,
 } from '@/components/admin/sections';
 import {
   initialAdminAnnouncements,
   initialAdminUsers,
   initialScraperLogs,
-  recentAdminLogs,
 } from '@/components/admin/sections/adminData';
 
-export default function AdminDashboardPage() {
-  const [activePage, setActivePage] = useState<AdminPageKey>('home');
+export type AdminDashboardContextType = {
+  users: typeof initialAdminUsers;
+  filteredUsers: typeof initialAdminUsers;
+  searchQuery: string;
+  setSearchQuery: (val: string) => void;
+  activeFilter: 'all' | 'active' | 'suspended';
+  setActiveFilter: (val: 'all' | 'active' | 'suspended') => void;
+  toggleUserStatus: (id: number) => void;
+  deleteUser: (id: number) => void;
+  openEditUser: (id: number) => void;
+  openActivityId: number | null;
+  setOpenActivityId: React.Dispatch<React.SetStateAction<number | null>>;
+
+  announcements: typeof initialAdminAnnouncements;
+  deleteAnnouncement: (id: number) => void;
+  openCreateAnnouncement: () => void;
+
+  scraperRunning: boolean;
+  scraperLogs: typeof initialScraperLogs;
+  savedToken: string;
+  tokenVisible: boolean;
+  saveToken: (token: string) => void;
+  toggleTokenVisibility: () => void;
+  toggleScraper: () => void;
+  clearLogs: () => void;
+  exportLogs: () => void;
+
+  showToast: (message: string, type?: 'success' | 'error') => void;
+};
+
+export default function AdminDashboardLayout() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  let activePage: AdminPageKey = 'home';
+  if (location.pathname.includes('/admin/users')) activePage = 'users';
+  else if (location.pathname.includes('/admin/analysis')) activePage = 'analytics';
+  else if (location.pathname.includes('/admin/notifications')) activePage = 'announcements';
+  else if (location.pathname.includes('/admin/scrap')) activePage = 'scraper';
+  else if (location.pathname.includes('/admin/settings')) activePage = 'settings';
+
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const [users, setUsers] = useState(initialAdminUsers);
@@ -96,9 +129,7 @@ export default function AdminDashboardPage() {
 
   const saveEditedUser = () => {
     if (editingUserId === null) return;
-
     setUsers((prev) => prev.map((u) => (u.id === editingUserId ? { ...u, ...editForm } : u)));
-
     setEditOpen(false);
     setEditingUserId(null);
     showToast('تم حفظ بيانات المستخدم');
@@ -116,7 +147,6 @@ export default function AdminDashboardPage() {
         u.id === id ? { ...u, status: u.status === 'active' ? 'suspended' : 'active' } : u
       )
     );
-
     showToast(`تم ${action} الحساب`);
   };
 
@@ -135,6 +165,8 @@ export default function AdminDashboardPage() {
     setAnnouncements((prev) => prev.filter((a) => a.id !== id));
     showToast('تم حذف الإشعار', 'error');
   };
+
+  const openCreateAnnouncement = () => setAnnounceOpen(true);
 
   const saveAnnouncement = () => {
     if (!announceForm.title.trim()) {
@@ -171,10 +203,11 @@ export default function AdminDashboardPage() {
       showToast('الرجاء إدخال الرمز أولاً', 'error');
       return;
     }
-
     setSavedToken(value);
     showToast('تم حفظ API Token بنجاح');
   };
+
+  const toggleTokenVisibility = () => setTokenVisible((prev) => !prev);
 
   const toggleScraper = () => {
     setScraperRunning((prev) => {
@@ -188,7 +221,6 @@ export default function AdminDashboardPage() {
           : { t: 'red', m: `[${ts}] ⏹ تم إيقاف السكراب يدوياً` },
         ...logs,
       ]);
-
       return next;
     });
   };
@@ -206,87 +238,68 @@ export default function AdminDashboardPage() {
     setScraperLogs([{ t: 'gray', m: `[${new Date().toLocaleTimeString('en-SA')}] — السجل فارغ` }]);
   };
 
-  const navigate = (page: AdminPageKey) => {
-    setActivePage(page);
+  const handleNavigate = (page: AdminPageKey) => {
     setMobileSidebarOpen(false);
+    switch (page) {
+      case 'home':
+        navigate('/admin');
+        break;
+      case 'users':
+        navigate('/admin/users');
+        break;
+      case 'analytics':
+        navigate('/admin/analysis');
+        break;
+      case 'announcements':
+        navigate('/admin/notifications');
+        break;
+      case 'scraper':
+        navigate('/admin/scrap');
+        break;
+      case 'settings':
+        navigate('/admin/settings');
+        break;
+    }
   };
 
-  const renderSection = () => {
-    switch (activePage) {
-      case 'home':
-        return <AdminHomeSection logs={recentAdminLogs} />;
-      case 'users':
-        return (
-          <AdminUsersSection
-            users={filteredUsers}
-            searchQuery={searchQuery}
-            activeFilter={activeFilter}
-            onSearchQueryChange={setSearchQuery}
-            onFilterChange={setActiveFilter}
-            onToggleStatus={toggleUserStatus}
-            onDeleteUser={deleteUser}
-            onEditUser={openEditUser}
-            onToggleActivity={(id) => setOpenActivityId((prev) => (prev === id ? null : id))}
-            openActivityId={openActivityId}
-          />
-        );
-      case 'analytics':
-        return <AdminAnalyticsSection />;
-      case 'announcements':
-        return (
-          <AdminAnnouncementsSection
-            announcements={announcements}
-            onDelete={deleteAnnouncement}
-            onOpenCreate={() => setAnnounceOpen(true)}
-          />
-        );
-      case 'scraper':
-        return (
-          <AdminScraperSection
-            scraperRunning={scraperRunning}
-            scraperLogs={scraperLogs}
-            savedToken={savedToken}
-            tokenVisible={tokenVisible}
-            onSaveToken={saveToken}
-            onToggleTokenVisibility={() => setTokenVisible((prev) => !prev)}
-            onToggleScraper={toggleScraper}
-            onClearLog={clearLogs}
-            onExportLog={exportLogs}
-          />
-        );
-      case 'settings':
-        return (
-          <AdminSettingsSection
-            onToggleSetting={(name, enabled) =>
-              showToast(`${name}: ${enabled ? 'تم التفعيل' : 'تم التعطيل'}`)
-            }
-            onSaveEmailSettings={() => showToast('تم حفظ إعدادات البريد')}
-            onSaveScraperSettings={() => showToast('تم حفظ الإعداد')}
-            onDangerAction={(type) => {
-              if (type === 'clear-logs') {
-                if (window.confirm('مسح جميع السجلات؟')) showToast('تم مسح السجلات', 'error');
-                return;
-              }
-              if (window.confirm('إعادة الضبط؟')) showToast('تمت إعادة الضبط', 'error');
-            }}
-          />
-        );
-      default:
-        return null;
-    }
+  const contextValue: AdminDashboardContextType = {
+    users,
+    filteredUsers,
+    searchQuery,
+    setSearchQuery,
+    activeFilter,
+    setActiveFilter,
+    toggleUserStatus,
+    deleteUser,
+    openEditUser,
+    openActivityId,
+    setOpenActivityId,
+    announcements,
+    deleteAnnouncement,
+    openCreateAnnouncement,
+    scraperRunning,
+    scraperLogs,
+    savedToken,
+    tokenVisible,
+    saveToken,
+    toggleTokenVisibility,
+    toggleScraper,
+    clearLogs,
+    exportLogs,
+    showToast,
   };
 
   return (
     <div dir="rtl">
       <AdminLayout
         activePage={activePage}
-        onNavigate={navigate}
+        onNavigate={handleNavigate}
         scraperRunning={scraperRunning}
         mobileSidebarOpen={mobileSidebarOpen}
         onToggleSidebar={() => setMobileSidebarOpen((prev) => !prev)}
         onCloseSidebar={() => setMobileSidebarOpen(false)}
       >
-        {renderSection()}
+        <Outlet context={contextValue} />
       </AdminLayout>
 
       <AdminModals

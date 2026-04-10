@@ -1,28 +1,45 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { UserLayout, type UserPageKey } from '@/components/user/layout';
-import {
-  UserAnalyticsSection,
-  UserAutoApplySection,
-  UserHomeSection,
-  UserSavedJobsSection,
-  UserSearchSection,
-  UserSettingsSection,
-} from '@/components/user/sections';
 import {
   PAGE_NAME,
   getApplications,
   getSavedJobs,
-  mockJobs,
   setApplications,
   setSavedJobs,
   type SavedJob,
   type UserJob,
 } from '@/components/user/sections/userData';
 
-const ITEMS_PER_PAGE = 10;
+export type DashboardContextType = {
+  savedJobs: SavedJob[];
+  applications: any[];
+  gmailConnected: boolean;
+  toggleSave: (job: UserJob) => void;
+  saveAllVisible: (jobs: UserJob[]) => void;
+  removeSavedByIndex: (index: number) => void;
+  removeAllSaved: () => void;
+  connectGmail: () => Promise<void>;
+  disconnectGmail: () => void;
+  startSending: (payload: {
+    selected: SavedJob[];
+    scheduleTime: string;
+    delay: string;
+    fileName: string | null;
+  }) => void;
+};
 
-export default function UserDashboardPage() {
-  const [activePage, setActivePage] = useState<UserPageKey>('home');
+export default function UserDashboardLayout() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  let activePage: UserPageKey = 'home';
+  if (location.pathname.includes('/dashboard/jobs')) activePage = 'search';
+  else if (location.pathname.includes('/dashboard/saved-jobs')) activePage = 'saved';
+  else if (location.pathname.includes('/dashboard/auto-apply')) activePage = 'auto-apply';
+  else if (location.pathname.includes('/dashboard/analysis')) activePage = 'analytics';
+  else if (location.pathname.includes('/dashboard/settings')) activePage = 'settings';
+
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const [savedJobs, setSavedJobsState] = useState<SavedJob[]>([]);
@@ -30,15 +47,6 @@ export default function UserDashboardPage() {
   const [gmailConnected, setGmailConnected] = useState(
     localStorage.getItem('gmailConnected') === 'true'
   );
-
-  const [searchQuery, setSearchQuery] = useState('');
-  const [hasSearched, setHasSearched] = useState(false);
-  const [country, setCountry] = useState('all');
-  const [timeFilter, setTimeFilter] = useState('all');
-  const [visibleCount, setVisibleCount] = useState(0);
-  const [selectedCard, setSelectedCard] = useState<string | null>(null);
-
-  const [returnToAutoApply, setReturnToAutoApply] = useState(false);
 
   useEffect(() => {
     const saved = getSavedJobs().filter((j) => j.page === PAGE_NAME);
@@ -51,8 +59,6 @@ export default function UserDashboardPage() {
     setSavedJobs(merged);
     setSavedJobsState(next);
   };
-
-  const visibleJobs = useMemo(() => mockJobs.slice(0, visibleCount), [visibleCount]);
 
   const toggleSave = (job: UserJob) => {
     const exists = savedJobs.some((s) => s.company === job.company && s.role === job.role);
@@ -77,7 +83,7 @@ export default function UserDashboardPage() {
     ]);
   };
 
-  const saveAllVisible = () => {
+  const saveAllVisible = (visibleJobs: UserJob[]) => {
     const existingMap = new Set(savedJobs.map((s) => `${s.company}-${s.role}`));
     const additions = visibleJobs
       .filter((job) => !existingMap.has(`${job.company}-${job.role}`))
@@ -106,28 +112,12 @@ export default function UserDashboardPage() {
     persistSaved([]);
   };
 
-  const search = () => {
-    setHasSearched(true);
-    setVisibleCount(Math.min(ITEMS_PER_PAGE, mockJobs.length));
-    setSelectedCard(null);
-  };
-
-  const loadMore = () => {
-    setVisibleCount((prev) => Math.min(prev + ITEMS_PER_PAGE, mockJobs.length));
-  };
-
   const connectGmail = async () => {
     await new Promise<void>((resolve) => {
       window.setTimeout(resolve, 900);
     });
-
     setGmailConnected(true);
     localStorage.setItem('gmailConnected', 'true');
-
-    if (returnToAutoApply) {
-      setReturnToAutoApply(false);
-      setActivePage('auto-apply');
-    }
   };
 
   const disconnectGmail = () => {
@@ -154,93 +144,57 @@ export default function UserDashboardPage() {
         status: 'pending' as const,
       })),
     ];
-
     setApplicationsState(next);
     setApplications(next);
   };
 
-  const navigate = (page: UserPageKey) => {
-    setActivePage(page);
+  const handleNavigate = (page: UserPageKey) => {
     setMobileSidebarOpen(false);
-    if (page !== 'settings') setReturnToAutoApply(false);
+    switch (page) {
+      case 'home':
+        navigate('/dashboard');
+        break;
+      case 'search':
+        navigate('/dashboard/jobs');
+        break;
+      case 'saved':
+        navigate('/dashboard/saved-jobs');
+        break;
+      case 'auto-apply':
+        navigate('/dashboard/auto-apply');
+        break;
+      case 'analytics':
+        navigate('/dashboard/analysis');
+        break;
+      case 'settings':
+        navigate('/dashboard/settings');
+        break;
+    }
   };
 
-  const renderSection = () => {
-    switch (activePage) {
-      case 'home':
-        return <UserHomeSection savedCount={savedJobs.length} />;
-      case 'search':
-        return (
-          <UserSearchSection
-            searchQuery={searchQuery}
-            onSearchQueryChange={setSearchQuery}
-            onSearch={search}
-            jobs={mockJobs}
-            visibleCount={visibleCount}
-            hasSearched={hasSearched}
-            selectedCard={selectedCard}
-            onSelectCard={(key) => setSelectedCard((prev) => (prev === key ? null : key))}
-            onLoadMore={loadMore}
-            savedJobs={savedJobs}
-            onToggleSave={toggleSave}
-            onSaveAllVisible={saveAllVisible}
-            country={country}
-            onCountryChange={setCountry}
-            timeFilter={timeFilter}
-            onTimeFilterChange={setTimeFilter}
-          />
-        );
-      case 'saved':
-        return (
-          <UserSavedJobsSection
-            savedJobs={savedJobs}
-            onRemoveByIndex={removeSavedByIndex}
-            onRemoveAll={removeAllSaved}
-          />
-        );
-      case 'auto-apply':
-        return (
-          <UserAutoApplySection
-            savedJobs={savedJobs}
-            gmailConnected={gmailConnected}
-            onGoToSettings={() => {
-              setReturnToAutoApply(true);
-              setActivePage('settings');
-            }}
-            onGoSavedJobs={() => setActivePage('saved')}
-            onStartSending={startSending}
-            onGoAnalytics={() => setActivePage('analytics')}
-            onGoHome={() => setActivePage('home')}
-          />
-        );
-      case 'analytics':
-        return <UserAnalyticsSection applications={applications} />;
-      case 'settings':
-        return (
-          <UserSettingsSection
-            gmailConnected={gmailConnected}
-            savedCount={savedJobs.length}
-            returnToAutoApply={returnToAutoApply}
-            onConnect={connectGmail}
-            onDisconnect={disconnectGmail}
-            onGoAutoApply={() => setActivePage('auto-apply')}
-          />
-        );
-      default:
-        return null;
-    }
+  const contextValue: DashboardContextType = {
+    savedJobs,
+    applications,
+    gmailConnected,
+    toggleSave,
+    saveAllVisible,
+    removeSavedByIndex,
+    removeAllSaved,
+    connectGmail,
+    disconnectGmail,
+    startSending,
   };
 
   return (
     <UserLayout
       activePage={activePage}
-      onNavigate={navigate}
+      onNavigate={handleNavigate}
       mobileSidebarOpen={mobileSidebarOpen}
       onToggleSidebar={() => setMobileSidebarOpen((prev) => !prev)}
       onCloseSidebar={() => setMobileSidebarOpen(false)}
       savedCount={savedJobs.length}
     >
-      {renderSection()}
+      <Outlet context={contextValue} />
     </UserLayout>
   );
 }
