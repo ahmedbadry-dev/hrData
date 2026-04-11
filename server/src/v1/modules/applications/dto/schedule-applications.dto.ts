@@ -17,6 +17,7 @@ export const ScheduleApplicationsDtoSchema = z.object({
       .min(0)
       .default(APPLICATIONS_CONSTANTS.DEFAULT_DELAY_BETWEEN_EMAILS_MS)
       .optional(),
+    cvId: z.string().uuid().optional(),
   }),
 });
 
