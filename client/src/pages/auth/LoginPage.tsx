@@ -1,10 +1,15 @@
-import { LoginForm } from '@/components/auth';
-import styles from './AuthPages.module.css';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 
 export default function LoginPage() {
-  return (
-    <div className={styles.pageContainer}>
-      <LoginForm />
-    </div>
-  );
+  const navigate = useNavigate();
+  const { openLogin } = useAuthModal();
+
+  useEffect(() => {
+    openLogin();
+    navigate('/');
+  }, [navigate, openLogin]);
+
+  return null;
 }

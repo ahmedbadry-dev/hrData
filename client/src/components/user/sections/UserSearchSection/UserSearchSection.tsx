@@ -21,6 +21,7 @@ interface UserSearchSectionProps {
   onCountryChange: (value: string) => void;
   timeFilter: string;
   onTimeFilterChange: (value: string) => void;
+  showSaveButtons?: boolean;
 }
 
 const cityOptions = [
@@ -58,6 +59,7 @@ export default function UserSearchSection({
   onCountryChange,
   timeFilter,
   onTimeFilterChange,
+  showSaveButtons = true,
 }: UserSearchSectionProps) {
   const visibleJobs = jobs.slice(0, visibleCount);
 
@@ -103,9 +105,11 @@ export default function UserSearchSection({
         <>
           <div className={styles['control-bar']}>
             <span className={styles['count-label']}>عُثر على {jobs.length} وظيفة</span>
-            <Button className={styles['save-all-btn']} onClick={onSaveAllVisible}>
-              حفظ الكل
-            </Button>
+            {showSaveButtons && (
+              <Button className={styles['save-all-btn']} onClick={onSaveAllVisible}>
+                حفظ الكل
+              </Button>
+            )}
           </div>
 
           <div className={styles['results-list']}>
@@ -131,25 +135,27 @@ export default function UserSearchSection({
                       </div>
                     </div>
 
-                    <Button
-                      type="button"
-                      variant="icon"
-                      className={cn(styles['save-btn'], saved && styles.saved)}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleSave(job);
-                      }}
-                      title={saved ? 'إزالة من المحفوظات' : 'حفظ الوظيفة'}
-                    >
-                      <svg viewBox="0 0 24 24">
-                        <path
-                          fill="currentColor"
-                          stroke="currentColor"
-                          strokeWidth="0.9"
-                          d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z"
-                        />
-                      </svg>
-                    </Button>
+                    {showSaveButtons && (
+                      <Button
+                        type="button"
+                        variant="icon"
+                        className={cn(styles['save-btn'], saved && styles.saved)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleSave(job);
+                        }}
+                        title={saved ? 'إزالة من المحفوظات' : 'حفظ الوظيفة'}
+                      >
+                        <svg viewBox="0 0 24 24">
+                          <path
+                            fill="currentColor"
+                            stroke="currentColor"
+                            strokeWidth="0.9"
+                            d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z"
+                          />
+                        </svg>
+                      </Button>
+                    )}
                   </div>
 
                   <div className={styles['card-email']}>

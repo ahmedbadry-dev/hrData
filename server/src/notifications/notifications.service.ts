@@ -41,7 +41,10 @@ export class NotificationsService {
         return;
       } catch (error) {
         attempts++;
-        logger.error(`❌ Attempt ${attempts} failed to send email to ${options.to}`, { error });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logger.error(
+          `❌ Attempt ${attempts} failed to send email to ${options.to}: ${errorMessage}`
+        );
 
         if (attempts >= MAX_RETRIES) {
           logger.error(
@@ -56,10 +59,10 @@ export class NotificationsService {
   }
 
   async sendVerificationEmail(name: string, email: string, token: string): Promise<void> {
-    const url = `${appConfig.appUrl}/api/v1/auth/verify-email?token=${token}`;
+    const url = `${appConfig.appUrl}/verify-email?token=${token}`;
     await this.sendEmail({
       to: email,
-      subject: 'Verify your email address',
+      subject: 'تحقق من بريدك الإلكتروني - كفو',
       html: verifyEmailTemplate(name, url),
     });
   }

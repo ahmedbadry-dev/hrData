@@ -36,6 +36,7 @@ export default function UserDashboardLayout() {
   let activePage: UserPageKey = 'home';
   if (location.pathname.includes('/dashboard/jobs')) activePage = 'search';
   else if (location.pathname.includes('/dashboard/saved-jobs')) activePage = 'saved';
+  else if (location.pathname.includes('/dashboard/applications')) activePage = 'applications';
   else if (location.pathname.includes('/dashboard/auto-apply')) activePage = 'auto-apply';
   else if (location.pathname.includes('/dashboard/analysis')) activePage = 'analytics';
   else if (location.pathname.includes('/dashboard/settings')) activePage = 'settings';
@@ -159,6 +160,9 @@ export default function UserDashboardLayout() {
         break;
       case 'saved':
         navigate('/dashboard/saved-jobs');
+        break;
+      case 'applications':
+        navigate('/dashboard/applications');
         break;
       case 'auto-apply':
         navigate('/dashboard/auto-apply');
