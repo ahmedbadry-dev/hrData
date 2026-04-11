@@ -1,44 +1,44 @@
-import type { JobLocation } from 'generated/prisma'
-import { llmClient } from '@/config/llm'
-import logger from '@/shared/utils/logger.util'
+import type { JobLocation } from 'generated/prisma';
+import { llmClient } from '@/config/llm';
+import logger from '@/shared/utils/logger.util';
 
 export interface JobEnrichmentResult {
-  title: string
-  companyName: string
-  source: string
-  location: JobLocation | null
-  category: string | null
-  description: string | null
-  hrEmail: string | null
-  sourceUrl: string
-  language: 'ar' | 'en'
-  postedAt: string | null
-  expiresAt: string | null
+  title: string;
+  companyName: string;
+  source: string;
+  location: JobLocation | null;
+  category: string | null;
+  description: string | null;
+  hrEmail: string | null;
+  sourceUrl: string;
+  language: 'ar' | 'en';
+  postedAt: string | null;
+  expiresAt: string | null;
 }
 
 export interface JobEnrichmentResponse {
-  jobs: JobEnrichmentResult[]
+  jobs: JobEnrichmentResult[];
 }
 
 export class JobEnrichmentService {
-  private readonly apiUrl = `${llmClient.baseUrl || 'https://openrouter.ai/api/v1'}/chat/completions`
-  private readonly model = 'google/gemma-4-31b-it:free'
+  private readonly apiUrl = `${llmClient.baseUrl || 'https://openrouter.ai/api/v1'}/chat/completions`;
+  private readonly model = 'google/gemma-4-31b-it:free';
 
   async enrich(bodyText: string, sourceUrl: string): Promise<JobEnrichmentResponse> {
     if (!llmClient.isConfigured) {
-      throw new Error('LLM is not configured (missing OpenRouter API key)')
+      throw new Error('LLM is not configured (missing OpenRouter API key)');
     }
 
-    const prompt = this.buildPrompt(bodyText, sourceUrl)
+    const prompt = this.buildPrompt(bodyText, sourceUrl);
 
     try {
       const response = await fetch(this.apiUrl, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${llmClient.apiKey}`,
+          Authorization: `Bearer ${llmClient.apiKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://kafoo.ai',
-          'X-Title': 'Kafoo App'
+          'X-Title': 'Kafoo App',
         },
         body: JSON.stringify({
           model: this.model,
@@ -48,29 +48,32 @@ export class JobEnrichmentService {
               content: prompt,
             },
           ],
-          reasoning: { enabled: true }
+          reasoning: { enabled: true },
         }),
-      })
+      });
 
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`OpenRouter API error: ${response.status} ${errorText}`)
+        const errorText = await response.text();
+        throw new Error(`OpenRouter API error: ${response.status} ${errorText}`);
       }
 
-      const result = (await response.json()) as any
-      const assistantMessage = result.choices[0].message
-      const rawText = assistantMessage.content || ''
-      
-      // If we needed to continue the conversation in the future, 
+      const result = (await response.json()) as any;
+      const assistantMessage = result.choices[0].message;
+      const rawText = assistantMessage.content || '';
+
+      // If we needed to continue the conversation in the future,
       // we would preserve assistantMessage.reasoning_details
 
       // Clean markdown code blocks if the model wrapped the JSON
-      const cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim()
+      const cleanText = rawText
+        .replace(/```json/gi, '')
+        .replace(/```/g, '')
+        .trim();
 
-      return this.parseResponse(cleanText, sourceUrl)
+      return this.parseResponse(cleanText, sourceUrl);
     } catch (err: any) {
-      logger.error(`[JobEnrichmentService] Error extracting jobs: ${err.message}`)
-      throw err
+      logger.error(`[JobEnrichmentService] Error extracting jobs: ${err.message}`);
+      throw err;
     }
   }
 
@@ -107,24 +110,24 @@ export class JobEnrichmentService {
 
 الإعلان:
 ${bodyText.substring(0, 4000)}
-`
+`;
   }
 
   private parseResponse(rawText: string, sourceUrl: string): JobEnrichmentResponse {
     try {
-      const parsed = JSON.parse(rawText) as JobEnrichmentResponse
+      const parsed = JSON.parse(rawText) as JobEnrichmentResponse;
 
       if (!Array.isArray(parsed.jobs)) {
-        throw new Error('Missing "jobs" array in LLM response')
+        throw new Error('Missing "jobs" array in LLM response');
       }
 
-      parsed.jobs = parsed.jobs.filter((j) => j.title?.trim())
+      parsed.jobs = parsed.jobs.filter((j) => j.title?.trim());
 
-      return parsed
+      return parsed;
     } catch (err: any) {
-      throw new Error(`LLM parse error for ${sourceUrl}: ${err.message}`)
+      throw new Error(`LLM parse error for ${sourceUrl}: ${err.message}`);
     }
   }
 }
 
-export const jobEnrichmentService = new JobEnrichmentService()
+export const jobEnrichmentService = new JobEnrichmentService();

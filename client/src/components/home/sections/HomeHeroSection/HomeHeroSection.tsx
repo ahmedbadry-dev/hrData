@@ -1,7 +1,23 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styles from '@/components/home/layout/HomeLayout/HomeLayout.module.css';
+import { useAuthModal } from '@/contexts/AuthModalContext';
+import { useAuth } from '@/modules/auth/api/hooks/use-auth';
 
 export default function HomeHeroSection() {
+  const navigate = useNavigate();
+  const { openLogin } = useAuthModal();
+  const { data: authData, isLoading } = useAuth();
+
+  const handleStartSearch = () => {
+    if (isLoading) return;
+
+    if (authData?.isAuthenticated) {
+      navigate('/dashboard/jobs');
+    } else {
+      openLogin();
+    }
+  };
+
   return (
     <section className={styles.hero}>
       <div className={styles['hero-left']}>
@@ -18,9 +34,9 @@ export default function HomeHeroSection() {
           تعقيد. أرسل سيرتك الذاتية وانتظر ردهم.
         </p>
         <div className={styles['hero-cta-row']}>
-          <Link className={styles['btn-primary']} to="/dashboard/jobs">
+          <button className={styles['btn-primary']} onClick={handleStartSearch}>
             ابدأ البحث الآن
-          </Link>
+          </button>
           <a className={styles['btn-ghost']} href="#how">
             كيف يعمل؟
           </a>
