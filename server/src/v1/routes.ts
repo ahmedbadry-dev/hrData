@@ -12,7 +12,6 @@ import { jobsRoutes } from './modules/jobs/jobs.routes';
 import { usersRoutes } from './modules/users/users.routes';
 import trackingRoutes from './modules/tracking/tracking.routes';
 
-
 export const v1Routes = () => {
   const router = Router();
 
@@ -23,21 +22,10 @@ export const v1Routes = () => {
   const usersService = new UsersService(prisma);
   const usersController = new UsersController(usersService);
 
- 
-
-  // Mount v1 module routes here as you build them, e.g.:
-
   router.use('/auth', authRoutes(authController));
   router.use('/jobs', jobsRoutes(jobsController));
   router.use('/track', trackingRoutes);
   router.use('/admin/users', usersRoutes(usersController));
-
-  // router.use('/tickets',  ticketRoutes());
-  // router.use('/payments', paymentRoutes());
-  // router.use('/categories', categoryRoutes());
-  // router.use('/admin',    adminRoutes());
-  // router.use('/media',    mediaRoutes());
-  // router.use('/webhooks', webhookRoutes());
 
   return router;
 };

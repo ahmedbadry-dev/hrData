@@ -105,7 +105,6 @@ export class UsersService {
   async deleteUser(userId: string): Promise<void> {
     await this.findUserOrThrow(userId);
 
-    // Delete related records first (cascade delete)
     await this.prisma.$transaction([
       this.prisma.session.deleteMany({ where: { userId } }),
       this.prisma.savedJob.deleteMany({ where: { userId } }),
@@ -118,8 +117,6 @@ export class UsersService {
       this.prisma.user.delete({ where: { id: userId } }),
     ]);
   }
-
-  // ============ Private Helper Methods ============
 
   private resolvePagination(query: GetUsersDto['query']): PaginationParams {
     const page = query.page || USERS_CONSTANTS.PAGINATION.DEFAULT_PAGE;

@@ -5,7 +5,7 @@ import logger from '@/shared/utils/logger.util';
 export const transporterSingleton = nodemailer.createTransport({
   host: emailConfig.host,
   port: emailConfig.port,
-  secure: emailConfig.port === 465, // true for 465, false for 587
+  secure: emailConfig.port === 465,
   ...(emailConfig.user &&
     emailConfig.password && {
       auth: {
@@ -15,7 +15,6 @@ export const transporterSingleton = nodemailer.createTransport({
     }),
 });
 
-// Verify connection on startup
 transporterSingleton.verify((error) => {
   if (error) {
     logger.error('❌ Mailer connection failed:', error);

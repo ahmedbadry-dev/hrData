@@ -38,7 +38,7 @@ export class NotificationsService {
         if (!hasSmtpCredentials) {
           logger.info(`🔍 Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
         }
-        return; // Success, exit
+        return;
       } catch (error) {
         attempts++;
         logger.error(`❌ Attempt ${attempts} failed to send email to ${options.to}`, { error });
@@ -50,7 +50,6 @@ export class NotificationsService {
           return;
         }
 
-        // Wait before retrying (simple linear backoff: 1s, 2s)
         await new Promise((resolve) => setTimeout(resolve, attempts * 1000));
       }
     }

@@ -1,17 +1,16 @@
-import Redis from 'ioredis';
-import { redisConfig } from '@/config/env.config';
-import logger from '@/shared/utils/logger.util';
+import IORedis from 'ioredis';
+import { redisConfig } from './env.config';
 
-export const redis = new Redis({
+const redis = new IORedis({
   host: redisConfig.host,
   port: redisConfig.port,
+
   maxRetriesPerRequest: null,
+
+  enableReadyCheck: false,
 });
 
-redis.on('connect', () => {
-  logger.info('Redis connected');
-});
+redis.on('connect', () => console.log('[Redis] ✅ Connected'));
+redis.on('error', (err) => console.error('[Redis] ❌ Error:', err.message));
 
-redis.on('error', (err) => {
-  logger.warn('Redis connection error', err.message);
-});
+export default redis;
