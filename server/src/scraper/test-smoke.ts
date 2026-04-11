@@ -38,14 +38,16 @@ async function smokeTest() {
       }
 
       console.log(`   ✅ Body text: ${bodyText.length} chars`);
-      
+
       const result = await enrichmentService.enrich(bodyText, job.jobUrl);
       console.log(`   ✅ LLM extracted ${result.jobs.length} job(s)`);
-      
+
       allExtractedJobs.push(...result.jobs);
-      
+
       result.jobs.forEach((extractedJob, i) => {
-        console.log(`      (${i + 1}) ${extractedJob.title} @ ${extractedJob.companyName} | ${extractedJob.location}`);
+        console.log(
+          `      (${i + 1}) ${extractedJob.title} @ ${extractedJob.companyName} | ${extractedJob.location}`
+        );
       });
     } catch (err: any) {
       console.error(`   ❌ Failed: ${err.message}`);
