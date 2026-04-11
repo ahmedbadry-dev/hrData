@@ -28,7 +28,6 @@
     "cors": "latest",
     "dotenv": "latest",
     "express": "latest",
-    "groq-sdk": "^1.1.2",
     "helmet": "latest",
     "ioredis": "^5.10.1",
     "jsonwebtoken": "^9.0.3",

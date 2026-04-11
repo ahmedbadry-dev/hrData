@@ -1,7 +1,6 @@
-import { Groq } from 'groq-sdk'
-
 import type { JobLocation } from 'generated/prisma'
 import { llmClient } from '@/config/llm'
+import logger from '@/shared/utils/logger.util'
 
 export interface JobEnrichmentResult {
   title: string
@@ -22,32 +21,57 @@ export interface JobEnrichmentResponse {
 }
 
 export class JobEnrichmentService {
-
-  constructor(private readonly client: Groq = new Groq({ apiKey: llmClient.apiKey })) {}
+  private readonly apiUrl = `${llmClient.baseUrl || 'https://openrouter.ai/api/v1'}/chat/completions`
+  private readonly model = 'google/gemma-4-31b-it:free'
 
   async enrich(bodyText: string, sourceUrl: string): Promise<JobEnrichmentResponse> {
-    const prompt = this.buildPrompt(bodyText, sourceUrl)
-
-    const chatCompletion = await this.client.chat.completions.create({
-      messages: [{ role: 'user', content: prompt }],
-      model: 'openai/gpt-oss-120b',
-      temperature: 1,
-      max_completion_tokens: 2000,
-      top_p: 1,
-      stream: true,
-      reasoning_effort: "medium",
-      stop: null
-    })
-
-    let rawText = ''
-    for await (const chunk of chatCompletion) {
-      rawText += chunk.choices[0]?.delta?.content || ''
+    if (!llmClient.isConfigured) {
+      throw new Error('LLM is not configured (missing OpenRouter API key)')
     }
 
-    // Clean markdown code blocks if the model wrapped the JSON
-    const cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim()
+    const prompt = this.buildPrompt(bodyText, sourceUrl)
 
-    return this.parseResponse(cleanText, sourceUrl)
+    try {
+      const response = await fetch(this.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${llmClient.apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://kafoo.ai',
+          'X-Title': 'Kafoo App'
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          reasoning: { enabled: true }
+        }),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`OpenRouter API error: ${response.status} ${errorText}`)
+      }
+
+      const result = (await response.json()) as any
+      const assistantMessage = result.choices[0].message
+      const rawText = assistantMessage.content || ''
+      
+      // If we needed to continue the conversation in the future, 
+      // we would preserve assistantMessage.reasoning_details
+
+      // Clean markdown code blocks if the model wrapped the JSON
+      const cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim()
+
+      return this.parseResponse(cleanText, sourceUrl)
+    } catch (err: any) {
+      logger.error(`[JobEnrichmentService] Error extracting jobs: ${err.message}`)
+      throw err
+    }
   }
 
   private buildPrompt(bodyText: string, sourceUrl: string): string {
@@ -103,4 +127,4 @@ ${bodyText.substring(0, 4000)}
   }
 }
 
-export const jobEnrichmentService = new JobEnrichmentService()
+export const jobEnrichmentService = new JobEnrichmentService()
