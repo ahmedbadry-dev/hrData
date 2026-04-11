@@ -1,0 +1,23 @@
+import { z } from 'zod';
+import { APPLICATIONS_CONSTANTS } from '../applications.constants';
+
+export const ScheduleApplicationsDtoSchema = z.object({
+  body: z.object({
+    jobIds: z
+      .array(z.string().uuid())
+      .min(1, APPLICATIONS_CONSTANTS.MESSAGES.NO_SAVED_JOBS_PROVIDED),
+    sendTime: z
+      .string()
+      .refine(
+        (val) => val === 'immediately' || !isNaN(Date.parse(val)),
+        APPLICATIONS_CONSTANTS.MESSAGES.INVALID_SEND_TIME
+      ),
+    delayBetweenEmails: z
+      .number()
+      .min(0)
+      .default(APPLICATIONS_CONSTANTS.DEFAULT_DELAY_BETWEEN_EMAILS_MS)
+      .optional(),
+  }),
+});
+
+export type ScheduleApplicationsDto = z.infer<typeof ScheduleApplicationsDtoSchema>;

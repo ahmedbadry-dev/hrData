@@ -4,6 +4,7 @@ import { appConfig, getEnvVarAsNumber } from './config/env.config';
 import logger from '@/shared/utils/logger.util';
 import prisma from './config/db.config';
 import { bootstrapScraper } from './scraper';
+import '@/workers/email-send.worker';
 
 const PORT = getEnvVarAsNumber('PORT', 5000);
 

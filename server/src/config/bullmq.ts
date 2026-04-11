@@ -13,3 +13,16 @@ export const scraperQueue = new Queue('job-scraper', {
     removeOnFail: 10,
   },
 });
+
+export const emailSendQueue = new Queue('email-send', {
+  connection: redis,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 10_000,
+    },
+    removeOnComplete: 5,
+    removeOnFail: 10,
+  },
+});
