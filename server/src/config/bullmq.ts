@@ -1,7 +1,15 @@
 import { Queue } from 'bullmq';
-import { redis } from '@/config/redis';
+import redis from './redis';
 
-export const bullmqConnection = { connection: redis };
-
-export const emailSendQueue = new Queue('email-send-queue', bullmqConnection);
-export const scraperQueue = new Queue('scraper-queue', bullmqConnection);
+export const scraperQueue = new Queue('job-scraper', {
+  connection: redis,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 15_000,
+    },
+    removeOnComplete: 5,
+    removeOnFail: 10,
+  },
+});

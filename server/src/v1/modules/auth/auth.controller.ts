@@ -81,8 +81,6 @@ export class AuthController {
     return ResponseHelper.ok(res, data, 'Password changed successfully', req.path);
   };
 
-  // Helper methods
-
   private getDeviceInfo(req: Request) {
     const userAgent = req.get('User-Agent') || '';
     const parser = new UAParser(userAgent);

@@ -133,7 +133,6 @@ export class JobsService {
     }
   }
 
-  // TODO: remove this method its just for testing bulk creation
   async createBulkJobs(
     jobsData: CreateBulkJobsDto['body']['jobs']
   ): Promise<BulkCreateJobsResponse> {

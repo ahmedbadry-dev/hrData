@@ -3,6 +3,7 @@ import app from './app';
 import { appConfig, getEnvVarAsNumber } from './config/env.config';
 import logger from '@/shared/utils/logger.util';
 import prisma from './config/db.config';
+import { bootstrapScraper } from './scraper';
 
 const PORT = getEnvVarAsNumber('PORT', 5000);
 
@@ -20,6 +21,7 @@ const startServer = async () => {
       logger.info(`🚀 Server is running on http://localhost:${PORT}`);
       logger.info(`📊 Health check available at http://localhost:${PORT}/api/v1/health`);
       logger.info(`🌍 Environment: ${appConfig.nodeEnv}`);
+      bootstrapScraper();
     });
 
     server.on('error', (error: NodeJS.ErrnoException) => {

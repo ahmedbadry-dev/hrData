@@ -28,7 +28,7 @@ import {
   AuthResponseWithoutTokens,
   DeviceInfo,
 } from './types/auth.types';
-// Prisma types now imported from Line 1
+
 import { AUTH_CONSTANTS } from './auth.constants';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -310,7 +310,6 @@ export class AuthService {
     return { user: excludePassword(updatedUser) };
   }
 
-  // HELPER FUNCTIONS
   private generateSessionId = (): string => crypto.randomUUID();
 
   private validateUserStatus(user: { status: UserStatus; emailVerified: boolean }) {
