@@ -3,6 +3,8 @@ import type { SavedJob } from '@/components/user/sections/userData';
 import { EmptyState, PageHeader } from '@/components/common';
 import { Button, Input } from '@/components/ui';
 import styles from './UserAutoApplySection.module.css';
+import { useCvsList, useUploadCv } from '@/modules/cvs/api/hooks';
+import type { Cv } from '@/modules/cvs/api/cvs.service';
 
 interface UserAutoApplySectionProps {
   savedJobs: SavedJob[];
@@ -13,7 +15,7 @@ interface UserAutoApplySectionProps {
     selected: SavedJob[];
     scheduleTime: string;
     delay: string;
-    fileName: string | null;
+    cvId: string | null;
   }) => void;
   onGoAnalytics: () => void;
   onGoHome: () => void;
@@ -44,14 +46,43 @@ export default function UserAutoApplySection({
   );
   const [subject] = useState('طلب انضمام — [المسمى الوظيفي]');
   const [body] = useState(professionalEmailBody);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [selectedCvId, setSelectedCvId] = useState<string | null>(null);
   const [scheduleTime, setScheduleTime] = useState('now');
   const [delay, setDelay] = useState('30');
+
+  const { data: cvsData } = useCvsList();
+  const uploadCvMutation = useUploadCv();
+
+  const cvs = cvsData?.data || [];
 
   const selectedJobs = useMemo(
     () => savedJobs.filter((_, index) => selectedMap[index]),
     [savedJobs, selectedMap]
   );
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      window.alert('يرجى رفع ملف PDF فقط');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      window.alert('حجم الملف يجب أن يكون أقل من 5 ميجابايت');
+      return;
+    }
+
+    try {
+      const result = await uploadCvMutation.mutateAsync({ file, isDefault: cvs.length === 0 });
+      if (result.data) {
+        setSelectedCvId(result.data.id);
+      }
+    } catch {
+      alert('حدث خطأ في رفع الملف');
+    }
+  };
 
   if (!gmailConnected) {
     return (
@@ -153,7 +184,9 @@ export default function UserAutoApplySection({
 
         <div className={styles['summary-card']}>
           <div className={styles['company-tag']}>عدد الرسائل: {selectedJobs.length}</div>
-          <div className={styles['meta-chip']}>الملف المرفق: {fileName ?? 'لا يوجد'}</div>
+          <div className={styles['meta-chip']}>
+            الملف المرفق: {cvs.find((c: Cv) => c.id === selectedCvId)?.fileName ?? 'لا يوجد'}
+          </div>
         </div>
 
         <div className={styles['control-bar']}>
@@ -162,8 +195,9 @@ export default function UserAutoApplySection({
           </Button>
           <Button
             className={styles['btn-primary']}
+            disabled={!selectedCvId}
             onClick={() => {
-              onStartSending({ selected: selectedJobs, scheduleTime, delay, fileName });
+              onStartSending({ selected: selectedJobs, scheduleTime, delay, cvId: selectedCvId });
               setStep(3);
             }}
           >
@@ -207,26 +241,38 @@ export default function UserAutoApplySection({
 
       <div className={styles['field-wrap']}>
         <span className={styles['search-label']}>السيرة الذاتية</span>
-        <label className={styles['upload-box']}>
+
+        {cvs.length > 0 && (
+          <div className={styles['cv-list']}>
+            {cvs.map((cv: Cv) => (
+              <label key={cv.id} className={styles['cv-option']}>
+                <input
+                  type="radio"
+                  name="cv"
+                  checked={selectedCvId === cv.id}
+                  onChange={() => setSelectedCvId(cv.id)}
+                />
+                <span>{cv.fileName}</span>
+                {cv.isDefault && <span className={styles['default-badge']}>افتراضي</span>}
+              </label>
+            ))}
+          </div>
+        )}
+
+        <label className={`${styles['upload-box']} ${selectedCvId ? styles.selected : ''}`}>
           <input
             type="file"
             accept=".pdf"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              if (file.type !== 'application/pdf') {
-                window.alert('يرجى رفع ملف PDF فقط');
-                return;
-              }
-              if (file.size > 5 * 1024 * 1024) {
-                window.alert('حجم الملف يجب أن يكون أقل من 5 ميجابايت');
-                return;
-              }
-              setFileName(file.name);
-            }}
+            onChange={handleFileUpload}
+            disabled={uploadCvMutation.isPending}
           />
-          <span>اضغط لرفع السيرة الذاتية</span>
-          {fileName ? <b>✓ {fileName}</b> : null}
+          {selectedCvId ? (
+            <span style={{ color: 'var(--green)', fontWeight: 600 }}>
+              ✓ {cvs.find((c: Cv) => c.id === selectedCvId)?.fileName}
+            </span>
+          ) : (
+            <span>{uploadCvMutation.isPending ? 'جاري الرفع...' : 'اختر أو ارفع سيرة ذاتية'}</span>
+          )}
         </label>
       </div>
 

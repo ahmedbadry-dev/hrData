@@ -11,6 +11,8 @@ export interface ApplicationJob {
   title: string;
   companyName: string;
   hrEmail: string | null;
+  category: string | null;
+  location: string | null;
 }
 
 export interface Application {
@@ -44,6 +46,7 @@ export interface ScheduleApplicationsRequest {
   jobIds: string[];
   sendTime: string;
   delayBetweenEmails?: number;
+  cvId?: string;
 }
 
 export interface ScheduleApplicationsResponse {
