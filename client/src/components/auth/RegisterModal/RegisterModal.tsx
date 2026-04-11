@@ -10,6 +10,14 @@ interface RegisterModalProps {
   onLoginClick: () => void;
 }
 
+interface ValidationErrors {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  password?: string;
+}
+
 export default function RegisterModal({ isOpen, onClose, onLoginClick }: RegisterModalProps) {
   const navigate = useNavigate();
   const registerMutation = useRegisterMutation();
@@ -20,22 +28,61 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
     phone: '',
     password: '',
   });
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<ValidationErrors>({});
+
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'يرجى إدخال الاسم الأول';
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'يرجى إدخال الاسم الأخير';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'يرجى إدخال البريد الإلكتروني';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'يرجى إدخال بريد إلكتروني صحيح';
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'يرجى إدخال رقم الجوال';
+    } else if (!/^05\d{8}$/.test(formData.phone)) {
+      newErrors.phone = 'يرجى إدخال رقم جوال صحيح (05xxxxxxxx)';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'يرجى إدخال كلمة المرور';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name as keyof ValidationErrors]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
+
+    if (!validateForm()) return;
 
     try {
       await registerMutation.mutateAsync(formData);
       onClose();
       navigate('/');
     } catch (err: any) {
-      setError(mapErrorToArabic(err?.message || 'حدث خطأ'));
+      setErrors({ email: mapErrorToArabic(err?.message || 'حدث خطأ') });
     }
   };
 
@@ -60,7 +107,7 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
         </div>
 
         <div className={styles.body}>
-          {error && (
+          {errors.email && (
             <div className={`${styles.error} show`}>
               <svg
                 width="15"
@@ -75,7 +122,7 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
-              <span>{error}</span>
+              <span>{errors.email}</span>
             </div>
           )}
 
@@ -88,8 +135,9 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
                 placeholder="العمري"
                 value={formData.lastName}
                 onChange={handleChange}
-                required
+                className={errors.lastName ? styles.inputError : ''}
               />
+              {errors.lastName && <span className={styles.fieldError}>{errors.lastName}</span>}
             </div>
             <div className={styles.field}>
               <label>الاسم الأول</label>
@@ -99,8 +147,9 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
                 placeholder="أحمد"
                 value={formData.firstName}
                 onChange={handleChange}
-                required
+                className={errors.firstName ? styles.inputError : ''}
               />
+              {errors.firstName && <span className={styles.fieldError}>{errors.firstName}</span>}
             </div>
           </div>
 
@@ -113,8 +162,9 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
               dir="ltr"
               value={formData.email}
               onChange={handleChange}
-              required
+              className={errors.email ? styles.inputError : ''}
             />
+            {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
           </div>
 
           <div className={styles.field}>
@@ -126,8 +176,9 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
               dir="ltr"
               value={formData.phone}
               onChange={handleChange}
-              required
+              className={errors.phone ? styles.inputError : ''}
             />
+            {errors.phone && <span className={styles.fieldError}>{errors.phone}</span>}
           </div>
 
           <div className={styles.field}>
@@ -139,8 +190,9 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
               dir="ltr"
               value={formData.password}
               onChange={handleChange}
-              required
+              className={errors.password ? styles.inputError : ''}
             />
+            {errors.password && <span className={styles.fieldError}>{errors.password}</span>}
           </div>
 
           <button

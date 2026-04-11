@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Input } from '@/components/ui';
 import { useLoginMutation } from '@/modules/auth/api/mutations';
 import { mapErrorToArabic } from '@/lib/error-mapper';
 import styles from './LoginModal.module.css';
@@ -11,23 +10,57 @@ interface LoginModalProps {
   onRegisterClick: () => void;
 }
 
+interface ValidationErrors {
+  email?: string;
+  password?: string;
+}
+
 export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginModalProps) {
   const navigate = useNavigate();
   const loginMutation = useLoginMutation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<ValidationErrors>({});
+
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+
+    if (!email.trim()) {
+      newErrors.email = 'يرجى إدخال البريد الإلكتروني أو اسم المستخدم';
+    }
+
+    if (!password) {
+      newErrors.password = 'يرجى إدخال كلمة المرور';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (name === 'email') {
+      setEmail(value);
+    } else if (name === 'password') {
+      setPassword(value);
+    }
+    if (errors[name as keyof ValidationErrors]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
+
+    if (!validateForm()) return;
 
     try {
       await loginMutation.mutateAsync({ email, password });
       onClose();
       navigate('/dashboard');
     } catch (err: any) {
-      setError(mapErrorToArabic(err?.message || 'حدث خطأ'));
+      setErrors({ email: mapErrorToArabic(err?.message || 'حدث خطأ') });
     }
   };
 
@@ -44,16 +77,16 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
           ✕
         </button>
 
-        <div className={styles.header}>
+        <div className={styles.logoWrap}>
           <div className={styles.logo}>
-            كُفُـؤ<span className={styles.logoPoint}>.</span>
+            كُفُـؤ<em>.</em>
           </div>
           <div className={styles.subtitle}>تسجيل الدخول</div>
         </div>
 
-        <form className={styles.form} onSubmit={handleSubmit}>
-          {error && (
-            <div className={styles.error + ' show'}>
+        <div className={styles.body}>
+          {errors.email && (
+            <div className={`${styles.error} show`}>
               <svg
                 width="15"
                 height="15"
@@ -67,62 +100,62 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
-              {error}
+              <span>{errors.email}</span>
             </div>
           )}
 
           <div className={styles.field}>
-            <label className={styles.label}>البريد الإلكتروني أو اسم المستخدم</label>
-            <Input
+            <label>البريد الإلكتروني أو اسم المستخدم</label>
+            <input
               type="text"
+              name="email"
               placeholder="admin أو بريدك الإلكتروني"
-              className={styles.inputCustom + ' ' + styles.inputLtr}
               dir="ltr"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              onChange={handleChange}
+              className={errors.email ? styles.inputError : ''}
             />
+            {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>كلمة المرور</label>
-            <Input
+            <label>كلمة المرور</label>
+            <input
               type="password"
+              name="password"
               placeholder="••••••••"
-              className={styles.inputCustom + ' ' + styles.inputLtr}
               dir="ltr"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              onChange={handleChange}
+              className={errors.password ? styles.inputError : ''}
             />
+            {errors.password && <span className={styles.fieldError}>{errors.password}</span>}
           </div>
 
-          <Button
-            variant="primary"
-            fullWidth
+          <button
             className={styles.submitButton}
+            onClick={handleSubmit}
             disabled={loginMutation.isPending}
           >
             {loginMutation.isPending ? 'جاري الدخول...' : 'دخول ←'}
-          </Button>
-        </form>
+          </button>
 
-        <div className={styles.footer}>
-          ليس لديك حساب؟{' '}
-          <a
-            href="#"
-            className={styles.link}
-            onClick={(e) => {
-              e.preventDefault();
-              onRegisterClick();
-            }}
-          >
-            إنشاء حساب
-          </a>
-        </div>
+          <div className={styles.switch}>
+            ليس لديك حساب؟{' '}
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                onRegisterClick();
+              }}
+            >
+              إنشاء حساب
+            </a>
+          </div>
 
-        <div className={styles.adminHint}>
-          <strong>تلميح:</strong> اسم المستخدم <code>user</code> · كلمة المرور <code>user</code>
+          <div className={styles.hint}>
+            <strong>تلميح:</strong> اسم المستخدم <code>user</code> · كلمة المرور <code>user</code>
+          </div>
         </div>
       </div>
     </div>
