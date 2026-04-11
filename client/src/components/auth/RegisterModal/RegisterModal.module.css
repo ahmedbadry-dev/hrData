@@ -140,6 +140,16 @@
   border-color: var(--ink);
 }
 
+.inputError {
+  border-color: var(--accent) !important;
+}
+
+.fieldError {
+  font-size: 11px;
+  color: var(--accent);
+  margin-top: 4px;
+}
+
 .field input[type='email'],
 .field input[type='tel'],
 .field input[type='password'] {
