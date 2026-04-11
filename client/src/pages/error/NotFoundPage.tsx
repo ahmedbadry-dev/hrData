@@ -8,7 +8,7 @@ export default function NotFoundPage() {
       <style>
         {`@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');`}
       </style>
-      
+
       <nav style={styles.navbar}>
         <a href="/" style={styles.logo}>
           كُفُ<span style={styles.logoAccent}>ـ</span>ؤ
@@ -21,7 +21,8 @@ export default function NotFoundPage() {
         </h1>
         <h2 style={styles.h2}>الصفحة غير موجودة</h2>
         <p style={styles.p}>
-          الصفحة التي تبحث عنها غير موجودة أو تم نقلها إلى مكان آخر. يمكنك العودة للرئيسية أو استكشاف الوظائف المتاحة.
+          الصفحة التي تبحث عنها غير موجودة أو تم نقلها إلى مكان آخر. يمكنك العودة للرئيسية أو
+          استكشاف الوظائف المتاحة.
         </p>
         <div style={styles.buttons}>
           <a href="/" style={styles.btnPrimary}>
@@ -130,4 +131,3 @@ const styles: Record<string, React.CSSProperties> = {
     transition: 'all 0.25s',
   },
 };
-

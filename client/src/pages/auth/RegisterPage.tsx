@@ -1,13 +1,15 @@
-import { RegisterForm } from '@/components/auth';
-import styles from './AuthPages.module.css';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { openRegister } = useAuthModal();
 
-  return (
-    <div className={styles.pageContainer}>
-      <RegisterForm onLoginClick={() => navigate('/login')} />
-    </div>
-  );
+  useEffect(() => {
+    openRegister();
+    navigate('/');
+  }, [navigate, openRegister]);
+
+  return null;
 }

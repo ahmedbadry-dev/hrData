@@ -1,7 +1,11 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import styles from '@/components/home/layout/HomeLayout/HomeLayout.module.css';
 
 export default function HomeNavbar() {
+  const navigate = useNavigate();
+  const { openLogin, openRegister } = useAuthModal();
+
   return (
     <nav className={styles.nav}>
       <a className={styles['nav-logo']} href="#">
@@ -17,12 +21,24 @@ export default function HomeNavbar() {
         <a className={styles['nav-link']} href="#cta">
           للشركات
         </a>
-        <Link className={styles['btn-login-navbar']} to="/login">
+        <button
+          className={styles['btn-login-navbar']}
+          onClick={() => {
+            openLogin();
+            navigate('/');
+          }}
+        >
           تسجيل الدخول
-        </Link>
-        <Link className={styles['btn-register']} to="/register">
+        </button>
+        <button
+          className={styles['btn-register']}
+          onClick={() => {
+            openRegister();
+            navigate('/');
+          }}
+        >
           إنشاء حساب ←
-        </Link>
+        </button>
       </div>
     </nav>
   );

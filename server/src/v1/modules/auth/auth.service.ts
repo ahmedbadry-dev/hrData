@@ -7,6 +7,7 @@ import { NotFoundException } from '@/shared/errors/NotFoundException';
 import { ConflictException } from '@/shared/errors/ConflictException';
 import { ForbiddenException } from '@/shared/errors/ForbiddenException';
 import { APP_CONSTANTS } from '@/config/constants';
+import logger from '@/shared/utils/logger.util';
 import { CreateUserDto } from './dto/create-user.dto';
 import { generateHash, compareHash, generateHashedWithSha256 } from '@/shared/utils/hash.util';
 import {
@@ -75,7 +76,15 @@ export class AuthService {
       },
     });
 
-    this.emailService.sendVerificationEmail(firstName + ' ' + lastName, email, emailVerifyToken);
+    try {
+      await this.emailService.sendVerificationEmail(
+        firstName + ' ' + lastName,
+        email,
+        emailVerifyToken
+      );
+    } catch (emailError) {
+      logger.error('❌ Failed to send verification email:', { email, error: emailError });
+    }
 
     return { user: excludePassword(user) };
   }

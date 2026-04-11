@@ -18,7 +18,7 @@ export default function HomeHeroSection() {
           تعقيد. أرسل سيرتك الذاتية وانتظر ردهم.
         </p>
         <div className={styles['hero-cta-row']}>
-          <Link className={styles['btn-primary']} to="/dashboard">
+          <Link className={styles['btn-primary']} to="/dashboard/jobs">
             ابدأ البحث الآن
           </Link>
           <a className={styles['btn-ghost']} href="#how">

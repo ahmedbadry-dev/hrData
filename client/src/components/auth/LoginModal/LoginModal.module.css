@@ -1,0 +1,151 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background-color: var(--paper);
+  width: 100%;
+  max-width: 480px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  position: relative;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 10px 25px var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo {
+  font-family: 'Cairo', sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoPoint {
+  color: var(--accent);
+}
+
+.subtitle {
+  color: var(--warm);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.form {
+  width: 100%;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  color: var(--warm);
+  font-weight: 600;
+  text-align: right;
+}
+
+.inputCustom {
+  border: 1px solid var(--ink) !important;
+  background-color: #ffffff !important;
+  border-radius: 2px !important;
+  padding: 0.75rem !important;
+  font-size: 1rem !important;
+  width: 100%;
+}
+
+.submitButton {
+  background-color: var(--ink) !important;
+  color: #ffffff !important;
+  border-radius: 2px !important;
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  height: 3.5rem !important;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submitButton:hover {
+  background-color: var(--accent) !important;
+}
+
+.footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.registerLink {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+  margin-right: 0.25rem;
+}
+
+.registerLink:hover {
+  text-decoration: underline;
+}
+
+.error {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+[dir='rtl'] .closeButton {
+  left: auto;
+  right: 1rem;
+}
+
+[dir='rtl'] .label {
+  text-align: right;
+}

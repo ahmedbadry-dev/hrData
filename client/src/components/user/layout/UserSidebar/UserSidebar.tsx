@@ -1,7 +1,14 @@
 import { cn } from '@/lib/utils';
 import styles from './UserSidebar.module.css';
 
-export type UserPageKey = 'home' | 'search' | 'saved' | 'auto-apply' | 'analytics' | 'settings';
+export type UserPageKey =
+  | 'home'
+  | 'search'
+  | 'saved'
+  | 'applications'
+  | 'auto-apply'
+  | 'analytics'
+  | 'settings';
 
 interface UserSidebarProps {
   activePage: UserPageKey;
@@ -86,6 +93,28 @@ export default function UserSidebar({
                   <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                 </svg>
                 الوظائف المحفوظة
+              </button>
+            </li>
+            <li>
+              <button
+                className={cn(styles['nav-link'], activePage === 'applications' && styles.active)}
+                onClick={() => onNavigate('applications')}
+              >
+                <svg
+                  className={styles['nav-icon']}
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M22 2L11 13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+                طلبات التوظيف
               </button>
             </li>
             <li>

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Input } from '@/components/ui';
+import { useLoginMutation } from '@/modules/auth/api/mutations';
+import { mapErrorToArabic } from '@/lib/error-mapper';
 import styles from './LoginForm.module.css';
 
 interface LoginFormProps {
@@ -8,15 +10,25 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ onRegisterClick }: LoginFormProps) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [showToast, setShowToast] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const loginMutation = useLoginMutation();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate error based on the images provided
-    setError('يرجى إدخال اسم المستخدم وكلمة المرور');
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 5000);
+    setError(null);
+
+    if (!email || !password) return;
+
+    try {
+      await loginMutation.mutateAsync({ email, password });
+    } catch (err) {
+      const axiosError = err as { response?: { data?: { message?: string } } };
+      const message = axiosError.response?.data?.message || '';
+      setError(mapErrorToArabic(message));
+    }
   };
 
   return (
@@ -25,25 +37,34 @@ export default function LoginForm({ onRegisterClick }: LoginFormProps) {
         <div className={styles.logo}>
           <span className={styles.logoPoint}>.</span> كُفُـؤ
         </div>
-        <div >تسجيل الدخول</div>
+        <div>تسجيل الدخول</div>
       </div>
 
       {error && <div className={styles.errorBox}>{error}</div>}
 
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.field}>
-          <label className={styles.label}>البريد الإلكتروني أو اسم المستخدم</label>
+          <label className={styles.label}>البريد الإلكتروني</label>
           <Input
-            type="text"
-            placeholder="admin أو بريدك الإلكتروني"
+            type="email"
+            placeholder="بريدك الإلكتروني"
             className={styles.inputCustom}
             dir="rtl"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
 
         <div className={styles.field}>
           <label className={styles.label}>كلمة المرور</label>
-          <Input type="password" placeholder="********" className={styles.inputCustom} dir="ltr" />
+          <Input
+            type="password"
+            placeholder="********"
+            className={styles.inputCustom}
+            dir="ltr"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
 
         <Button
@@ -51,6 +72,7 @@ export default function LoginForm({ onRegisterClick }: LoginFormProps) {
           fullWidth
           className={`${styles.submitButton} ${error ? styles.submitButtonError : ''}`}
           type="submit"
+          isLoading={loginMutation.isPending}
         >
           دخول ←
         </Button>
@@ -71,13 +93,6 @@ export default function LoginForm({ onRegisterClick }: LoginFormProps) {
         <span>كلمة المرور</span>
         <span className={styles.hintTag}>admin</span>
       </div>
-
-      {showToast && (
-        <div className={styles.toast}>
-          <span>يرجى ملء الحقول الإلزامية</span>
-          <div className={styles.toastIcon}>✕</div>
-        </div>
-      )}
     </div>
   );
 }

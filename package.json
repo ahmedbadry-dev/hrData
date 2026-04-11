@@ -10,7 +10,8 @@
     "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
     "build": "npm run build --workspace=server && npm run build --workspace=client",
     "lint": "prettier --check \"**/*.{ts,tsx,js,json,md}\"",
-    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "type:check": "npm run type:check --workspace=server && npm run type:check --workspace=client"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.10",
