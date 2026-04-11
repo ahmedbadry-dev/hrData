@@ -34,10 +34,14 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
   if (!isOpen) return null;
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div
+      className={`${styles.overlay} ${isOpen ? styles.overlayOpen : ''}`}
+      dir="rtl"
+      onClick={onClose}
+    >
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeButton} onClick={onClose} aria-label="Close">
-          ×
+          ✕
         </button>
 
         <div className={styles.header}>
@@ -48,12 +52,31 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit}>
+          {error && (
+            <div className={styles.error + ' show'}>
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              {error}
+            </div>
+          )}
+
           <div className={styles.field}>
-            <label className={styles.label}>البريد الإلكتروني</label>
+            <label className={styles.label}>البريد الإلكتروني أو اسم المستخدم</label>
             <Input
-              type="email"
-              placeholder="ahmed@email.com"
-              className={styles.inputCustom}
+              type="text"
+              placeholder="admin أو بريدك الإلكتروني"
+              className={styles.inputCustom + ' ' + styles.inputLtr}
               dir="ltr"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -65,8 +88,8 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
             <label className={styles.label}>كلمة المرور</label>
             <Input
               type="password"
-              placeholder="********"
-              className={styles.inputCustom}
+              placeholder="••••••••"
+              className={styles.inputCustom + ' ' + styles.inputLtr}
               dir="ltr"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -74,15 +97,13 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
             />
           </div>
 
-          {error && <div className={styles.error}>{error}</div>}
-
           <Button
             variant="primary"
             fullWidth
             className={styles.submitButton}
             disabled={loginMutation.isPending}
           >
-            {loginMutation.isPending ? 'جاري الدخول...' : 'تسجيل الدخول ←'}
+            {loginMutation.isPending ? 'جاري الدخول...' : 'دخول ←'}
           </Button>
         </form>
 
@@ -90,7 +111,7 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
           ليس لديك حساب؟{' '}
           <a
             href="#"
-            className={styles.registerLink}
+            className={styles.link}
             onClick={(e) => {
               e.preventDefault();
               onRegisterClick();
@@ -98,6 +119,10 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
           >
             إنشاء حساب
           </a>
+        </div>
+
+        <div className={styles.adminHint}>
+          <strong>تلميح:</strong> اسم المستخدم <code>user</code> · كلمة المرور <code>user</code>
         </div>
       </div>
     </div>

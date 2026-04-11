@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Input } from '@/components/ui';
 import { useRegisterMutation } from '@/modules/auth/api/mutations';
 import { mapErrorToArabic } from '@/lib/error-mapper';
 import styles from './RegisterModal.module.css';
@@ -43,40 +42,61 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
   if (!isOpen) return null;
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div
+      className={`${styles.overlay} ${isOpen ? styles.overlayOpen : ''}`}
+      dir="rtl"
+      onClick={onClose}
+    >
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeButton} onClick={onClose} aria-label="Close">
-          ×
+          ✕
         </button>
 
-        <div className={styles.header}>
+        <div className={styles.logoWrap}>
           <div className={styles.logo}>
-            كُفُـؤ<span className={styles.logoPoint}>.</span>
+            كُفُـؤ<em>.</em>
           </div>
           <div className={styles.subtitle}>إنشاء حساب جديد</div>
         </div>
 
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.row}>
+        <div className={styles.body}>
+          {error && (
+            <div className={`${styles.error} show`}>
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div className={styles.row2}>
             <div className={styles.field}>
-              <label className={styles.label}>الاسم الأخير</label>
-              <Input
-                placeholder="العمري"
-                className={styles.inputCustom}
-                dir="rtl"
+              <label>الاسم الأخير</label>
+              <input
+                type="text"
                 name="lastName"
+                placeholder="العمري"
                 value={formData.lastName}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className={styles.field}>
-              <label className={styles.label}>الاسم الأول</label>
-              <Input
-                placeholder="أحمد"
-                className={styles.inputCustom}
-                dir="rtl"
+              <label>الاسم الأول</label>
+              <input
+                type="text"
                 name="firstName"
+                placeholder="أحمد"
                 value={formData.firstName}
                 onChange={handleChange}
                 required
@@ -85,13 +105,12 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>البريد الإلكتروني</label>
-            <Input
+            <label>البريد الإلكتروني</label>
+            <input
               type="email"
-              placeholder="ahmed@email.com"
-              className={styles.inputCustom}
-              dir="ltr"
               name="email"
+              placeholder="ahmed@email.com"
+              dir="ltr"
               value={formData.email}
               onChange={handleChange}
               required
@@ -99,13 +118,12 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>رقم الجوال</label>
-            <Input
+            <label>رقم الجوال</label>
+            <input
               type="tel"
-              placeholder="05XXXXXXXX"
-              className={styles.inputCustom}
-              dir="ltr"
               name="phone"
+              placeholder="05XXXXXXXX"
+              dir="ltr"
               value={formData.phone}
               onChange={handleChange}
               required
@@ -113,43 +131,38 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>كلمة المرور</label>
-            <Input
+            <label>كلمة المرور</label>
+            <input
               type="password"
-              placeholder="********"
-              className={styles.inputCustom}
-              dir="ltr"
               name="password"
+              placeholder="••••••••"
+              dir="ltr"
               value={formData.password}
               onChange={handleChange}
               required
             />
           </div>
 
-          {error && <div className={styles.error}>{error}</div>}
-
-          <Button
-            variant="primary"
-            fullWidth
+          <button
             className={styles.submitButton}
+            onClick={handleSubmit}
             disabled={registerMutation.isPending}
           >
             {registerMutation.isPending ? 'جاري إنشاء الحساب...' : 'إنشاء الحساب ←'}
-          </Button>
-        </form>
+          </button>
 
-        <div className={styles.footer}>
-          لديك حساب بالفعل؟{' '}
-          <a
-            href="#"
-            className={styles.loginLink}
-            onClick={(e) => {
-              e.preventDefault();
-              onLoginClick();
-            }}
-          >
-            تسجيل الدخول
-          </a>
+          <div className={styles.switch}>
+            لديك حساب بالفعل؟{' '}
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                onLoginClick();
+              }}
+            >
+              تسجيل الدخول
+            </a>
+          </div>
         </div>
       </div>
     </div>
