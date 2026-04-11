@@ -26,6 +26,7 @@ enum ApplicationStatus {
   SENDING
   SENT
   FAILED
+  EMAIL_SENT
   EMAIL_OPENED
 }
 

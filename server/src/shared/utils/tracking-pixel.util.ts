@@ -1,8 +1,12 @@
-export const getTrackingPixel = (): Buffer => {
-  return Buffer.from(
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-    'base64'
-  );
+import { appConfig } from '@/config/env.config';
+
+const BASE_URL = appConfig.appUrl.replace(/\/+$/, '');
+
+export const generateTrackingPixelUrl = (token: string): string => {
+  return `${BASE_URL}/api/v1/track/open/${token}`;
 };
 
-export const TRACKING_PIXEL_CONTENT_TYPE = 'image/png';
+export const TRANSPARENT_GIF = Buffer.from(
+  'R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==',
+  'base64'
+);

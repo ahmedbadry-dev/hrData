@@ -10,6 +10,7 @@ import { Router } from "express";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { jobsRoutes } from './modules/jobs/jobs.routes';
 import { usersRoutes } from './modules/users/users.routes';
+import trackingRoutes from './modules/tracking/tracking.routes';
 
 
 export const v1Routes = () => {
@@ -28,6 +29,7 @@ export const v1Routes = () => {
 
   router.use('/auth', authRoutes(authController));
   router.use('/jobs', jobsRoutes(jobsController));
+  router.use('/track', trackingRoutes);
   router.use('/admin/users', usersRoutes(usersController));
 
   // router.use('/tickets',  ticketRoutes());
