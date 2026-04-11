@@ -48,7 +48,8 @@ export const emailSendWorker = new Worker<EmailSendJobData>(
       });
 
       const mailOptions: nodemailer.SendMailOptions = {
-        from: userEmail,
+        from: emailConfig.from,
+        replyTo: userEmail,
         to: hrEmail,
         subject: `طلب انضمام — ${jobTitle}`,
         html,
@@ -81,7 +82,8 @@ export const emailSendWorker = new Worker<EmailSendJobData>(
 
       logger.info(`✅ Application ${applicationId} marked as EMAIL_SENT`);
     } catch (error) {
-      logger.error(`❌ Failed to send email for application ${applicationId}`, { error });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`❌ Failed to send email for application ${applicationId}: ${errorMessage}`);
 
       const retryCount = job.attemptsMade || 0;
 

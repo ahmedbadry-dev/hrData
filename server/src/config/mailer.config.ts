@@ -1,8 +1,9 @@
 import nodemailer from 'nodemailer';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { emailConfig } from './env.config';
 import logger from '@/shared/utils/logger.util';
 
-export const transporterSingleton = nodemailer.createTransport({
+const smtpOptions: SMTPTransport.Options = {
   host: emailConfig.host,
   port: emailConfig.port,
   secure: emailConfig.port === 465,
@@ -13,7 +14,12 @@ export const transporterSingleton = nodemailer.createTransport({
           pass: emailConfig.password,
         }
       : undefined,
-});
+  tls: {
+    rejectUnauthorized: false,
+  },
+};
+
+export const transporterSingleton = nodemailer.createTransport(smtpOptions);
 
 transporterSingleton.verify((error) => {
   if (error) {

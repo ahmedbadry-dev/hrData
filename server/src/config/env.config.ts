@@ -81,6 +81,7 @@ export const emailConfig = {
   user: getEnvVariable('SMTP_USER', ''),
   password: getEnvVariable('SMTP_PASSWORD', ''),
   from: getEnvVariable('EMAIL_FROM', 'noreply@kafoo.com'),
+  serverUrl: getEnvVariable('SERVER_URL', 'http://localhost:5000'),
 };
 
 export const encryptionConfig = {
