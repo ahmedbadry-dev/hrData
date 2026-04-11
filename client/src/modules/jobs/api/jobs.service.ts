@@ -1,0 +1,87 @@
+import { axiosClient, type ApiResponse, type PaginationMeta } from '@/services/api';
+
+export interface Job {
+  id: string;
+  title: string;
+  companyName: string;
+  location: string | null;
+  category: string | null;
+  description: string | null;
+  hrEmail: string | null;
+  source: string;
+  sourceUrl: string | null;
+  language: string;
+  postedAt: string | null;
+  expiresAt: string | null;
+  isExpired: boolean;
+  isSaved?: boolean;
+}
+
+export interface PaginatedJobs {
+  jobs: Job[];
+  pagination: PaginationMeta;
+}
+
+export interface GetJobsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  location?: string;
+  category?: string;
+  dateFilter?: string;
+}
+
+export const fetchJobs = async (params?: GetJobsParams): Promise<ApiResponse<PaginatedJobs>> => {
+  const searchParams = new URLSearchParams();
+  if (params?.page) searchParams.set('page', String(params.page));
+  if (params?.limit) searchParams.set('limit', String(params.limit));
+  if (params?.search) searchParams.set('keyword', params.search);
+  if (params?.location) searchParams.set('location', params.location.toUpperCase());
+  if (params?.dateFilter) searchParams.set('dateFilter', params.dateFilter.toUpperCase());
+
+  const { data } = await axiosClient.get<ApiResponse<PaginatedJobs>>(
+    `/jobs?${searchParams.toString()}`
+  );
+  return data;
+};
+
+export const fetchJobById = async (id: string): Promise<ApiResponse<Job>> => {
+  const { data } = await axiosClient.get<ApiResponse<Job>>(`/jobs/${id}`);
+  return data;
+};
+
+export const saveJob = async (jobId: string): Promise<ApiResponse<{ success: boolean }>> => {
+  const { data } = await axiosClient.post<ApiResponse<{ success: boolean }>>(`/jobs/${jobId}/save`);
+  return data;
+};
+
+export const unsaveJob = async (jobId: string): Promise<ApiResponse<{ success: boolean }>> => {
+  const { data } = await axiosClient.delete<ApiResponse<{ success: boolean }>>(
+    `/jobs/${jobId}/save`
+  );
+  return data;
+};
+
+export const fetchSavedJobs = async (
+  params?: GetJobsParams
+): Promise<ApiResponse<PaginatedJobs>> => {
+  const searchParams = new URLSearchParams();
+  if (params?.page) searchParams.set('page', String(params.page));
+  if (params?.limit) searchParams.set('limit', String(params.limit));
+  if (params?.search) searchParams.set('keyword', params.search);
+  if (params?.location) searchParams.set('location', params.location.toUpperCase());
+  if (params?.dateFilter) searchParams.set('dateFilter', params.dateFilter.toUpperCase());
+
+  const { data } = await axiosClient.get<ApiResponse<PaginatedJobs>>(
+    `/jobs/saved?${searchParams.toString()}`
+  );
+  return data;
+};
+
+export const jobsService = {
+  fetchJobs,
+  fetchJobById,
+  saveJob,
+  unsaveJob,
+  fetchSavedJobs,
+};
