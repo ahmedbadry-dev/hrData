@@ -1,19 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { UserLayout, type UserPageKey } from '@/components/user/layout';
-import {
-  PAGE_NAME,
-  getApplications,
-  getSavedJobs,
-  setApplications,
-  setSavedJobs,
-  type SavedJob,
-  type UserJob,
-} from '@/components/user/sections/userData';
+import { useSavedJobs, useSaveJob, useUnsaveJob } from '@/modules/jobs/api/hooks';
+import { UseScheduleApplication } from '@/modules/applications/api/hooks';
+import { useLogoutMutation } from '@/modules/auth/api/mutations';
+import type { SavedJob, UserJob } from '@/components/user/sections/userData';
 
 export type DashboardContextType = {
   savedJobs: SavedJob[];
-  applications: any[];
   gmailConnected: boolean;
   toggleSave: (job: UserJob) => void;
   saveAllVisible: (jobs: UserJob[]) => void;
@@ -25,8 +19,9 @@ export type DashboardContextType = {
     selected: SavedJob[];
     scheduleTime: string;
     delay: string;
-    fileName: string | null;
+    cvId: string | null;
   }) => void;
+  isLoadingSaved: boolean;
 };
 
 export default function UserDashboardLayout() {
@@ -42,76 +37,72 @@ export default function UserDashboardLayout() {
   else if (location.pathname.includes('/dashboard/settings')) activePage = 'settings';
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-
-  const [savedJobs, setSavedJobsState] = useState<SavedJob[]>([]);
-  const [applications, setApplicationsState] = useState(getApplications());
   const [gmailConnected, setGmailConnected] = useState(
     localStorage.getItem('gmailConnected') === 'true'
   );
 
-  useEffect(() => {
-    const saved = getSavedJobs().filter((j) => j.page === PAGE_NAME);
-    setSavedJobsState(saved);
-  }, []);
+  const { data: savedJobsData, isLoading: isLoadingSaved } = useSavedJobs({ limit: 100 });
+  const saveJobMutation = useSaveJob();
+  const unsaveJobMutation = useUnsaveJob();
+  const scheduleApplicationMutation = UseScheduleApplication();
+  const logoutMutation = useLogoutMutation();
 
-  const persistSaved = (next: SavedJob[]) => {
-    const all = getSavedJobs().filter((j) => j.page !== PAGE_NAME);
-    const merged = [...all, ...next];
-    setSavedJobs(merged);
-    setSavedJobsState(next);
-  };
+  const savedJobs: SavedJob[] = (savedJobsData?.data?.jobs || []).map((job) => ({
+    page: 'dashboard',
+    company: job.companyName,
+    role: job.title,
+    email: job.hrEmail || '',
+    major: job.category || '',
+    city: job.location || '',
+    date: job.postedAt || '',
+    timestamp: job.postedAt || new Date().toISOString(),
+    jobId: job.id,
+  }));
 
-  const toggleSave = (job: UserJob) => {
-    const exists = savedJobs.some((s) => s.company === job.company && s.role === job.role);
+  const toggleSave = useCallback(
+    (job: UserJob) => {
+      const jobId = (job as any).jobId;
+      if (!jobId) return;
 
-    if (exists) {
-      persistSaved(savedJobs.filter((s) => !(s.company === job.company && s.role === job.role)));
-      return;
-    }
+      const exists = savedJobs.some((s) => s.jobId === jobId);
+      if (exists) {
+        unsaveJobMutation.mutate(jobId);
+      } else {
+        saveJobMutation.mutate(jobId);
+      }
+    },
+    [savedJobs, saveJobMutation, unsaveJobMutation]
+  );
 
-    persistSaved([
-      ...savedJobs,
-      {
-        page: PAGE_NAME,
-        company: job.company,
-        role: job.role,
-        email: job.email,
-        major: job.major,
-        city: job.city,
-        date: job.date,
-        timestamp: new Date().toISOString(),
-      },
-    ]);
-  };
+  const saveAllVisible = useCallback(
+    (visibleJobs: UserJob[]) => {
+      const existingIds = new Set(savedJobs.map((s) => s.jobId));
+      const toSave = visibleJobs
+        .filter((job) => job.jobId && !existingIds.has(job.jobId))
+        .map((job) => job.jobId as string);
 
-  const saveAllVisible = (visibleJobs: UserJob[]) => {
-    const existingMap = new Set(savedJobs.map((s) => `${s.company}-${s.role}`));
-    const additions = visibleJobs
-      .filter((job) => !existingMap.has(`${job.company}-${job.role}`))
-      .map((job) => ({
-        page: PAGE_NAME,
-        company: job.company,
-        role: job.role,
-        email: job.email,
-        major: job.major,
-        city: job.city,
-        date: job.date,
-        timestamp: new Date().toISOString(),
-      }));
+      toSave.forEach((jobId) => saveJobMutation.mutate(jobId));
+    },
+    [savedJobs, saveJobMutation]
+  );
 
-    if (additions.length === 0) return;
-    persistSaved([...savedJobs, ...additions]);
-  };
+  const removeSavedByIndex = useCallback(
+    (index: number) => {
+      const job = savedJobs[index];
+      if (job?.jobId) {
+        unsaveJobMutation.mutate(job.jobId);
+      }
+    },
+    [savedJobs, unsaveJobMutation]
+  );
 
-  const removeSavedByIndex = (index: number) => {
-    const next = [...savedJobs];
-    next.splice(index, 1);
-    persistSaved(next);
-  };
-
-  const removeAllSaved = () => {
-    persistSaved([]);
-  };
+  const removeAllSaved = useCallback(() => {
+    savedJobs.forEach((job) => {
+      if (job.jobId) {
+        unsaveJobMutation.mutate(job.jobId);
+      }
+    });
+  }, [savedJobs, unsaveJobMutation]);
 
   const connectGmail = async () => {
     await new Promise<void>((resolve) => {
@@ -131,22 +122,35 @@ export default function UserDashboardLayout() {
     selected: SavedJob[];
     scheduleTime: string;
     delay: string;
-    fileName: string | null;
+    cvId: string | null;
   }) => {
-    const next = [
-      ...applications,
-      ...payload.selected.map((job) => ({
-        company: job.company,
-        role: job.role,
-        email: job.email,
-        major: job.major,
-        city: job.city,
-        date: new Date().toISOString(),
-        status: 'pending' as const,
-      })),
-    ];
-    setApplicationsState(next);
-    setApplications(next);
+    const jobIds = payload.selected.map((job) => job.jobId).filter((id): id is string => !!id);
+
+    if (jobIds.length === 0) {
+      alert('لا توجد وظائف محددة');
+      return;
+    }
+
+    if (!payload.cvId) {
+      alert('يرجى رفع سيرة ذاتية');
+      return;
+    }
+
+    const sendTime = payload.scheduleTime === 'now' ? 'immediately' : payload.scheduleTime;
+    const delayBetweenEmails = parseInt(payload.delay, 10) * 1000;
+
+    scheduleApplicationMutation.mutate(
+      { jobIds, sendTime, delayBetweenEmails, cvId: payload.cvId! },
+      {
+        onSuccess: () => {
+          navigate('/dashboard/applications');
+        },
+        onError: (error: unknown) => {
+          alert('حدث خطأ في جدولة التقديم');
+          console.error(error);
+        },
+      }
+    );
   };
 
   const handleNavigate = (page: UserPageKey) => {
@@ -178,7 +182,6 @@ export default function UserDashboardLayout() {
 
   const contextValue: DashboardContextType = {
     savedJobs,
-    applications,
     gmailConnected,
     toggleSave,
     saveAllVisible,
@@ -187,6 +190,7 @@ export default function UserDashboardLayout() {
     connectGmail,
     disconnectGmail,
     startSending,
+    isLoadingSaved,
   };
 
   return (
@@ -197,6 +201,7 @@ export default function UserDashboardLayout() {
       onToggleSidebar={() => setMobileSidebarOpen((prev) => !prev)}
       onCloseSidebar={() => setMobileSidebarOpen(false)}
       savedCount={savedJobs.length}
+      onLogout={() => logoutMutation.mutate()}
     >
       <Outlet context={contextValue} />
     </UserLayout>

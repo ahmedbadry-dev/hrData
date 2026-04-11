@@ -64,7 +64,10 @@ export default function UserSearchSection({
   const visibleJobs = jobs.slice(0, visibleCount);
 
   const isSaved = (job: UserJob) =>
-    savedJobs.some((s: SavedJob) => s.company === job.company && s.role === job.role);
+    savedJobs.some(
+      (s: SavedJob) =>
+        (job.jobId && s.jobId === job.jobId) || (s.company === job.company && s.role === job.role)
+    );
 
   return (
     <section>
