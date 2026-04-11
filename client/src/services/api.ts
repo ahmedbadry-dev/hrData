@@ -1,4 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import { authService } from '@/modules/auth/api/auth.service';
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -30,7 +31,36 @@ export const axiosClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
+
+let isRefreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
+const refreshToken = async (): Promise<boolean> => {
+  if (isRefreshing) {
+    return refreshPromise ?? Promise.resolve(false);
+  }
+
+  isRefreshing = true;
+  refreshPromise = (async () => {
+    try {
+      const response = await authService.refresh();
+      if (response.data?.tokens?.accessToken) {
+        setAccessToken(response.data.tokens.accessToken);
+        return true;
+      }
+      return false;
+    } catch {
+      removeAccessToken();
+      return false;
+    } finally {
+      isRefreshing = false;
+    }
+  })();
+
+  return refreshPromise;
+};
 
 axiosClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = localStorage.getItem('accessToken');
@@ -43,11 +73,22 @@ axiosClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 axiosClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ApiResponse>) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      const refreshed = await refreshToken();
+      if (refreshed && originalRequest.headers) {
+        originalRequest.headers.Authorization = `Bearer ${getAccessToken()}`;
+        return axiosClient(originalRequest);
+      }
+
+      removeAccessToken();
       window.location.href = '/login';
+      return Promise.reject(error);
     }
+
     return Promise.reject(error);
   }
 );
