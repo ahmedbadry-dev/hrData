@@ -2,9 +2,10 @@ import styles from './UserNavbar.module.css';
 
 interface UserNavbarProps {
   onToggleSidebar: () => void;
+  onLogout?: () => void;
 }
 
-export default function UserNavbar({ onToggleSidebar }: UserNavbarProps) {
+export default function UserNavbar({ onToggleSidebar, onLogout }: UserNavbarProps) {
   return (
     <header className={styles['site-header']}>
       <div className={styles['header-left']}>
@@ -43,7 +44,9 @@ export default function UserNavbar({ onToggleSidebar }: UserNavbarProps) {
           <br />
           ٢٠٢٦
         </div>
-        <button className={styles['btn-logout']}>← خروج</button>
+        <button className={styles['btn-logout']} onClick={onLogout}>
+          ← خروج
+        </button>
       </div>
     </header>
   );

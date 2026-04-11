@@ -12,6 +12,7 @@ interface UserLayoutProps {
   onToggleSidebar: () => void;
   onCloseSidebar: () => void;
   savedCount: number;
+  onLogout?: () => void;
 }
 
 export default function UserLayout({
@@ -22,10 +23,11 @@ export default function UserLayout({
   onToggleSidebar,
   onCloseSidebar,
   savedCount,
+  onLogout,
 }: UserLayoutProps) {
   return (
     <div className={styles['user-layout-root']}>
-      <UserNavbar onToggleSidebar={onToggleSidebar} />
+      <UserNavbar onToggleSidebar={onToggleSidebar} onLogout={onLogout} />
 
       <div
         className={cn(styles['sidebar-overlay'], mobileSidebarOpen && styles.open)}

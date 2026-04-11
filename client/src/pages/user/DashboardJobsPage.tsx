@@ -1,10 +1,21 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { UserSearchSection } from '@/components/user/sections';
-import { mockJobs } from '@/components/user/sections/userData';
+import { useJobsList } from '@/modules/jobs/api/hooks';
 import type { DashboardContextType } from './UserDashboardLayout';
+import type { Job, UserJob } from '@/modules/jobs/types';
 
 const ITEMS_PER_PAGE = 10;
+
+const mapJobToUserJob = (job: Job): UserJob & { jobId: string } => ({
+  company: job.companyName,
+  role: job.title,
+  major: job.category || '',
+  city: job.location || '',
+  date: job.postedAt || '',
+  email: job.hrEmail || '',
+  jobId: job.id,
+});
 
 export default function DashboardJobsPage() {
   const { savedJobs, toggleSave, saveAllVisible } = useOutletContext<DashboardContextType>();
@@ -13,23 +24,29 @@ export default function DashboardJobsPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [country, setCountry] = useState('all');
   const [timeFilter, setTimeFilter] = useState('all');
-  const [visibleCount, setVisibleCount] = useState(0);
-  const [selectedCard, setSelectedCard] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
-  const visibleJobs = useMemo(() => mockJobs.slice(0, visibleCount), [visibleCount]);
+  const { data } = useJobsList({
+    page,
+    limit: ITEMS_PER_PAGE,
+    search: searchQuery || undefined,
+    location: country !== 'all' ? country : undefined,
+    dateFilter: timeFilter !== 'all' ? timeFilter : undefined,
+  });
+
+  const jobs: UserJob[] = (data?.data?.jobs || []).map(mapJobToUserJob);
 
   const search = () => {
     setHasSearched(true);
-    setVisibleCount(Math.min(ITEMS_PER_PAGE, mockJobs.length));
-    setSelectedCard(null);
+    setPage(1);
   };
 
   const loadMore = () => {
-    setVisibleCount((prev) => Math.min(prev + ITEMS_PER_PAGE, mockJobs.length));
+    setPage((prev) => prev + 1);
   };
 
   const handleSaveAllVisible = () => {
-    saveAllVisible(visibleJobs);
+    saveAllVisible(jobs);
   };
 
   return (
@@ -37,11 +54,11 @@ export default function DashboardJobsPage() {
       searchQuery={searchQuery}
       onSearchQueryChange={setSearchQuery}
       onSearch={search}
-      jobs={mockJobs}
-      visibleCount={visibleCount}
+      jobs={jobs}
+      visibleCount={jobs.length}
       hasSearched={hasSearched}
-      selectedCard={selectedCard}
-      onSelectCard={(key) => setSelectedCard((prev) => (prev === key ? null : key))}
+      selectedCard={null}
+      onSelectCard={() => {}}
       onLoadMore={loadMore}
       savedJobs={savedJobs}
       onToggleSave={toggleSave}
