@@ -1,6 +1,7 @@
 import { Application, ApplicationStatus, Prisma, PrismaClient } from 'generated/prisma';
 
 import { APPLICATIONS_CONSTANTS } from './applications.constants';
+import { emailConfig } from '@/config/env.config';
 import {
   ApplicationResponse,
   PaginatedApplicationsResponse,
@@ -79,7 +80,8 @@ export class ApplicationsService {
     userId: string,
     jobIds: string[],
     sendTime: string,
-    delayBetweenEmails?: number
+    delayBetweenEmails?: number,
+    cvId?: string
   ): Promise<ScheduleApplicationResponse> {
     const savedJobs = await this.prisma.savedJob.findMany({
       where: {
@@ -93,11 +95,20 @@ export class ApplicationsService {
       throw new BadRequestException(APPLICATIONS_CONSTANTS.MESSAGES.JOB_NOT_SAVED);
     }
 
-    const defaultCv = await this.prisma.cv.findFirst({
-      where: { userId, isDefault: true },
-    });
+    let cv = null;
+    if (cvId) {
+      cv = await this.prisma.cv.findFirst({
+        where: { id: cvId, userId },
+      });
+    }
 
-    if (!defaultCv) {
+    if (!cv) {
+      cv = await this.prisma.cv.findFirst({
+        where: { userId, isDefault: true },
+      });
+    }
+
+    if (!cv) {
       throw new BadRequestException(APPLICATIONS_CONSTANTS.MESSAGES.NO_DEFAULT_CV);
     }
 
@@ -118,7 +129,7 @@ export class ApplicationsService {
     const applicationsToCreate = savedJobs.map((savedJob) => ({
       userId,
       jobId: savedJob.jobId,
-      cvId: defaultCv.id,
+      cvId: cv.id,
       status: ApplicationStatus.SCHEDULED,
       scheduledAt,
     }));
@@ -143,7 +154,7 @@ export class ApplicationsService {
         hrEmail: savedJob.job.hrEmail,
         jobTitle: savedJob.job.title,
         companyName: savedJob.job.companyName,
-        cvUrl: defaultCv.fileUrl,
+        cvUrl: cv.fileUrl.startsWith('/') ? `${emailConfig.serverUrl}${cv.fileUrl}` : cv.fileUrl,
       };
 
       if (isImmediate) {

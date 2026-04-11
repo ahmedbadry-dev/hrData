@@ -36,12 +36,14 @@ export class ApplicationsController {
   };
 
   scheduleApplications = async (req: Request, res: Response): Promise<Response> => {
-    const { jobIds, sendTime, delayBetweenEmails } = req.body as ScheduleApplicationsDto['body'];
+    const { jobIds, sendTime, delayBetweenEmails, cvId } =
+      req.body as ScheduleApplicationsDto['body'];
     const data = await this.applicationsService.scheduleApplications(
       req.user!.id,
       jobIds,
       sendTime,
-      delayBetweenEmails
+      delayBetweenEmails,
+      cvId
     );
     return ResponseHelper.created(
       res,

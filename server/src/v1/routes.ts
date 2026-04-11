@@ -13,6 +13,7 @@ import { authRoutes } from './modules/auth/auth.routes';
 import { jobsRoutes } from './modules/jobs/jobs.routes';
 import { usersRoutes } from './modules/users/users.routes';
 import { applicationsRoutes } from './modules/applications/applications.routes';
+import { cvsRoutes } from './modules/cvs/cvs.routes';
 import trackingRoutes from './modules/tracking/tracking.routes';
 
 export const v1Routes = () => {
@@ -34,6 +35,7 @@ export const v1Routes = () => {
   router.use('/track', trackingRoutes);
   router.use('/admin/users', usersRoutes(usersController));
   router.use('/applications', applicationsRoutes(applicationsController));
+  router.use('/cvs', cvsRoutes);
 
   return router;
 };
