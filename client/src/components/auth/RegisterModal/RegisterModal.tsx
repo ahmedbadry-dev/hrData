@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useRegisterMutation } from '@/modules/auth/api/mutations';
 import { mapErrorToArabic } from '@/lib/error-mapper';
 import styles from './RegisterModal.module.css';
@@ -19,7 +18,6 @@ interface ValidationErrors {
 }
 
 export default function RegisterModal({ isOpen, onClose, onLoginClick }: RegisterModalProps) {
-  const navigate = useNavigate();
   const registerMutation = useRegisterMutation();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -79,8 +77,7 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
 
     try {
       await registerMutation.mutateAsync(formData);
-      onClose();
-      navigate('/');
+      onLoginClick();
     } catch (err: any) {
       setErrors({ email: mapErrorToArabic(err?.message || 'حدث خطأ') });
     }

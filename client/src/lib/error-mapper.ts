@@ -26,7 +26,7 @@ export const mapErrorToArabic = (message: string): string => {
     'phone is required': 'رقم الجوال مطلوب',
     'phone must start with 0': 'رقم الجوال يجب أن يبدأ بـ 0',
     'invalid phone number': 'رقم الجوال غير صالح',
-    'passwords do not match': 'كلمات المرور غير متطابقة',
+    'passwords do not match': 'كلمتا المرور غير متطابقتين',
     'account is disabled': 'الحساب معطل',
     'account is not verified': 'الحساب غير مفعل',
     'please verify your email first': 'يرجى التحقق من بريدك الإلكتروني أولاً',
@@ -42,6 +42,12 @@ export const mapErrorToArabic = (message: string): string => {
     'jwt token expired': 'انتهت صلاحية الجلسة',
     'invalid jwt token': 'جلسة غير صالحة',
     'user already exists': 'المستخدم موجود بالفعل',
+    'invalid verification token': 'رابط التحقق غير صالح أو منتهي الصلاحية',
+    'password reset token sent successfully': 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك',
+    'password reset successfully': 'تم تغيير كلمة المرور بنجاح',
+    'password is same as current password': 'كلمة المرور الجديدة مطابقة للحالية',
+    'password must be at least 8 characters long': 'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
+    'refresh token is required': 'انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى',
   };
 
   for (const [key, arabic] of Object.entries(errorMap)) {

@@ -24,6 +24,7 @@ import NotFoundPage from '@/pages/error/NotFoundPage';
 import LoginPage from '@/pages/auth/LoginPage';
 import RegisterPage from '@/pages/auth/RegisterPage';
 import VerifyEmailPage from '@/pages/auth/VerifyEmailPage';
+import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 
 export default function AppRoutes() {
   return (
@@ -32,6 +33,7 @@ export default function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Public job search - no auth required, no save functionality */}
       {/* <Route path="/dashboard/jobs" element={<PublicJobsPage />} /> */}

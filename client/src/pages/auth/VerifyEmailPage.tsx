@@ -1,208 +1,115 @@
-import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { Spinner } from '@/components/ui';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import HomeNavbar from '@/components/home/layout/HomeNavbar/HomeNavbar';
-import styles from '@/components/home/layout/HomeLayout/HomeLayout.module.css';
+import { Spinner } from '@/components/ui';
+import { authService } from '@/modules/auth/api/auth.service';
+import { useAuthModal } from '@/contexts/AuthModalContext';
+import { mapErrorToArabic } from '@/lib/error-mapper';
+import styles from './AuthPages.module.css';
+
+type VerifyStatus = 'loading' | 'success' | 'error';
 
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const token = searchParams.get('token');
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const { openLogin } = useAuthModal();
+
+  const token = useMemo(() => searchParams.get('token')?.trim() ?? '', [searchParams]);
+
+  const [status, setStatus] = useState<VerifyStatus>('loading');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    if (!token) {
-      setStatus('error');
-      setMessage('رابط التحقق غير صالح');
-      return;
-    }
-
-    fetch('/api/v1/auth/verify-email?token=' + token, {
-      method: 'POST',
-      credentials: 'include',
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setStatus('success');
-          setMessage('تم التحقق من بريدك الإلكتروني بنجاح!');
-          setTimeout(() => navigate('/login'), 3000);
-        } else {
-          setStatus('error');
-          setMessage(data.message || 'فشل التحقق من البريد الإلكتروني');
-        }
-      })
-      .catch(() => {
+    const verify = async () => {
+      if (!token) {
         setStatus('error');
-        setMessage('حدث خطأ في الاتصال بالخادم');
-      });
-  }, [token, navigate]);
+        setMessage('رابط التحقق غير صالح');
+        return;
+      }
+
+      try {
+        const response = await authService.verifyEmail(token);
+        setStatus('success');
+        setMessage(response.message || 'تم التحقق من البريد الإلكتروني بنجاح');
+      } catch (err) {
+        const axiosError = err as { response?: { data?: { message?: string } } };
+        const backendMessage =
+          axiosError.response?.data?.message || 'فشل التحقق من البريد الإلكتروني';
+        setStatus('error');
+        setMessage(mapErrorToArabic(backendMessage));
+      }
+    };
+
+    void verify();
+  }, [token]);
 
   return (
-    <div className={styles['home-page']}>
+    <div dir="rtl">
       <HomeNavbar />
-      <main
-        style={{
-          minHeight: 'calc(100vh - 64px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '40px 20px',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '480px',
-            width: '100%',
-            backgroundColor: 'var(--paper)',
-            border: '2px solid var(--ink)',
-            borderRadius: '4px',
-            padding: '48px 40px',
-            textAlign: 'center',
-            boxShadow: '8px 8px 0 var(--ink)',
-          }}
-        >
+
+      <main className={styles.pageContainer}>
+        <section className={styles.authCard}>
           {status === 'loading' && (
             <>
-              <div
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  margin: '0 auto 24px',
-                  background: 'var(--cream)',
-                  border: '2px solid var(--ink)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '32px',
-                }}
-              >
-                ✉️
-              </div>
-              <h1
-                style={{
-                  color: 'var(--ink)',
-                  fontSize: '28px',
-                  fontWeight: '900',
-                  marginBottom: '12px',
-                  letterSpacing: '-0.5px',
-                }}
-              >
-                جاري التحقق...
-              </h1>
-              <p style={{ color: 'var(--muted)', fontSize: '15px', marginBottom: '24px' }}>
-                يرجى الانتظار بينما نتحقق من بريدك الإلكتروني
-              </p>
+              <div className={`${styles.iconWrap} ${styles.iconLoading}`}>✉️</div>
+              <h1 className={styles.title}>جاري التحقق من بريدك</h1>
+              <p className={styles.subtitle}>لحظات قليلة ونكمل تفعيل حسابك</p>
               <Spinner />
             </>
           )}
 
           {status === 'success' && (
             <>
-              <div
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  margin: '0 auto 24px',
-                  background: 'var(--accent2)',
-                  border: '2px solid var(--ink)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '32px',
-                }}
-              >
-                ✓
+              <div className={`${styles.iconWrap} ${styles.iconSuccess}`}>✓</div>
+              <h1 className={styles.title}>تم التحقق بنجاح</h1>
+              <p className={styles.subtitle}>{message}</p>
+
+              <div className={styles.actions}>
+                <button
+                  className={styles.outlineBtn}
+                  onClick={() => navigate('/', { replace: true })}
+                >
+                  الذهاب للرئيسية
+                </button>
+                <button
+                  className={styles.solidBtn}
+                  onClick={() => {
+                    openLogin();
+                    navigate('/?mode=login', { replace: true });
+                  }}
+                >
+                  تسجيل الدخول
+                </button>
               </div>
-              <h1
-                style={{
-                  color: 'var(--ink)',
-                  fontSize: '28px',
-                  fontWeight: '900',
-                  marginBottom: '12px',
-                  letterSpacing: '-0.5px',
-                }}
-              >
-                تم التحقق بنجاح!
-              </h1>
-              <p style={{ color: 'var(--muted)', fontSize: '15px', marginBottom: '16px' }}>
-                {message}
-              </p>
-              <p style={{ color: 'var(--warm)', fontSize: '13px' }}>
-                سيتم توجيهك لتسجيل الدخول خلال 3 ثوانٍ...
-              </p>
             </>
           )}
 
           {status === 'error' && (
             <>
-              <div
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  margin: '0 auto 24px',
-                  background: 'var(--accent)',
-                  border: '2px solid var(--ink)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '32px',
-                  color: 'var(--paper)',
-                }}
-              >
-                !
-              </div>
-              <h1
-                style={{
-                  color: 'var(--ink)',
-                  fontSize: '28px',
-                  fontWeight: '900',
-                  marginBottom: '12px',
-                  letterSpacing: '-0.5px',
-                }}
-              >
-                فشل التحقق
-              </h1>
-              <p style={{ color: 'var(--muted)', fontSize: '15px', marginBottom: '32px' }}>
-                {message}
-              </p>
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                <Link
-                  to="/login"
-                  className={styles['btn-register']}
-                  style={{
-                    background: 'var(--ink)',
-                    color: 'var(--paper)',
-                    padding: '14px 32px',
-                    textDecoration: 'none',
-                    display: 'inline-block',
-                    fontWeight: '700',
-                    fontSize: '14px',
+              <div className={`${styles.iconWrap} ${styles.iconError}`}>!</div>
+              <h1 className={styles.title}>تعذر التحقق</h1>
+              <p className={styles.subtitle}>{message}</p>
+
+              <div className={styles.actions}>
+                <button
+                  className={styles.outlineBtn}
+                  onClick={() => navigate('/', { replace: true })}
+                >
+                  الذهاب للرئيسية
+                </button>
+                <button
+                  className={styles.solidBtn}
+                  onClick={() => {
+                    openLogin();
+                    navigate('/?mode=login', { replace: true });
                   }}
                 >
                   تسجيل الدخول
-                </Link>
-                <Link
-                  to="/register"
-                  className={styles['btn-login-navbar']}
-                  style={{
-                    padding: '12px 32px',
-                    textDecoration: 'none',
-                    display: 'inline-block',
-                    fontWeight: '700',
-                    fontSize: '14px',
-                  }}
-                >
-                  إنشاء حساب
-                </Link>
+                </button>
               </div>
             </>
           )}
-        </div>
+        </section>
       </main>
     </div>
   );

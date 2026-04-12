@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLoginMutation } from '@/modules/auth/api/mutations';
+import { authService } from '@/modules/auth/api/auth.service';
 import { mapErrorToArabic } from '@/lib/error-mapper';
 import styles from './LoginModal.module.css';
 
@@ -14,11 +15,33 @@ interface ValidationErrors {
   password?: string;
 }
 
+const getErrorMessage = (err: unknown): string => {
+  const axiosError = err as { response?: { data?: { message?: string } } };
+  const message = axiosError.response?.data?.message || '';
+  return mapErrorToArabic(message);
+};
+
 export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginModalProps) {
   const loginMutation = useLoginMutation();
+  const [mode, setMode] = useState<'login' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSuccess, setForgotSuccess] = useState<string | null>(null);
+  const [forgotLoading, setForgotLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    setMode('login');
+    setPassword('');
+    setErrors({});
+    setForgotSuccess(null);
+    setForgotLoading(false);
+  }, [isOpen]);
 
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
@@ -56,8 +79,29 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
     try {
       await loginMutation.mutateAsync({ email, password });
       onClose();
-    } catch (err: any) {
-      setErrors({ email: mapErrorToArabic(err?.message || 'حدث خطأ') });
+    } catch (err) {
+      setErrors({ email: getErrorMessage(err) });
+    }
+  };
+
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    setForgotSuccess(null);
+
+    if (!forgotEmail.trim()) {
+      setErrors({ email: 'يرجى إدخال البريد الإلكتروني' });
+      return;
+    }
+
+    setForgotLoading(true);
+    try {
+      const response = await authService.forgotPassword({ email: forgotEmail.trim() });
+      setForgotSuccess(response.message || 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك');
+    } catch (err) {
+      setErrors({ email: getErrorMessage(err) });
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -78,10 +122,14 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
           <div className={styles.logo}>
             كُفُـؤ<em>.</em>
           </div>
-          <div className={styles.subtitle}>تسجيل الدخول</div>
+          <div className={styles.subtitle}>
+            {mode === 'login' ? 'تسجيل الدخول' : 'استعادة كلمة المرور'}
+          </div>
         </div>
 
         <div className={styles.body}>
+          {forgotSuccess && <div className={styles.success}>{forgotSuccess}</div>}
+
           {errors.email && (
             <div className={`${styles.error} show`}>
               <svg
@@ -101,54 +149,102 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
             </div>
           )}
 
-          <div className={styles.field}>
-            <label>البريد الإلكتروني أو اسم المستخدم</label>
-            <input
-              type="text"
-              name="email"
-              placeholder="admin أو بريدك الإلكتروني"
-              dir="ltr"
-              value={email}
-              onChange={handleChange}
-              className={errors.email ? styles.inputError : ''}
-            />
-            {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
-          </div>
+          {mode === 'login' ? (
+            <form onSubmit={handleSubmit}>
+              <div className={styles.field}>
+                <label>البريد الإلكتروني أو اسم المستخدم</label>
+                <input
+                  type="text"
+                  name="email"
+                  placeholder="admin أو بريدك الإلكتروني"
+                  dir="ltr"
+                  value={email}
+                  onChange={handleChange}
+                  className={errors.email ? styles.inputError : ''}
+                />
+                {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
+              </div>
 
-          <div className={styles.field}>
-            <label>كلمة المرور</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              dir="ltr"
-              value={password}
-              onChange={handleChange}
-              className={errors.password ? styles.inputError : ''}
-            />
-            {errors.password && <span className={styles.fieldError}>{errors.password}</span>}
-          </div>
+              <div className={styles.field}>
+                <label>كلمة المرور</label>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="••••••••"
+                  dir="ltr"
+                  value={password}
+                  onChange={handleChange}
+                  className={errors.password ? styles.inputError : ''}
+                />
+                {errors.password && <span className={styles.fieldError}>{errors.password}</span>}
+              </div>
 
-          <button
-            className={styles.submitButton}
-            onClick={handleSubmit}
-            disabled={loginMutation.isPending}
-          >
-            {loginMutation.isPending ? 'جاري الدخول...' : 'دخول ←'}
-          </button>
+              <button
+                type="button"
+                className={styles.forgotLink}
+                onClick={() => {
+                  setMode('forgot');
+                  setForgotEmail(email);
+                  setErrors({});
+                  setForgotSuccess(null);
+                }}
+              >
+                نسيت كلمة المرور؟
+              </button>
 
-          <div className={styles.switch}>
-            ليس لديك حساب؟{' '}
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                onRegisterClick();
-              }}
-            >
-              إنشاء حساب
-            </a>
-          </div>
+              <button
+                className={styles.submitButton}
+                type="submit"
+                disabled={loginMutation.isPending}
+              >
+                {loginMutation.isPending ? 'جاري الدخول...' : 'دخول ←'}
+              </button>
+
+              <div className={styles.switch}>
+                ليس لديك حساب؟{' '}
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onRegisterClick();
+                  }}
+                >
+                  إنشاء حساب
+                </a>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleForgotPasswordSubmit}>
+              <div className={styles.field}>
+                <label>البريد الإلكتروني</label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  dir="ltr"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  className={errors.email ? styles.inputError : ''}
+                />
+                {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
+              </div>
+
+              <button className={styles.submitButton} type="submit" disabled={forgotLoading}>
+                {forgotLoading ? 'جاري الإرسال...' : 'إرسال رابط إعادة التعيين'}
+              </button>
+
+              <button
+                type="button"
+                className={styles.backLink}
+                onClick={() => {
+                  setMode('login');
+                  setErrors({});
+                }}
+              >
+                العودة إلى تسجيل الدخول
+              </button>
+            </form>
+          )}
 
           <div className={styles.hint}>
             <strong>تلميح:</strong> اسم المستخدم <code>user</code> · كلمة المرور <code>user</code>

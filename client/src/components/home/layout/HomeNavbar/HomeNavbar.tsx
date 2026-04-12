@@ -47,7 +47,7 @@ export default function HomeNavbar() {
               className={styles['btn-login-navbar']}
               onClick={() => {
                 openLogin();
-                navigate('/');
+                navigate('/?mode=login', { replace: true });
               }}
             >
               تسجيل الدخول
@@ -56,7 +56,7 @@ export default function HomeNavbar() {
               className={styles['btn-register']}
               onClick={() => {
                 openRegister();
-                navigate('/');
+                navigate('/?mode=register', { replace: true });
               }}
             >
               إنشاء حساب ←

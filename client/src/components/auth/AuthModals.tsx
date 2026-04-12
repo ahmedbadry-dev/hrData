@@ -8,8 +8,7 @@ export default function AuthModals() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isLoginOpen, isRegisterOpen, closeLogin, closeRegister, openRegister, openLogin } =
-    useAuthModal();
+  const { isLoginOpen, isRegisterOpen, closeAll, openRegister, openLogin } = useAuthModal();
 
   const navigateWithParams = (params: URLSearchParams) => {
     const nextSearch = params.toString();
@@ -32,7 +31,7 @@ export default function AuthModals() {
   }, [searchParams, openLogin, openRegister]);
 
   const handleLoginClose = () => {
-    closeLogin();
+    closeAll();
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete('mode');
     nextParams.delete('redirect');
@@ -40,7 +39,7 @@ export default function AuthModals() {
   };
 
   const handleRegisterClose = () => {
-    closeRegister();
+    closeAll();
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete('mode');
     nextParams.delete('redirect');
@@ -53,7 +52,6 @@ export default function AuthModals() {
         isOpen={isLoginOpen}
         onClose={handleLoginClose}
         onRegisterClick={() => {
-          closeLogin();
           openRegister();
           const nextParams = new URLSearchParams(searchParams);
           nextParams.set('mode', 'register');
@@ -64,7 +62,6 @@ export default function AuthModals() {
         isOpen={isRegisterOpen}
         onClose={handleRegisterClose}
         onLoginClick={() => {
-          closeRegister();
           openLogin();
           const nextParams = new URLSearchParams(searchParams);
           nextParams.set('mode', 'login');

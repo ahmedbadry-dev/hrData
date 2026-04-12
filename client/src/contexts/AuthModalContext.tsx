@@ -1,8 +1,9 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
 interface AuthModalContextType {
   isLoginOpen: boolean;
   isRegisterOpen: boolean;
+  closeAll: () => void;
   openLogin: () => void;
   closeLogin: () => void;
   openRegister: () => void;
@@ -12,30 +13,45 @@ interface AuthModalContextType {
 const AuthModalContext = createContext<AuthModalContextType | null>(null);
 
 export function AuthModalProvider({ children }: { children: ReactNode }) {
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<'login' | 'register' | null>(null);
 
-  const openLogin = () => {
-    setIsRegisterOpen(false);
-    setIsLoginOpen(true);
-  };
+  const isLoginOpen = activeModal === 'login';
+  const isRegisterOpen = activeModal === 'register';
 
-  const closeLogin = () => setIsLoginOpen(false);
+  const openLogin = useCallback(() => {
+    setActiveModal('login');
+  }, []);
 
-  const openRegister = () => {
-    setIsLoginOpen(false);
-    setIsRegisterOpen(true);
-  };
+  const closeLogin = useCallback(() => {
+    setActiveModal((prev) => (prev === 'login' ? null : prev));
+  }, []);
 
-  const closeRegister = () => setIsRegisterOpen(false);
+  const openRegister = useCallback(() => {
+    setActiveModal('register');
+  }, []);
 
-  return (
-    <AuthModalContext.Provider
-      value={{ isLoginOpen, isRegisterOpen, openLogin, closeLogin, openRegister, closeRegister }}
-    >
-      {children}
-    </AuthModalContext.Provider>
+  const closeRegister = useCallback(() => {
+    setActiveModal((prev) => (prev === 'register' ? null : prev));
+  }, []);
+
+  const closeAll = useCallback(() => {
+    setActiveModal(null);
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      isLoginOpen,
+      isRegisterOpen,
+      closeAll,
+      openLogin,
+      closeLogin,
+      openRegister,
+      closeRegister,
+    }),
+    [isLoginOpen, isRegisterOpen, closeAll, openLogin, closeLogin, openRegister, closeRegister]
   );
+
+  return <AuthModalContext.Provider value={value}>{children}</AuthModalContext.Provider>;
 }
 
 export function useAuthModal() {
