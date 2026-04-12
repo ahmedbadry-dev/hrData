@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useLoginMutation } from '@/modules/auth/api/mutations';
 import { mapErrorToArabic } from '@/lib/error-mapper';
 import styles from './LoginModal.module.css';
@@ -16,7 +15,6 @@ interface ValidationErrors {
 }
 
 export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginModalProps) {
-  const navigate = useNavigate();
   const loginMutation = useLoginMutation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -58,7 +56,6 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
     try {
       await loginMutation.mutateAsync({ email, password });
       onClose();
-      navigate('/dashboard');
     } catch (err: any) {
       setErrors({ email: mapErrorToArabic(err?.message || 'حدث خطأ') });
     }

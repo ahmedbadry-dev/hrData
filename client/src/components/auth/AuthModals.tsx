@@ -1,13 +1,26 @@
 import { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import LoginModal from '@/components/auth/LoginModal/LoginModal';
 import RegisterModal from '@/components/auth/RegisterModal/RegisterModal';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 
 export default function AuthModals() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { isLoginOpen, isRegisterOpen, closeLogin, closeRegister, openRegister, openLogin } =
     useAuthModal();
+
+  const navigateWithParams = (params: URLSearchParams) => {
+    const nextSearch = params.toString();
+    navigate(
+      {
+        pathname: location.pathname,
+        search: nextSearch ? `?${nextSearch}` : '',
+      },
+      { replace: true }
+    );
+  };
 
   useEffect(() => {
     const mode = searchParams.get('mode');
@@ -20,12 +33,18 @@ export default function AuthModals() {
 
   const handleLoginClose = () => {
     closeLogin();
-    window.history.pushState({}, '', '/');
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('mode');
+    nextParams.delete('redirect');
+    navigateWithParams(nextParams);
   };
 
   const handleRegisterClose = () => {
     closeRegister();
-    window.history.pushState({}, '', '/');
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('mode');
+    nextParams.delete('redirect');
+    navigateWithParams(nextParams);
   };
 
   return (
@@ -36,7 +55,9 @@ export default function AuthModals() {
         onRegisterClick={() => {
           closeLogin();
           openRegister();
-          window.history.pushState({}, '', '/?mode=register');
+          const nextParams = new URLSearchParams(searchParams);
+          nextParams.set('mode', 'register');
+          navigateWithParams(nextParams);
         }}
       />
       <RegisterModal
@@ -45,7 +66,9 @@ export default function AuthModals() {
         onLoginClick={() => {
           closeRegister();
           openLogin();
-          window.history.pushState({}, '', '/?mode=login');
+          const nextParams = new URLSearchParams(searchParams);
+          nextParams.set('mode', 'login');
+          navigateWithParams(nextParams);
         }}
       />
     </>

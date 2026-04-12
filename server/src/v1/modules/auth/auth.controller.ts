@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { AUTH_CONSTANTS } from './auth.constants';
 import ResponseHelper from '@/shared/utils/api-response';
 import { UAParser } from 'ua-parser-js';
+
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -28,7 +29,7 @@ export class AuthController {
       res,
       {
         user: data.user,
-        tokens: { accessToken: data.tokens.accessToken, refreshToken: data.tokens.refreshToken },
+        tokens: { accessToken: data.tokens.accessToken },
       },
       'User logged in successfully',
       req.path
@@ -95,10 +96,12 @@ export class AuthController {
   }
 
   private setRefreshTokenCookie(res: Response, token: string) {
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res.cookie(AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_NAME, token, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
       maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
     });
   }

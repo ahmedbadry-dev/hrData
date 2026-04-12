@@ -2,13 +2,13 @@ import type { User } from '../api/auth.service';
 
 export interface AuthState {
   user: User | null;
+  accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
 
 export interface AuthContextType extends AuthState {
-  login: (user: User) => Promise<void>;
-  logout: () => Promise<void>;
-  register: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
-  checkAuth: () => Promise<void>;
+  setSession: (session: { user: User; accessToken: string }) => void;
+  clearSession: () => void;
+  restoreSession: () => Promise<void>;
 }

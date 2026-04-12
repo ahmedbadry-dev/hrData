@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@/lib/react-query/QueryClientProvider';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { Toast } from '@/components/common';
 import { AuthModalProvider } from '@/contexts/AuthModalContext';
+import { AuthProvider } from '@/modules/auth/context';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -11,10 +12,12 @@ interface ProvidersProps {
 export const Providers = ({ children }: ProvidersProps) => {
   return (
     <QueryClientProvider>
-      <ToastProvider>
-        <Toast />
-        <AuthModalProvider>{children}</AuthModalProvider>
-      </ToastProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <Toast />
+          <AuthModalProvider>{children}</AuthModalProvider>
+        </ToastProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 };
