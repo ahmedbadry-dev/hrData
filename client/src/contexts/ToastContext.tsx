@@ -1,14 +1,21 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 
+type ToastType = 'success' | 'error' | 'info';
+
 interface ToastState {
   message: string;
-  type: 'success' | 'error';
+  type: ToastType;
   visible: boolean;
+}
+
+interface ShowToastOptions {
+  message: string;
+  type: ToastType;
 }
 
 interface ToastContextType {
   toast: ToastState;
-  showToast: (message: string, type: 'success' | 'error') => void;
+  showToast: (options: ShowToastOptions) => void;
   hideToast: () => void;
 }
 
@@ -33,7 +40,7 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
     visible: false,
   });
 
-  const showToast = useCallback((message: string, type: 'success' | 'error') => {
+  const showToast = useCallback(({ message, type }: ShowToastOptions) => {
     setToast({ message, type, visible: true });
   }, []);
 

@@ -1,20 +1,29 @@
 import { useState, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { UserLayout, type UserPageKey } from '@/components/user/layout';
-import { useSavedJobs, useSaveJob, useUnsaveJob } from '@/modules/jobs/api/hooks';
+import {
+  useSavedJobs,
+  useSaveJob,
+  useUnsaveJob,
+  useSaveJobs,
+  useUnsaveJobs,
+} from '@/modules/jobs/api/hooks';
 import { UseScheduleApplication } from '@/modules/applications/api/hooks';
 import { useLogoutMutation } from '@/modules/auth/api/mutations';
-import type { SavedJob, UserJob } from '@/components/user/sections/userData';
+import { useAuth } from '@/modules/auth/api/hooks';
+import type { SavedJob } from '@/components/user/sections/userData';
+import type { UserJob } from '@/modules/jobs/types';
 
 export type DashboardContextType = {
   savedJobs: SavedJob[];
   gmailConnected: boolean;
+  gmailEmail: string | null;
   toggleSave: (job: UserJob) => void;
   saveAllVisible: (jobs: UserJob[]) => void;
   removeSavedByIndex: (index: number) => void;
   removeAllSaved: () => void;
   connectGmail: () => Promise<void>;
-  disconnectGmail: () => void;
+  disconnectGmail: () => Promise<void>;
   startSending: (payload: {
     selected: SavedJob[];
     scheduleTime: string;
@@ -27,6 +36,7 @@ export type DashboardContextType = {
 export default function UserDashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { data: authData, connectGmail, disconnectGmail } = useAuth();
 
   let activePage: UserPageKey = 'home';
   if (location.pathname.includes('/dashboard/jobs')) activePage = 'search';
@@ -37,13 +47,14 @@ export default function UserDashboardLayout() {
   else if (location.pathname.includes('/dashboard/settings')) activePage = 'settings';
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [gmailConnected, setGmailConnected] = useState(
-    localStorage.getItem('gmailConnected') === 'true'
-  );
+  const gmailConnected = authData.gmailConnected;
+  const gmailEmail = authData.gmailEmail;
 
   const { data: savedJobsData, isLoading: isLoadingSaved } = useSavedJobs({ limit: 100 });
   const saveJobMutation = useSaveJob();
+  const saveJobsMutation = useSaveJobs();
   const unsaveJobMutation = useUnsaveJob();
+  const unsaveJobsMutation = useUnsaveJobs();
   const scheduleApplicationMutation = UseScheduleApplication();
   const logoutMutation = useLogoutMutation();
 
@@ -61,7 +72,7 @@ export default function UserDashboardLayout() {
 
   const toggleSave = useCallback(
     (job: UserJob) => {
-      const jobId = (job as any).jobId;
+      const jobId = job.jobId;
       if (!jobId) return;
 
       const exists = savedJobs.some((s) => s.jobId === jobId);
@@ -81,9 +92,13 @@ export default function UserDashboardLayout() {
         .filter((job) => job.jobId && !existingIds.has(job.jobId))
         .map((job) => job.jobId as string);
 
-      toSave.forEach((jobId) => saveJobMutation.mutate(jobId));
+      if (toSave.length === 0) {
+        return;
+      }
+
+      saveJobsMutation.mutate(toSave);
     },
-    [savedJobs, saveJobMutation]
+    [savedJobs, saveJobsMutation]
   );
 
   const removeSavedByIndex = useCallback(
@@ -97,25 +112,20 @@ export default function UserDashboardLayout() {
   );
 
   const removeAllSaved = useCallback(() => {
-    savedJobs.forEach((job) => {
-      if (job.jobId) {
-        unsaveJobMutation.mutate(job.jobId);
-      }
-    });
-  }, [savedJobs, unsaveJobMutation]);
+    const jobIds = savedJobs
+      .map((job) => job.jobId)
+      .filter((jobId): jobId is string => Boolean(jobId));
 
-  const connectGmail = async () => {
-    await new Promise<void>((resolve) => {
-      window.setTimeout(resolve, 900);
-    });
-    setGmailConnected(true);
-    localStorage.setItem('gmailConnected', 'true');
-  };
+    if (jobIds.length === 0) {
+      return;
+    }
 
-  const disconnectGmail = () => {
+    unsaveJobsMutation.mutate(jobIds);
+  }, [savedJobs, unsaveJobsMutation]);
+
+  const handleDisconnectGmail = async () => {
     if (!window.confirm('هل أنت متأكد من فصل الاتصال؟')) return;
-    setGmailConnected(false);
-    localStorage.setItem('gmailConnected', 'false');
+    await disconnectGmail();
   };
 
   const startSending = (payload: {
@@ -183,12 +193,13 @@ export default function UserDashboardLayout() {
   const contextValue: DashboardContextType = {
     savedJobs,
     gmailConnected,
+    gmailEmail,
     toggleSave,
     saveAllVisible,
     removeSavedByIndex,
     removeAllSaved,
     connectGmail,
-    disconnectGmail,
+    disconnectGmail: handleDisconnectGmail,
     startSending,
     isLoadingSaved,
   };

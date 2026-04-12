@@ -26,6 +26,8 @@ export interface PaginatedResponse<T> {
 
 export const API_BASE_URL = '/api/v1';
 export const AUTH_REQUIRED_EVENT = 'auth:required';
+export const CSRF_COOKIE_NAME = 'csrfToken';
+export const CSRF_HEADER_NAME = 'x-csrf-token';
 
 const NO_REFRESH_ENDPOINTS = [
   '/auth/login',
@@ -63,6 +65,21 @@ const emitAuthRequired = () => {
   }
 };
 
+const getCookieValue = (cookieName: string): string | null => {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  const escapedName = cookieName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = document.cookie.match(new RegExp(`(?:^|; )${escapedName}=([^;]*)`));
+
+  if (!match || !match[1]) {
+    return null;
+  }
+
+  return decodeURIComponent(match[1]);
+};
+
 const refreshToken = async (): Promise<boolean> => {
   if (isRefreshing) {
     return refreshPromise ?? Promise.resolve(false);
@@ -82,6 +99,7 @@ const refreshToken = async (): Promise<boolean> => {
       return false;
     } finally {
       isRefreshing = false;
+      refreshPromise = null;
     }
   })();
 
@@ -93,6 +111,15 @@ axiosClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  const method = config.method?.toUpperCase();
+  if (method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && config.headers) {
+    const csrfToken = getCookieValue(CSRF_COOKIE_NAME);
+    if (csrfToken) {
+      config.headers[CSRF_HEADER_NAME] = csrfToken;
+    }
+  }
+
   return config;
 });
 

@@ -21,28 +21,22 @@ import DashboardSettingsPage from '@/pages/user/DashboardSettingsPage';
 import HomePage from '@/pages/home/HomePage';
 import NotFoundPage from '@/pages/error/NotFoundPage';
 
-import LoginPage from '@/pages/auth/LoginPage';
-import RegisterPage from '@/pages/auth/RegisterPage';
 import VerifyEmailPage from '@/pages/auth/VerifyEmailPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
-
-      {/* Public job search - no auth required, no save functionality */}
-      {/* <Route path="/dashboard/jobs" element={<PublicJobsPage />} /> */}
 
       {/* Protected user routes */}
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole="USER">
             <UserDashboardLayout />
           </ProtectedRoute>
         }
@@ -60,7 +54,7 @@ export default function AppRoutes() {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole="ADMIN">
             <AdminDashboardLayout />
           </ProtectedRoute>
         }

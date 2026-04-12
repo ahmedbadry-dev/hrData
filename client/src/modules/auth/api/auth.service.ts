@@ -13,6 +13,15 @@ export interface User {
   updatedAt: string;
 }
 
+export interface GmailStatusResponse {
+  connected: boolean;
+  email: string | null;
+}
+
+export interface GmailAuthUrlResponse {
+  authUrl: string;
+}
+
 export interface Tokens {
   accessToken: string;
 }
@@ -20,6 +29,7 @@ export interface Tokens {
 export interface LoginRequest {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface LoginResponse {
@@ -81,8 +91,8 @@ const verifyEmail = async (token: string): Promise<ApiResponse<User>> => {
 
 const forgotPassword = async (
   payload: ForgotPasswordRequest
-): Promise<ApiResponse<{ user: User }>> => {
-  const { data } = await axiosClient.post<ApiResponse<{ user: User }>>(
+): Promise<ApiResponse<{ message: string }>> => {
+  const { data } = await axiosClient.post<ApiResponse<{ message: string }>>(
     '/auth/forgot-password',
     payload
   );
@@ -100,6 +110,31 @@ const resetPassword = async (
   return data;
 };
 
+const validateResetToken = async (
+  token: string
+): Promise<ApiResponse<{ valid: boolean }>> => {
+  const { data } = await axiosClient.get<ApiResponse<{ valid: boolean }>>(
+    `/auth/validate-reset-token?token=${encodeURIComponent(token)}`
+  );
+  return data;
+};
+
+const getGmailStatus = async (): Promise<ApiResponse<GmailStatusResponse>> => {
+  const { data } = await axiosClient.get<ApiResponse<GmailStatusResponse>>('/gmail/status');
+  return data;
+};
+
+const getGmailAuthUrl = async (): Promise<ApiResponse<GmailAuthUrlResponse>> => {
+  const { data } = await axiosClient.get<ApiResponse<GmailAuthUrlResponse>>('/gmail/auth-url');
+  return data;
+};
+
+const disconnectGmail = async (): Promise<ApiResponse<{ connected: boolean }>> => {
+  const { data } =
+    await axiosClient.delete<ApiResponse<{ connected: boolean }>>('/gmail/disconnect');
+  return data;
+};
+
 export const authService = {
   login,
   register,
@@ -108,4 +143,8 @@ export const authService = {
   verifyEmail,
   forgotPassword,
   resetPassword,
+  validateResetToken,
+  getGmailStatus,
+  getGmailAuthUrl,
+  disconnectGmail,
 };

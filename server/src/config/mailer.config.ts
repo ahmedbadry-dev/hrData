@@ -15,7 +15,7 @@ const smtpOptions: SMTPTransport.Options = {
         }
       : undefined,
   tls: {
-    rejectUnauthorized: false,
+    rejectUnauthorized: !emailConfig.allowSelfSignedTls,
   },
 };
 

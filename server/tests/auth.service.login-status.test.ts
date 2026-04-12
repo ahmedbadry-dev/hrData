@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import bcrypt from 'bcrypt';
-import { APP_CONSTANTS } from '../src/config/constants';
-import { ForbiddenException } from '../src/shared/errors/ForbiddenException';
+import { BadRequestException } from '../src/shared/errors/BadRequestException';
 import { UnauthorizedException } from '../src/shared/errors/UnauthorizedException';
+import { AUTH_CONSTANTS } from '../src/v1/modules/auth/auth.constants';
 import { AuthService } from '../src/v1/modules/auth/auth.service';
 
 const buildPrismaMock = (user: Record<string, unknown>) => {
@@ -24,7 +24,15 @@ const buildPrismaMock = (user: Record<string, unknown>) => {
   };
 };
 
+const mockDeviceInfo = {
+  ipAddress: '127.0.0.1',
+  userAgent: 'test-agent',
+  deviceName: 'test-device',
+};
+
 test('login blocks unverified users before password checks', async () => {
+  const passwordHash = await bcrypt.hash('password123', 12);
+
   const { prisma } = buildPrismaMock({
     id: 'user-1',
     email: 'user@example.com',
@@ -32,22 +40,28 @@ test('login blocks unverified users before password checks', async () => {
     status: 'PENDING_VERIFICATION',
     emailVerified: false,
     lockedUntil: null,
-    passwordHash: 'unused',
+    passwordHash,
     failedLoginAttempts: 0,
   });
 
   const service = new AuthService(prisma as never);
 
   await assert.rejects(
-    () => service.login('user@example.com', 'password123'),
+    () =>
+      service.login(
+        {
+          email: 'user@example.com',
+          password: 'password123',
+        },
+        mockDeviceInfo
+      ),
     (error: unknown) =>
-      error instanceof ForbiddenException &&
-      error.message === 'Please verify your email before logging in'
+      error instanceof BadRequestException && error.message === 'Please verify your email first'
   );
 });
 
 test('login applies lockout duration from constants at threshold', async () => {
-  const passwordHash = await bcrypt.hash('correct-password', APP_CONSTANTS.BCRYPT_SALT_ROUNDS);
+  const passwordHash = await bcrypt.hash('correct-password', 12);
   const { prisma, updates } = buildPrismaMock({
     id: 'user-2',
     email: 'user2@example.com',
@@ -56,23 +70,30 @@ test('login applies lockout duration from constants at threshold', async () => {
     emailVerified: true,
     lockedUntil: null,
     passwordHash,
-    failedLoginAttempts: APP_CONSTANTS.MAX_FAILED_LOGIN_ATTEMPTS - 1,
+    failedLoginAttempts: AUTH_CONSTANTS.MAX_FAILED_LOGIN_ATTEMPTS - 1,
   });
 
   const service = new AuthService(prisma as never);
 
   await assert.rejects(
-    () => service.login('user2@example.com', 'wrong-password'),
+    () =>
+      service.login(
+        {
+          email: 'user2@example.com',
+          password: 'wrong-password',
+        },
+        mockDeviceInfo
+      ),
     (error: unknown) => error instanceof UnauthorizedException
   );
 
   assert.equal(updates.length, 1);
-  assert.equal(updates[0].data.failedLoginAttempts, APP_CONSTANTS.MAX_FAILED_LOGIN_ATTEMPTS);
+  assert.equal(updates[0].data.failedLoginAttempts, AUTH_CONSTANTS.MAX_FAILED_LOGIN_ATTEMPTS);
   assert.ok(updates[0].data.lockedUntil instanceof Date);
 
   const lockoutEnd = updates[0].data.lockedUntil as Date;
   const remainingMs = lockoutEnd.getTime() - Date.now();
-  const expectedMs = APP_CONSTANTS.LOCKOUT_DURATION_MINUTES * 60 * 1000;
+  const expectedMs = AUTH_CONSTANTS.LOCKOUT_DURATION_MS;
 
   assert.ok(remainingMs <= expectedMs);
   assert.ok(remainingMs >= expectedMs - 10_000);

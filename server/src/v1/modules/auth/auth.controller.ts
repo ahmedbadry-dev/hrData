@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
+import crypto from 'node:crypto';
 import { AuthService } from './auth.service';
 import { AUTH_CONSTANTS } from './auth.constants';
 import ResponseHelper from '@/shared/utils/api-response';
 import { UAParser } from 'ua-parser-js';
+import { appConfig } from '@/config/env.config';
 
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -24,7 +26,8 @@ export class AuthController {
     if ('requestTwoFactor' in data) {
       return ResponseHelper.ok(res, data, 'Two factor authentication required', req.path);
     }
-    this.setRefreshTokenCookie(res, data.tokens.refreshToken);
+    const rememberMe = Boolean(req.body.rememberMe);
+    this.setRefreshTokenCookie(res, data.tokens.refreshToken, rememberMe);
     return ResponseHelper.ok(
       res,
       {
@@ -38,13 +41,13 @@ export class AuthController {
 
   logout = async (req: Request, res: Response): Promise<Response> => {
     await this.authService.logout(req.user!.id, req.cookies.refreshToken);
-    res.clearCookie('refreshToken');
+    this.clearRefreshTokenCookie(res);
     return ResponseHelper.ok(res, {}, 'User logged out successfully', req.path);
   };
 
   logoutAll = async (req: Request, res: Response): Promise<Response> => {
     await this.authService.logoutAll(req.user!.id);
-    res.clearCookie('refreshToken');
+    this.clearRefreshTokenCookie(res);
     return ResponseHelper.ok(res, {}, 'User logged out from all devices successfully', req.path);
   };
 
@@ -63,9 +66,9 @@ export class AuthController {
   };
 
   forgotPassword = async (req: Request, res: Response): Promise<Response> => {
-    const { user } = await this.authService.forgotPassword(req.body);
+    const data = await this.authService.forgotPassword(req.body);
 
-    return ResponseHelper.ok(res, { user }, 'Password reset token sent successfully', req.path);
+    return ResponseHelper.ok(res, data, 'Password reset token sent successfully', req.path);
   };
 
   resetPassword = async (req: Request, res: Response): Promise<Response> => {
@@ -74,6 +77,15 @@ export class AuthController {
     });
     this.clearRefreshTokenCookie(res);
     return ResponseHelper.ok(res, data, 'Password reset successfully', req.path);
+  };
+
+  validateResetToken = async (req: Request, res: Response): Promise<Response> => {
+    const token = req.query.token as string;
+    if (!token) {
+      return ResponseHelper.error(res, 'Token is required', 400, req.path);
+    }
+    const data = await this.authService.validateResetToken(token);
+    return ResponseHelper.ok(res, data, 'Token is valid', req.path);
   };
 
   changePassword = async (req: Request, res: Response): Promise<Response> => {
@@ -95,18 +107,38 @@ export class AuthController {
     };
   }
 
-  private setRefreshTokenCookie(res: Response, token: string) {
-    const isProduction = process.env.NODE_ENV === 'production';
+  private setRefreshTokenCookie(res: Response, token: string, rememberMe = true) {
+    const csrfToken = crypto.randomBytes(32).toString('hex');
 
-    res.cookie(AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_NAME, token, {
+    const cookieOptions: {
+      httpOnly: boolean;
+      secure: boolean;
+      sameSite: 'strict';
+      maxAge?: number;
+    } = {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
-      maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
+      secure: appConfig.isProduction,
+      sameSite: 'strict',
+    };
+
+    // rememberMe = true  → persistent cookie (30 days)
+    // rememberMe = false → session cookie (no maxAge, deleted when browser closes)
+    if (rememberMe) {
+      cookieOptions.maxAge = AUTH_CONSTANTS.REMEMBER_ME_MAX_AGE;
+    }
+
+    res.cookie(AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_NAME, token, cookieOptions);
+
+    res.cookie(AUTH_CONSTANTS.CSRF_TOKEN_COOKIE_NAME, csrfToken, {
+      httpOnly: false,
+      secure: appConfig.isProduction,
+      sameSite: 'strict',
+      path: '/',
     });
   }
 
   private clearRefreshTokenCookie(res: Response) {
     res.clearCookie(AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_NAME);
+    res.clearCookie(AUTH_CONSTANTS.CSRF_TOKEN_COOKIE_NAME);
   }
 }

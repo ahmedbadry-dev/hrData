@@ -1,5 +1,6 @@
 import IORedis from 'ioredis';
 import { redisConfig } from './env.config';
+import logger from '@/shared/utils/logger.util';
 
 const redis = new IORedis({
   host: redisConfig.host,
@@ -10,7 +11,7 @@ const redis = new IORedis({
   enableReadyCheck: false,
 });
 
-redis.on('connect', () => console.log('[Redis] ✅ Connected'));
-redis.on('error', (err) => console.error('[Redis] ❌ Error:', err.message));
+redis.on('connect', () => logger.info('[Redis] ✅ Connected'));
+redis.on('error', (err) => logger.error('[Redis] ❌ Error:', err.message));
 
 export default redis;

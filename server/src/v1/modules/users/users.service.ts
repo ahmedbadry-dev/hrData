@@ -1,7 +1,7 @@
 import { User, Prisma, PrismaClient, UserStatus, UserRole } from 'generated/prisma';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
 import { ConflictException } from '@/shared/errors/ConflictException';
-import { PaginationMeta } from '@/shared/utils/api-response';
+import { resolvePagination, buildPaginationMeta } from '@/shared/utils/paginate.util';
 import { GetUsersDto } from './dto/get-users.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
@@ -13,17 +13,17 @@ import {
 } from './types/user.types';
 import { USERS_CONSTANTS } from './users.constants';
 
-interface PaginationParams {
-  page: number;
-  limit: number;
-  skip: number;
-}
-
 export class UsersService {
   constructor(private readonly prisma: PrismaClient) {}
 
   async getUsers(query: GetUsersDto['query']): Promise<PaginatedUsersResponse> {
-    const pagination = this.resolvePagination(query);
+    const pagination = resolvePagination(query, {
+      minPage: USERS_CONSTANTS.PAGINATION.MIN_PAGE,
+      defaultPage: USERS_CONSTANTS.PAGINATION.DEFAULT_PAGE,
+      minLimit: USERS_CONSTANTS.PAGINATION.MIN_LIMIT,
+      defaultLimit: USERS_CONSTANTS.PAGINATION.DEFAULT_LIMIT,
+      maxLimit: USERS_CONSTANTS.PAGINATION.MAX_LIMIT,
+    });
     const where = this.buildUsersWhere(query);
 
     const [users, total] = await this.prisma.$transaction([
@@ -39,7 +39,12 @@ export class UsersService {
 
     return {
       users: users.map((user) => this.mapUserResponse(user as User)),
-      pagination: this.buildPaginationMeta(total, pagination.page, pagination.limit),
+      pagination: buildPaginationMeta(
+        total,
+        pagination.page,
+        pagination.limit,
+        USERS_CONSTANTS.PAGINATION.MIN_PAGE
+      ),
     };
   }
 
@@ -118,14 +123,6 @@ export class UsersService {
     ]);
   }
 
-  private resolvePagination(query: GetUsersDto['query']): PaginationParams {
-    const page = query.page || USERS_CONSTANTS.PAGINATION.DEFAULT_PAGE;
-    const limit = query.limit || USERS_CONSTANTS.PAGINATION.DEFAULT_LIMIT;
-    const skip = (page - 1) * limit;
-
-    return { page, limit, skip };
-  }
-
   private buildUsersWhere(query: GetUsersDto['query']): Prisma.UserWhereInput {
     const where: Prisma.UserWhereInput = {};
 
@@ -142,19 +139,6 @@ export class UsersService {
     }
 
     return where;
-  }
-
-  private buildPaginationMeta(total: number, page: number, limit: number): PaginationMeta {
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      page,
-      limit,
-      total,
-      totalPages,
-      hasNextPage: page < totalPages,
-      hasPreviousPage: page > USERS_CONSTANTS.PAGINATION.MIN_PAGE,
-    };
   }
 
   private mapUserResponse(user: User & { fullName?: string | null }): UserResponse {

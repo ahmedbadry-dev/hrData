@@ -5,6 +5,8 @@ import { JobIdParamDto } from './dto/job-id-param.dto';
 import { SearchJobsDto } from './dto/search-jobs.dto';
 import { CreateJobDto } from './dto/create-job.dto';
 import { CreateBulkJobsDto } from './dto/create-bulk-jobs.dto';
+import { BulkSaveJobsDto } from './dto/bulk-save-jobs.dto';
+import { BulkUnsaveJobsDto } from './dto/bulk-unsave-jobs.dto';
 import { JobsService } from './jobs.service';
 import { JOBS_CONSTANTS } from './jobs.constants';
 
@@ -13,7 +15,12 @@ export class JobsController {
 
   getJobs = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.jobsService.getJobs(req.user!.id, req.query as GetJobsDto['query']);
-    return ResponseHelper.ok(res, data, JOBS_CONSTANTS.MESSAGES.JOBS_FETCHED_SUCCESSFULLY, req.path);
+    return ResponseHelper.ok(
+      res,
+      data,
+      JOBS_CONSTANTS.MESSAGES.JOBS_FETCHED_SUCCESSFULLY,
+      req.path
+    );
   };
 
   getJobById = async (req: Request, res: Response): Promise<Response> => {
@@ -25,7 +32,10 @@ export class JobsController {
   };
 
   getSavedJobs = async (req: Request, res: Response): Promise<Response> => {
-    const data = await this.jobsService.getSavedJobs(req.user!.id, req.query as GetJobsDto['query']);
+    const data = await this.jobsService.getSavedJobs(
+      req.user!.id,
+      req.query as GetJobsDto['query']
+    );
     return ResponseHelper.ok(
       res,
       data,
@@ -35,23 +45,51 @@ export class JobsController {
   };
 
   searchJobs = async (req: Request, res: Response): Promise<Response> => {
-    const data = await this.jobsService.searchJobs(req.user!.id, req.query as SearchJobsDto['query']);
-    return ResponseHelper.ok(res, data, JOBS_CONSTANTS.MESSAGES.JOBS_FETCHED_SUCCESSFULLY, req.path);
+    const data = await this.jobsService.searchJobs(
+      req.user!.id,
+      req.query as SearchJobsDto['query']
+    );
+    return ResponseHelper.ok(
+      res,
+      data,
+      JOBS_CONSTANTS.MESSAGES.JOBS_FETCHED_SUCCESSFULLY,
+      req.path
+    );
   };
 
   saveJob = async (req: Request, res: Response): Promise<Response> => {
-    const data = await this.jobsService.saveJob(req.user!.id, (req.params as JobIdParamDto['params']).id);
-    return ResponseHelper.created(res, data, JOBS_CONSTANTS.MESSAGES.JOB_SAVED_SUCCESSFULLY, req.path);
+    const data = await this.jobsService.saveJob(
+      req.user!.id,
+      (req.params as JobIdParamDto['params']).id
+    );
+    return ResponseHelper.created(
+      res,
+      data,
+      JOBS_CONSTANTS.MESSAGES.JOB_SAVED_SUCCESSFULLY,
+      req.path
+    );
   };
 
   createJob = async (req: Request, res: Response): Promise<Response> => {
-    const data = await this.jobsService.createJob((req.body as CreateJobDto['body']));
-    return ResponseHelper.created(res, data, JOBS_CONSTANTS.MESSAGES.JOB_CREATED_SUCCESSFULLY, req.path);
+    const data = await this.jobsService.createJob(req.body as CreateJobDto['body']);
+    return ResponseHelper.created(
+      res,
+      data,
+      JOBS_CONSTANTS.MESSAGES.JOB_CREATED_SUCCESSFULLY,
+      req.path
+    );
   };
 
   createBulkJobs = async (req: Request, res: Response): Promise<Response> => {
-    const data = await this.jobsService.createBulkJobs((req.body as CreateBulkJobsDto['body']).jobs);
-    return ResponseHelper.created(res, data, JOBS_CONSTANTS.MESSAGES.JOBS_CREATED_SUCCESSFULLY, req.path);
+    const data = await this.jobsService.createBulkJobs(
+      (req.body as CreateBulkJobsDto['body']).jobs
+    );
+    return ResponseHelper.created(
+      res,
+      data,
+      JOBS_CONSTANTS.MESSAGES.JOBS_CREATED_SUCCESSFULLY,
+      req.path
+    );
   };
 
   unsaveJob = async (req: Request, res: Response): Promise<Response> => {
@@ -60,6 +98,27 @@ export class JobsController {
       res,
       {},
       JOBS_CONSTANTS.MESSAGES.JOB_REMOVED_FROM_SAVED_LIST,
+      req.path
+    );
+  };
+
+  saveJobs = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.jobsService.saveJobs(
+      req.user!.id,
+      (req.body as BulkSaveJobsDto['body']).jobIds
+    );
+    return ResponseHelper.ok(res, data, JOBS_CONSTANTS.MESSAGES.JOBS_SAVED_SUCCESSFULLY, req.path);
+  };
+
+  unsaveJobs = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.jobsService.unsaveJobs(
+      req.user!.id,
+      (req.body as BulkUnsaveJobsDto['body']).jobIds
+    );
+    return ResponseHelper.ok(
+      res,
+      data,
+      JOBS_CONSTANTS.MESSAGES.JOBS_REMOVED_FROM_SAVED_LIST,
       req.path
     );
   };

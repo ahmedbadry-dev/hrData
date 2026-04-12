@@ -48,7 +48,7 @@
 .closeButton {
   position: absolute;
   top: 16px;
-  right: 16px;
+  inset-inline-end: 16px;
   background: none;
   border: none;
   color: var(--muted);
@@ -61,6 +61,11 @@
 
 .closeButton:hover {
   color: var(--accent);
+}
+
+.closeButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .logoWrap {
@@ -96,12 +101,6 @@
   width: 100%;
 }
 
-.row2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
 .field {
   display: flex;
   flex-direction: column;
@@ -114,7 +113,7 @@
   font-weight: 600;
   color: var(--muted);
   margin-bottom: 6px;
-  text-align: right;
+  text-align: start;
 }
 
 .field input {
@@ -128,7 +127,14 @@
   outline: none;
   border-radius: 3px;
   transition: border-color 0.2s;
-  text-align: right;
+  text-align: start;
+}
+
+.field input[type='email'],
+.field input[type='tel'],
+.field input[type='password'] {
+  text-align: left;
+  direction: ltr;
 }
 
 .field input::placeholder {
@@ -140,8 +146,14 @@
   border-color: var(--ink);
 }
 
+.field input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .inputError {
   border-color: var(--accent) !important;
+  background-color: rgba(192, 57, 43, 0.04);
 }
 
 .fieldError {
@@ -149,50 +161,61 @@
   font-weight: 700;
   color: var(--accent);
   margin-top: 4px;
+  display: block;
 }
 
-.field input[type='email'],
-.field input[type='tel'],
-.field input[type='password'] {
-  text-align: left;
-  direction: ltr;
-}
-
-.error {
-  background: rgba(192, 57, 43, 0.08);
-  border: 1.5px solid var(--accent);
-  border-radius: 3px;
-  padding: 10px 14px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--accent);
-  margin-bottom: 14px;
-  display: none;
+/* Server error banner */
+.serverError {
+  display: flex;
   align-items: center;
   gap: 8px;
-  flex-direction: row-reverse;
-}
-
-.error.show {
-  display: flex;
-}
-
-.success {
-  background: rgba(26, 107, 74, 0.12);
-  border: 1.5px solid var(--green);
+  background-color: rgba(192, 57, 43, 0.06);
+  border: 1px solid var(--accent);
   border-radius: 3px;
+  color: var(--accent);
   padding: 10px 14px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--green);
   margin-bottom: 14px;
 }
 
-.successOnlyWrap {
-  display: flex;
-  min-height: 260px;
-  align-items: center;
-  justify-content: center;
+.serverErrorIcon {
+  flex-shrink: 0;
+}
+
+/* Success state */
+.successState {
+  text-align: center;
+  padding: 12px 0;
+}
+
+.successIcon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.successTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.successBody {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-bottom: 8px;
+}
+
+.successHint {
+  font-size: 12px;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 20px;
+  background: rgba(184, 134, 11, 0.08);
+  padding: 10px 14px;
+  border-radius: 3px;
 }
 
 .submitButton {
@@ -210,12 +233,12 @@
   margin-top: 4px;
 }
 
-.submitButton:hover {
+.submitButton:hover:not(:disabled) {
   background: #155a3c;
   transform: translateY(-1px);
 }
 
-.submitButton:active {
+.submitButton:active:not(:disabled) {
   transform: translateY(0);
 }
 

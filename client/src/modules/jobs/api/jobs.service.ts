@@ -62,6 +62,24 @@ export const unsaveJob = async (jobId: string): Promise<ApiResponse<{ success: b
   return data;
 };
 
+export const saveJobs = async (
+  jobIds: string[]
+): Promise<ApiResponse<{ savedJobIds: string[]; alreadySavedJobIds: string[] }>> => {
+  const { data } = await axiosClient.post<
+    ApiResponse<{ savedJobIds: string[]; alreadySavedJobIds: string[] }>
+  >('/jobs/save/bulk', { jobIds });
+  return data;
+};
+
+export const unsaveJobs = async (
+  jobIds: string[]
+): Promise<ApiResponse<{ removedJobIds: string[]; notSavedJobIds: string[] }>> => {
+  const { data } = await axiosClient.delete<
+    ApiResponse<{ removedJobIds: string[]; notSavedJobIds: string[] }>
+  >('/jobs/save/bulk', { data: { jobIds } });
+  return data;
+};
+
 export const fetchSavedJobs = async (
   params?: GetJobsParams
 ): Promise<ApiResponse<PaginatedJobs>> => {
@@ -83,5 +101,7 @@ export const jobsService = {
   fetchJobById,
   saveJob,
   unsaveJob,
+  saveJobs,
+  unsaveJobs,
   fetchSavedJobs,
 };

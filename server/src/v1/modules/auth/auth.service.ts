@@ -6,20 +6,16 @@ import { UnauthorizedException } from '@/shared/errors/UnauthorizedException';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
 import { ConflictException } from '@/shared/errors/ConflictException';
 import { ForbiddenException } from '@/shared/errors/ForbiddenException';
-import { APP_CONSTANTS } from '@/config/constants';
 import logger from '@/shared/utils/logger.util';
 import { CreateUserDto } from './dto/create-user.dto';
 import { generateHash, compareHash, generateHashedWithSha256 } from '@/shared/utils/hash.util';
 import {
   generateTempToken,
-  generateAccessToken,
-  generateRefreshToken,
   verifyRefreshToken,
   verifyTempToken,
   generateTokenPair,
 } from '@/shared/utils/jwt.util';
 import { excludePassword } from '@/shared/utils/exclude-password.utils';
-import { env, appConfig, jwtConfig, emailConfig } from '@/config/env.config';
 import { NotificationsService, notificationsService } from '@/notifications/notifications.service';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { LoginDto } from './dto/login.dto';
@@ -35,6 +31,10 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
+const FORGOT_PASSWORD_RESPONSE = {
+  message: 'If the account exists and is eligible, a password reset link will be sent.',
+};
+
 export class AuthService {
   constructor(
     private readonly prisma: PrismaClient,
@@ -48,14 +48,14 @@ export class AuthService {
       where: { phone },
     });
     if (phoneExists) {
-      throw new BadRequestException('Phone already exists');
+      throw new BadRequestException('Unable to register with provided credentials');
     }
 
     const emailExists = await this.prisma.user.findUnique({
       where: { email },
     });
     if (emailExists) {
-      throw new BadRequestException('Email already exists');
+      throw new BadRequestException('Unable to register with provided credentials');
     }
 
     const hashedPassword = await generateHash(password);
@@ -211,10 +211,10 @@ export class AuthService {
     });
 
     if (!userExists) {
-      throw new BadRequestException('User not found or inactive');
+      return FORGOT_PASSWORD_RESPONSE;
     }
     if (!userExists.emailVerified) {
-      throw new BadRequestException('Please verify your email first');
+      return FORGOT_PASSWORD_RESPONSE;
     }
 
     const resetToken = generateTempToken({
@@ -237,7 +237,7 @@ export class AuthService {
       resetToken
     );
 
-    return { user: excludePassword(updatedUser) };
+    return FORGOT_PASSWORD_RESPONSE;
   }
 
   async resetPassword(
@@ -266,6 +266,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid reset token');
     }
 
+    if (!user.resetTokenExpiresAt || user.resetTokenExpiresAt < new Date()) {
+      throw new UnauthorizedException('Invalid reset token');
+    }
+
     this.validateUserStatus(user);
 
     if (user.passwordHash) {
@@ -287,6 +291,34 @@ export class AuthService {
     });
 
     return { user: excludePassword(updatedUser) };
+  }
+
+  async validateResetToken(token: string): Promise<{ valid: boolean }> {
+    const verifiedToken = verifyTempToken(token);
+    if (!verifiedToken.valid) {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+    if (verifiedToken.payload.type !== 'PASSWORD_RESET') {
+      throw new UnauthorizedException('Invalid reset token');
+    }
+
+    const hashedToken = generateHashedWithSha256(token);
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: verifiedToken.payload.email,
+        resetToken: hashedToken,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+
+    if (!user.resetTokenExpiresAt || user.resetTokenExpiresAt < new Date()) {
+      throw new UnauthorizedException('Reset token has expired');
+    }
+
+    return { valid: true };
   }
 
   async changePassword(userId: string, data: ChangePasswordDto['body']) {

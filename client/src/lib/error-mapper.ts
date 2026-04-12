@@ -11,11 +11,12 @@ export const mapErrorToArabic = (message: string): string => {
     'phone already in use': 'رقم الجوال مسجل بالفعل',
     'validation failed': 'فشل في التحقق من البيانات',
     unauthorized: 'غير مصرح',
-    forbidden: 'مسموح',
+    forbidden: 'غير مسموح',
     'token expired': 'انتهت صلاحية الجلسة',
     'token invalid': 'جلسة غير صالحة',
     'refresh token expired': 'انتهت صلاحية الجلسة',
     'refresh token invalid': 'جلسة غير صالحة',
+    'unable to register with provided credentials': 'تعذر إنشاء الحساب بالبيانات المدخلة',
     'password is too short': 'كلمة المرور قصيرة جداً',
     'password must be at least 8 characters': 'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
     'invalid email': 'البريد الإلكتروني غير صالح',
@@ -57,4 +58,30 @@ export const mapErrorToArabic = (message: string): string => {
   }
 
   return 'حدث خطأ';
+};
+
+interface AxiosLikeError {
+  response?: {
+    status?: number;
+    data?: {
+      message?: string;
+      errors?: Array<{ field?: string; message?: string }>;
+    };
+  };
+}
+
+export const getErrorStatus = (error: unknown): number | undefined => {
+  return (error as AxiosLikeError).response?.status;
+};
+
+export const mapError = (error: unknown): string => {
+  const axiosError = error as AxiosLikeError;
+
+  const fieldErrors = axiosError.response?.data?.errors ?? [];
+  if (fieldErrors.length > 0) {
+    const firstError = fieldErrors[0]?.message ?? '';
+    return mapErrorToArabic(firstError || 'يرجى التحقق من البيانات المدخلة');
+  }
+
+  return mapErrorToArabic(axiosError.response?.data?.message || 'حدث خطأ');
 };

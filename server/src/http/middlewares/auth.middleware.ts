@@ -2,41 +2,49 @@ import { NextFunction, Request, Response } from 'express';
 import { UnauthorizedException } from '../../shared/errors/UnauthorizedException';
 import { verifyAccessToken } from '@/shared/utils/jwt.util';
 import prisma from '@/config/db.config';
-import { UserRole, UserStatus } from 'generated/prisma';
+import { PrismaClient, UserRole, UserStatus } from 'generated/prisma';
+import { ForbiddenException } from '@/shared/errors/ForbiddenException';
 
-export async function authenticationMiddleware(req: Request, _res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
-  const [type, token] = authHeader?.split(' ') || [];
+type UserLookupClient = Pick<PrismaClient, 'user'>;
 
-  if (!token || type !== 'Bearer') {
-    throw new UnauthorizedException('Authentication required. Please provide a valid token.');
-  }
+export const createAuthenticationMiddleware = (db: UserLookupClient) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
+    const [type, token] = authHeader?.split(' ') || [];
 
-  const verified = verifyAccessToken(token);
+    if (!token || type !== 'Bearer') {
+      throw new UnauthorizedException('Authentication required. Please provide a valid token.');
+    }
 
-  if (!verified.valid) {
-    throw new UnauthorizedException(verified.error || 'Invalid access token');
-  }
+    const verified = verifyAccessToken(token);
 
-  const user = await prisma.user.findUnique({
-    where: {
-      id: verified.payload.userId,
-      status: UserStatus.ACTIVE,
-      emailVerified: true,
-    },
-    include: {
-      sessions: {
-        where: { id: verified.payload.tokenId },
+    if (!verified.valid) {
+      throw new UnauthorizedException(verified.error || 'Invalid access token');
+    }
+
+    const user = await db.user.findUnique({
+      where: {
+        id: verified.payload.userId,
+        status: UserStatus.ACTIVE,
+        emailVerified: true,
       },
-    },
-  });
+      include: {
+        sessions: {
+          where: { id: verified.payload.tokenId },
+        },
+      },
+    });
 
-  if (!user || user.sessions.length === 0) {
-    throw new UnauthorizedException('User not found or session expired. Please login again.');
-  }
-  req.user = user;
-  next();
-}
+    if (!user || user.sessions.length === 0) {
+      throw new UnauthorizedException('User not found or session expired. Please login again.');
+    }
+
+    req.user = user;
+    next();
+  };
+};
+
+export const authenticationMiddleware = createAuthenticationMiddleware(prisma);
 
 export const authorizationMiddleware = (...roles: Array<UserRole>) => {
   return (req: Request, _res: Response, next: NextFunction) => {
@@ -44,7 +52,7 @@ export const authorizationMiddleware = (...roles: Array<UserRole>) => {
       throw new UnauthorizedException('User not found');
     }
     if (!roles.includes(req.user.role)) {
-      throw new UnauthorizedException('This action is not allowed for this user');
+      throw new ForbiddenException('This action is not allowed for this user');
     }
     next();
   };

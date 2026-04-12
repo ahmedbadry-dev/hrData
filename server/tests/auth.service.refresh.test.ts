@@ -6,6 +6,10 @@ import { AuthService } from '../src/v1/modules/auth/auth.service';
 
 test('refresh rejects malformed or invalid refresh token values', async () => {
   const prisma = {
+    session: {
+      findUnique: async () => null,
+      delete: async () => null,
+    },
     user: {
       findUnique: async () => null,
       update: async () => null,
@@ -15,9 +19,13 @@ test('refresh rejects malformed or invalid refresh token values', async () => {
   const service = new AuthService(prisma as never);
 
   await assert.rejects(
-    () => service.refresh('not-a-valid-jwt-token'),
+    () =>
+      service.refresh('not-a-valid-jwt-token', {
+        ipAddress: '127.0.0.1',
+        userAgent: 'test-agent',
+        deviceName: 'test-device',
+      }),
     (error: unknown) =>
-      error instanceof UnauthorizedException &&
-      error.message === 'Invalid or expired refresh token'
+      error instanceof UnauthorizedException && error.message === 'Invalid refresh token'
   );
 });

@@ -12,6 +12,7 @@ import { jobApplicationTemplate } from '@/notifications/templates/job-applicatio
 import { generateTrackingPixelUrl } from '@/shared/utils/tracking-pixel.util';
 import logger from '@/shared/utils/logger.util';
 import { ApplicationStatus } from 'generated/prisma';
+import { resolveStoredCvPath } from '@/v1/modules/cvs/cv-storage.util';
 
 export interface EmailSendJobData {
   applicationId: string;
@@ -21,13 +22,18 @@ export interface EmailSendJobData {
   hrEmail: string;
   jobTitle: string;
   companyName: string;
-  cvUrl: string | null;
+  cvPath: string | null;
 }
 
 export const emailSendWorker = new Worker<EmailSendJobData>(
   emailSendQueue.name,
   async (job: Job<EmailSendJobData>) => {
-    const { applicationId, userName, userEmail, hrEmail, jobTitle, companyName, cvUrl } = job.data;
+    const { applicationId, userName, userEmail, hrEmail, jobTitle, companyName, cvPath } = job.data;
+
+    let attachmentPath: string | undefined;
+    if (cvPath) {
+      attachmentPath = resolveStoredCvPath(cvPath);
+    }
 
     logger.info(`📧 Processing email job ${job.id} for application ${applicationId}`);
 
@@ -53,11 +59,11 @@ export const emailSendWorker = new Worker<EmailSendJobData>(
         to: hrEmail,
         subject: `طلب انضمام — ${jobTitle}`,
         html,
-        attachments: cvUrl
+        attachments: attachmentPath
           ? [
               {
                 filename: 'CV.pdf',
-                path: cvUrl,
+                path: attachmentPath,
               },
             ]
           : [],

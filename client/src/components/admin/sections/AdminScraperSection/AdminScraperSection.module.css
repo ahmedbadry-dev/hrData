@@ -375,4 +375,16 @@
   .scraper-card {
     padding: 18px;
   }
+
+  .token-input-row {
+    flex-direction: column;
+    border: none;
+    gap: 8px;
+  }
+
+  .token-input-row input,
+  .token-input-row button {
+    border: 2px solid var(--ink);
+    width: 100%;
+  }
 }

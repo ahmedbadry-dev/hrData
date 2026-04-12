@@ -15,6 +15,7 @@ import { usersRoutes } from './modules/users/users.routes';
 import { applicationsRoutes } from './modules/applications/applications.routes';
 import { cvsRoutes } from './modules/cvs/cvs.routes';
 import trackingRoutes from './modules/tracking/tracking.routes';
+import { gmailRoutes } from './modules/gmail/gmail.routes';
 
 export const v1Routes = () => {
   const router = Router();
@@ -36,6 +37,7 @@ export const v1Routes = () => {
   router.use('/admin/users', usersRoutes(usersController));
   router.use('/applications', applicationsRoutes(applicationsController));
   router.use('/cvs', cvsRoutes);
+  router.use('/gmail', gmailRoutes(prisma));
 
   return router;
 };

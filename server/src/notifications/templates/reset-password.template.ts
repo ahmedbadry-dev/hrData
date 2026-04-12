@@ -2,6 +2,7 @@ import { escapeHtml } from '../../shared/utils/escape-html.utils';
 
 export const resetPasswordTemplate = (name: string, resetUrl: string): string => {
   const safeName = escapeHtml(name);
+  const safeResetUrl = escapeHtml(resetUrl);
 
   return `
     <!DOCTYPE html>
@@ -33,7 +34,7 @@ export const resetPasswordTemplate = (name: string, resetUrl: string): string =>
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;">
                     <tr>
                       <td align="center">
-                        <a href="${resetUrl}" style="display:inline-block;background:#0d0d0d;color:#f5f0e8;text-decoration:none;padding:14px 30px;border-radius:2px;font-size:15px;font-weight:700;">إعادة تعيين كلمة المرور</a>
+                        <a href="${safeResetUrl}" style="display:inline-block;background:#0d0d0d;color:#f5f0e8;text-decoration:none;padding:14px 30px;border-radius:2px;font-size:15px;font-weight:700;">إعادة تعيين كلمة المرور</a>
                       </td>
                     </tr>
                   </table>
@@ -42,7 +43,7 @@ export const resetPasswordTemplate = (name: string, resetUrl: string): string =>
                     صلاحية الرابط: ساعة واحدة فقط. إذا لم تطلب هذا الإجراء، تجاهل الرسالة.
                   </p>
                   <p style="margin:0;padding:12px 14px;background:#ede8dc;border:1px dashed #c8b89a;font-size:12px;line-height:1.8;color:#0d0d0d;word-break:break-all;">
-                    ${resetUrl}
+                    ${safeResetUrl}
                   </p>
                 </td>
               </tr>

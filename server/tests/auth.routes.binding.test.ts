@@ -4,7 +4,11 @@ import test from 'node:test';
 import { AuthController } from '../src/v1/modules/auth/auth.controller';
 import { authRoutes } from '../src/v1/modules/auth/auth.routes';
 
-type RouteHandler = (req: unknown, res: unknown, next: (error?: unknown) => void) => Promise<unknown>;
+type RouteHandler = (
+  req: unknown,
+  res: unknown,
+  next: (error?: unknown) => void
+) => Promise<unknown>;
 
 const getLastRouteHandler = (router: unknown, path: string, method: string): RouteHandler => {
   const stack = (router as { stack: Array<unknown> }).stack;
@@ -29,16 +33,25 @@ test('auth routes use bound controller handlers', async () => {
   let capturedContext: unknown;
 
   const mockService = {
-    register: async (email: string, password: string, firstName: string, lastName: string) => {
-      capturedContext = { email, password, firstName, lastName };
+    register: async (data: {
+      email: string;
+      password: string;
+      firstName: string;
+      lastName: string;
+    }) => {
+      capturedContext = data;
       return {
-        user: { id: 'user-1', email, role: 'USER' },
+        user: { id: 'user-1', email: data.email, role: 'USER' },
         accessToken: 'access',
         refreshToken: 'refresh',
       };
     },
     verifyEmail: async () => ({ message: 'ok' }),
-    login: async () => ({ user: { id: 'user-1', email: 'e', role: 'USER' }, accessToken: 'a', refreshToken: 'r' }),
+    login: async () => ({
+      user: { id: 'user-1', email: 'e', role: 'USER' },
+      accessToken: 'a',
+      refreshToken: 'r',
+    }),
     logout: async () => ({ message: 'ok' }),
     logoutAll: async () => ({ message: 'ok' }),
     refresh: async () => ({ accessToken: 'a', refreshToken: 'r' }),

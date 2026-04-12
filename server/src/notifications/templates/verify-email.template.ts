@@ -2,6 +2,7 @@ import { escapeHtml } from '../../shared/utils/escape-html.utils';
 
 export const verifyEmailTemplate = (name: string, verifyUrl: string): string => {
   const safeName = escapeHtml(name);
+  const safeVerifyUrl = escapeHtml(verifyUrl);
 
   return `
     <!DOCTYPE html>
@@ -33,7 +34,7 @@ export const verifyEmailTemplate = (name: string, verifyUrl: string): string => 
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;">
                     <tr>
                       <td align="center">
-                        <a href="${verifyUrl}" style="display:inline-block;background:#0d0d0d;color:#f5f0e8;text-decoration:none;padding:14px 30px;border-radius:2px;font-size:15px;font-weight:700;">تفعيل الحساب</a>
+                        <a href="${safeVerifyUrl}" style="display:inline-block;background:#0d0d0d;color:#f5f0e8;text-decoration:none;padding:14px 30px;border-radius:2px;font-size:15px;font-weight:700;">تفعيل الحساب</a>
                       </td>
                     </tr>
                   </table>
@@ -42,7 +43,7 @@ export const verifyEmailTemplate = (name: string, verifyUrl: string): string => 
                     إذا لم يفتح الزر، انسخ الرابط التالي في المتصفح:
                   </p>
                   <p style="margin:0;padding:12px 14px;background:#ede8dc;border:1px dashed #c8b89a;font-size:12px;line-height:1.8;color:#0d0d0d;word-break:break-all;">
-                    ${verifyUrl}
+                    ${safeVerifyUrl}
                   </p>
                 </td>
               </tr>

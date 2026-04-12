@@ -1,4 +1,5 @@
-import type { SavedJob, UserJob } from '@/components/user/sections/userData';
+import type { SavedJob } from '@/components/user/sections/userData';
+import type { UserJob } from '@/modules/jobs/types';
 import { EmptyState, SearchBox, Select } from '@/components/common';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';

@@ -4,6 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "lib": ["ES2022"],
+    "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
@@ -21,6 +22,6 @@
     },
     "ignoreDeprecations": "6.0"
   },
-  "include": ["src/**/*", "generated/**/*", "src/shared/types/**/*"],
+  "include": ["src/**/*", "src/shared/types/**/*"],
   "exclude": ["node_modules", "dist"]
 }
