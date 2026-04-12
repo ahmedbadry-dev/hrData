@@ -8,7 +8,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     openRegister();
-    navigate('/');
+    navigate('/?mode=register', { replace: true });
   }, [navigate, openRegister]);
 
   return null;

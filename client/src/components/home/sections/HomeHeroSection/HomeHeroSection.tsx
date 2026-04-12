@@ -15,6 +15,7 @@ export default function HomeHeroSection() {
       navigate('/dashboard/jobs');
     } else {
       openLogin();
+      navigate('/?mode=login&redirect=%2Fdashboard%2Fjobs', { replace: true });
     }
   };
 

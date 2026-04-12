@@ -50,6 +50,13 @@
   color: var(--accent);
 }
 
+.nav-welcome {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
 .btn-register {
   background: var(--ink);
   color: var(--paper);
@@ -90,6 +97,11 @@
 
 .btn-login-navbar:hover {
   background: var(--cream);
+}
+
+.btn-login-navbar:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .hero {
@@ -669,6 +681,10 @@
 
   .nav-links {
     gap: 12px;
+  }
+
+  .nav-welcome {
+    display: none;
   }
 
   .btn-login {

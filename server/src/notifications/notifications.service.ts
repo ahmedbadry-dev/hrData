@@ -68,10 +68,10 @@ export class NotificationsService {
   }
 
   async sendPasswordResetEmail(name: string, email: string, token: string): Promise<void> {
-    const url = `${appConfig.appUrl}/api/v1/auth/reset-password?token=${token}`;
+    const url = `${appConfig.appUrl}/reset-password?token=${token}`;
     await this.sendEmail({
       to: email,
-      subject: 'Reset your password',
+      subject: 'إعادة تعيين كلمة المرور - كفو',
       html: resetPasswordTemplate(name, url),
     });
   }
@@ -97,7 +97,7 @@ export class NotificationsService {
 
       await this.sendEmail({
         to: recipientEmail,
-        subject: 'Application Status Update',
+        subject: 'تحديث حالة الطلب - كفو',
         html: applicationStatusTemplate({
           recipientName,
           message,

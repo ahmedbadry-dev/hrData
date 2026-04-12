@@ -15,7 +15,6 @@ export interface User {
 
 export interface Tokens {
   accessToken: string;
-  refreshToken?: string;
 }
 
 export interface LoginRequest {
@@ -38,6 +37,15 @@ export interface RegisterRequest {
 
 export interface RegisterResponse {
   user: User;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  password: string;
+  confirmPassword: string;
 }
 
 const login = async (credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
@@ -64,9 +72,40 @@ const refresh = async (): Promise<ApiResponse<{ user: User; tokens: Tokens }>> =
   return data;
 };
 
+const verifyEmail = async (token: string): Promise<ApiResponse<User>> => {
+  const { data } = await axiosClient.post<ApiResponse<User>>(
+    `/auth/verify-email?token=${encodeURIComponent(token)}`
+  );
+  return data;
+};
+
+const forgotPassword = async (
+  payload: ForgotPasswordRequest
+): Promise<ApiResponse<{ user: User }>> => {
+  const { data } = await axiosClient.post<ApiResponse<{ user: User }>>(
+    '/auth/forgot-password',
+    payload
+  );
+  return data;
+};
+
+const resetPassword = async (
+  token: string,
+  payload: ResetPasswordRequest
+): Promise<ApiResponse<{ user: User }>> => {
+  const { data } = await axiosClient.post<ApiResponse<{ user: User }>>(
+    `/auth/reset-password?token=${encodeURIComponent(token)}`,
+    payload
+  );
+  return data;
+};
+
 export const authService = {
   login,
   register,
   logout,
   refresh,
+  verifyEmail,
+  forgotPassword,
+  resetPassword,
 };

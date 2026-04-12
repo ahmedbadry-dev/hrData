@@ -1,26 +1,29 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { authService, type LoginRequest } from '@/modules/auth/api/auth.service';
-import { setAccessToken } from '@/services/api';
+import { useAuthContext } from '@/modules/auth/context';
 
-const loginMutationFn = async (credentials: LoginRequest) => {
-  const response = await authService.login(credentials);
-  if (response.data?.tokens?.accessToken) {
-    setAccessToken(response.data.tokens.accessToken);
-  }
-  return response;
-};
+const loginMutationFn = async (credentials: LoginRequest) => authService.login(credentials);
 
 export const useLoginMutation = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const location = useLocation();
+  const { setSession } = useAuthContext();
 
   return useMutation({
     mutationFn: loginMutationFn,
     onSuccess: (response) => {
-      if (response.data?.user) {
-        queryClient.invalidateQueries({ queryKey: ['auth'] });
-        navigate('/dashboard');
+      const user = response.data?.user;
+      const accessToken = response.data?.tokens?.accessToken;
+
+      if (user && accessToken) {
+        setSession({ user, accessToken });
+
+        const redirect = new URLSearchParams(location.search).get('redirect');
+        const defaultPath =
+          user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard';
+
+        navigate(redirect && redirect.startsWith('/') ? redirect : defaultPath, { replace: true });
       }
     },
   });

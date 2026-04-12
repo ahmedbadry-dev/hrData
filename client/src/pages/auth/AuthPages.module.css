@@ -4,5 +4,134 @@
   align-items: center;
   justify-content: center;
   background-color: var(--paper);
-  padding: 1rem;
+  padding: 24px;
+}
+
+.authCard {
+  width: 100%;
+  max-width: 520px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: 8px 8px 0 var(--ink);
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.iconWrap {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 20px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  font-weight: 900;
+}
+
+.iconSuccess {
+  background: rgba(26, 107, 74, 0.16);
+  color: var(--green);
+}
+
+.iconError {
+  background: rgba(192, 57, 43, 0.14);
+  color: var(--accent);
+}
+
+.iconLoading {
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-bottom: 22px;
+}
+
+.actions {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.outlineBtn {
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  padding: 12px 24px;
+  border-radius: 2px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.outlineBtn:hover {
+  background: var(--cream);
+}
+
+.solidBtn {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 12px 24px;
+  border-radius: 2px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.solidBtn:hover {
+  background: #1a1a1a;
+}
+
+.form {
+  text-align: right;
+  margin-top: 16px;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid var(--warm);
+  padding: 12px 14px;
+  border-radius: 2px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 14px;
+  background: #fff;
+}
+
+.inputError {
+  border-color: var(--accent);
+}
+
+.errorText {
+  margin-top: 6px;
+  color: var(--accent);
+  font-size: 12px;
 }

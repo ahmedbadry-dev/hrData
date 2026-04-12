@@ -45,6 +45,18 @@
   background-color: rgba(192, 57, 43, 0.05);
 }
 
+.successBox {
+  width: 100%;
+  border: 1px solid var(--green);
+  color: var(--green);
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background-color: rgba(26, 107, 74, 0.08);
+}
+
 .form {
   width: 100%;
 }

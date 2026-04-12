@@ -20,13 +20,30 @@ export default function LoginForm({ onRegisterClick }: LoginFormProps) {
     e.preventDefault();
     setError(null);
 
-    if (!email || !password) return;
+    if (!email.trim()) {
+      setError('البريد الإلكتروني مطلوب');
+      return;
+    }
+
+    if (!password) {
+      setError('كلمة المرور مطلوبة');
+      return;
+    }
 
     try {
-      await loginMutation.mutateAsync({ email, password });
+      await loginMutation.mutateAsync({ email: email.trim(), password });
     } catch (err) {
-      const axiosError = err as { response?: { data?: { message?: string } } };
-      const message = axiosError.response?.data?.message || '';
+      const axiosError = err as {
+        response?: {
+          data?: {
+            message?: string;
+            errors?: Array<{ message?: string }>;
+          };
+        };
+      };
+
+      const fieldError = axiosError.response?.data?.errors?.[0]?.message;
+      const message = fieldError || axiosError.response?.data?.message || '';
       setError(mapErrorToArabic(message));
     }
   };
@@ -51,7 +68,10 @@ export default function LoginForm({ onRegisterClick }: LoginFormProps) {
             className={styles.inputCustom}
             dir="rtl"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (error) setError(null);
+            }}
           />
         </div>
 
@@ -63,7 +83,10 @@ export default function LoginForm({ onRegisterClick }: LoginFormProps) {
             className={styles.inputCustom}
             dir="ltr"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (error) setError(null);
+            }}
           />
         </div>
 

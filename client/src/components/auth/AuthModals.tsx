@@ -1,31 +1,52 @@
 import { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import LoginModal from '@/components/auth/LoginModal/LoginModal';
 import RegisterModal from '@/components/auth/RegisterModal/RegisterModal';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 
 export default function AuthModals() {
   const [searchParams] = useSearchParams();
-  const { isLoginOpen, isRegisterOpen, closeLogin, closeRegister, openRegister, openLogin } =
-    useAuthModal();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isLoginOpen, isRegisterOpen, closeAll, openRegister, openLogin } = useAuthModal();
+
+  const mode = searchParams.get('mode');
+
+  const navigateWithParams = (params: URLSearchParams) => {
+    const nextSearch = params.toString();
+    navigate(
+      {
+        pathname: location.pathname,
+        search: nextSearch ? `?${nextSearch}` : '',
+      },
+      { replace: true }
+    );
+  };
 
   useEffect(() => {
-    const mode = searchParams.get('mode');
     if (mode === 'login') {
       openLogin();
     } else if (mode === 'register') {
       openRegister();
+    } else {
+      closeAll();
     }
-  }, [searchParams, openLogin, openRegister]);
+  }, [mode, openLogin, openRegister, closeAll]);
 
   const handleLoginClose = () => {
-    closeLogin();
-    window.history.pushState({}, '', '/');
+    closeAll();
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('mode');
+    nextParams.delete('redirect');
+    navigateWithParams(nextParams);
   };
 
   const handleRegisterClose = () => {
-    closeRegister();
-    window.history.pushState({}, '', '/');
+    closeAll();
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('mode');
+    nextParams.delete('redirect');
+    navigateWithParams(nextParams);
   };
 
   return (
@@ -34,18 +55,20 @@ export default function AuthModals() {
         isOpen={isLoginOpen}
         onClose={handleLoginClose}
         onRegisterClick={() => {
-          closeLogin();
           openRegister();
-          window.history.pushState({}, '', '/?mode=register');
+          const nextParams = new URLSearchParams(searchParams);
+          nextParams.set('mode', 'register');
+          navigateWithParams(nextParams);
         }}
       />
       <RegisterModal
         isOpen={isRegisterOpen}
         onClose={handleRegisterClose}
         onLoginClick={() => {
-          closeRegister();
           openLogin();
-          window.history.pushState({}, '', '/?mode=login');
+          const nextParams = new URLSearchParams(searchParams);
+          nextParams.set('mode', 'login');
+          navigateWithParams(nextParams);
         }}
       />
     </>
