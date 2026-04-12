@@ -91,20 +91,27 @@ export class AuthService {
 
   async verifyEmail(data: VerifyEmailDto['query']) {
     const { token } = data;
-    const hashedToken = generateHashedWithSha256(token);
+    const verificationToken = verifyTempToken(token);
 
-    const userExists = await this.prisma.user.findFirst({
-      where: {
-        verificationToken: hashedToken,
-        emailVerified: false,
-      },
+    if (!verificationToken.valid || verificationToken.payload.type !== 'VERIFICATION') {
+      throw new BadRequestException('Invalid verification token');
+    }
+
+    const userExists = await this.prisma.user.findUnique({
+      where: { email: verificationToken.payload.email },
     });
+
     if (!userExists) {
       throw new BadRequestException('Invalid verification token');
     }
 
-    const verificationToken = verifyTempToken(token);
-    if (!verificationToken.valid) {
+    if (userExists.emailVerified) {
+      return excludePassword(userExists);
+    }
+
+    const hashedToken = generateHashedWithSha256(token);
+
+    if (userExists.verificationToken !== hashedToken) {
       throw new BadRequestException('Invalid verification token');
     }
 

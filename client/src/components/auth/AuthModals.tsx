@@ -10,6 +10,8 @@ export default function AuthModals() {
   const location = useLocation();
   const { isLoginOpen, isRegisterOpen, closeAll, openRegister, openLogin } = useAuthModal();
 
+  const mode = searchParams.get('mode');
+
   const navigateWithParams = (params: URLSearchParams) => {
     const nextSearch = params.toString();
     navigate(
@@ -22,13 +24,14 @@ export default function AuthModals() {
   };
 
   useEffect(() => {
-    const mode = searchParams.get('mode');
     if (mode === 'login') {
       openLogin();
     } else if (mode === 'register') {
       openRegister();
+    } else {
+      closeAll();
     }
-  }, [searchParams, openLogin, openRegister]);
+  }, [mode, openLogin, openRegister, closeAll]);
 
   const handleLoginClose = () => {
     closeAll();

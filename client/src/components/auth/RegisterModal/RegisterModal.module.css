@@ -145,7 +145,8 @@
 }
 
 .fieldError {
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--accent);
   margin-top: 4px;
 }
@@ -162,7 +163,7 @@
   border: 1.5px solid var(--accent);
   border-radius: 3px;
   padding: 10px 14px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--accent);
   margin-bottom: 14px;
@@ -174,6 +175,24 @@
 
 .error.show {
   display: flex;
+}
+
+.success {
+  background: rgba(26, 107, 74, 0.12);
+  border: 1.5px solid var(--green);
+  border-radius: 3px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 14px;
+}
+
+.successOnlyWrap {
+  display: flex;
+  min-height: 260px;
+  align-items: center;
+  justify-content: center;
 }
 
 .submitButton {

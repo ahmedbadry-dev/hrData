@@ -13,12 +13,26 @@ interface LoginModalProps {
 interface ValidationErrors {
   email?: string;
   password?: string;
+  general?: string;
 }
 
-const getErrorMessage = (err: unknown): string => {
-  const axiosError = err as { response?: { data?: { message?: string } } };
-  const message = axiosError.response?.data?.message || '';
-  return mapErrorToArabic(message);
+const getBackendError = (err: unknown): string => {
+  const axiosError = err as {
+    response?: {
+      data?: {
+        message?: string;
+        errors?: Array<{ field?: string; message?: string }>;
+      };
+    };
+  };
+
+  const fieldErrors = axiosError.response?.data?.errors ?? [];
+  if (fieldErrors.length > 0) {
+    const firstError = fieldErrors[0]?.message ?? '';
+    return mapErrorToArabic(firstError || 'يرجى التحقق من البيانات المدخلة');
+  }
+
+  return mapErrorToArabic(axiosError.response?.data?.message || 'حدث خطأ');
 };
 
 export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginModalProps) {
@@ -31,75 +45,67 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
   const [forgotLoading, setForgotLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
 
+  const hasFieldError = Boolean(errors.email || errors.password);
+
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+    if (!isOpen) return;
 
     setMode('login');
-    setPassword('');
     setErrors({});
     setForgotSuccess(null);
     setForgotLoading(false);
   }, [isOpen]);
 
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
+  const validateLoginForm = (): boolean => {
+    const nextErrors: ValidationErrors = {};
 
     if (!email.trim()) {
-      newErrors.email = 'يرجى إدخال البريد الإلكتروني أو اسم المستخدم';
+      nextErrors.email = 'البريد الإلكتروني مطلوب';
     }
 
     if (!password) {
-      newErrors.password = 'يرجى إدخال كلمة المرور';
+      nextErrors.password = 'كلمة المرور مطلوبة';
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (name === 'email') {
-      setEmail(value);
-    } else if (name === 'password') {
-      setPassword(value);
-    }
-    if (errors[name as keyof ValidationErrors]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
 
-    if (!validateForm()) return;
+    if (!validateLoginForm()) {
+      return;
+    }
 
     try {
-      await loginMutation.mutateAsync({ email, password });
+      await loginMutation.mutateAsync({ email: email.trim(), password });
       onClose();
     } catch (err) {
-      setErrors({ email: getErrorMessage(err) });
+      setErrors({ general: getBackendError(err) });
     }
   };
 
-  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+  const handleForgotSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     setForgotSuccess(null);
 
     if (!forgotEmail.trim()) {
-      setErrors({ email: 'يرجى إدخال البريد الإلكتروني' });
+      setErrors({ email: 'البريد الإلكتروني مطلوب' });
       return;
     }
 
     setForgotLoading(true);
     try {
       const response = await authService.forgotPassword({ email: forgotEmail.trim() });
-      setForgotSuccess(response.message || 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك');
+      setForgotSuccess(
+        mapErrorToArabic(response.message || 'Password reset token sent successfully')
+      );
+      setErrors({});
     } catch (err) {
-      setErrors({ email: getErrorMessage(err) });
+      setErrors({ general: getBackendError(err) });
     } finally {
       setForgotLoading(false);
     }
@@ -130,37 +136,27 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
         <div className={styles.body}>
           {forgotSuccess && <div className={styles.success}>{forgotSuccess}</div>}
 
-          {errors.email && (
+          {errors.general && (
             <div className={`${styles.error} show`}>
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-              <span>{errors.email}</span>
+              <span>{errors.general}</span>
             </div>
           )}
 
           {mode === 'login' ? (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleLoginSubmit}>
               <div className={styles.field}>
-                <label>البريد الإلكتروني أو اسم المستخدم</label>
+                <label>البريد الإلكتروني</label>
                 <input
                   type="text"
                   name="email"
-                  placeholder="admin أو بريدك الإلكتروني"
+                  placeholder="بريدك الإلكتروني"
                   dir="ltr"
                   value={email}
-                  onChange={handleChange}
-                  className={errors.email ? styles.inputError : ''}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                  }}
+                  className={errors.email || hasFieldError ? styles.inputError : ''}
                 />
                 {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
               </div>
@@ -170,11 +166,14 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
                 <input
                   type="password"
                   name="password"
-                  placeholder="••••••••"
+                  placeholder="********"
                   dir="ltr"
                   value={password}
-                  onChange={handleChange}
-                  className={errors.password ? styles.inputError : ''}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                  }}
+                  className={errors.password || hasFieldError ? styles.inputError : ''}
                 />
                 {errors.password && <span className={styles.fieldError}>{errors.password}</span>}
               </div>
@@ -214,24 +213,31 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
               </div>
             </form>
           ) : (
-            <form onSubmit={handleForgotPasswordSubmit}>
-              <div className={styles.field}>
-                <label>البريد الإلكتروني</label>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="you@example.com"
-                  dir="ltr"
-                  value={forgotEmail}
-                  onChange={(e) => setForgotEmail(e.target.value)}
-                  className={errors.email ? styles.inputError : ''}
-                />
-                {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
-              </div>
+            <>
+              {!forgotSuccess && (
+                <form onSubmit={handleForgotSubmit}>
+                  <div className={styles.field}>
+                    <label>البريد الإلكتروني</label>
+                    <input
+                      type="email"
+                      name="forgotEmail"
+                      placeholder="you@example.com"
+                      dir="ltr"
+                      value={forgotEmail}
+                      onChange={(e) => {
+                        setForgotEmail(e.target.value);
+                        if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                      }}
+                      className={errors.email ? styles.inputError : ''}
+                    />
+                    {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
+                  </div>
 
-              <button className={styles.submitButton} type="submit" disabled={forgotLoading}>
-                {forgotLoading ? 'جاري الإرسال...' : 'إرسال رابط إعادة التعيين'}
-              </button>
+                  <button className={styles.submitButton} type="submit" disabled={forgotLoading}>
+                    {forgotLoading ? 'جاري الإرسال...' : 'إرسال رابط إعادة التعيين'}
+                  </button>
+                </form>
+              )}
 
               <button
                 type="button"
@@ -239,11 +245,12 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
                 onClick={() => {
                   setMode('login');
                   setErrors({});
+                  setForgotSuccess(null);
                 }}
               >
-                العودة إلى تسجيل الدخول
+                العودة لتسجيل الدخول
               </button>
-            </form>
+            </>
           )}
 
           <div className={styles.hint}>

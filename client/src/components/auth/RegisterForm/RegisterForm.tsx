@@ -16,21 +16,67 @@ export default function RegisterForm({ onLoginClick }: RegisterFormProps) {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const registerMutation = useRegisterMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccessMessage(null);
 
-    if (!firstName || !lastName || !email || !phone || !password) return;
-    if (password.length < 8) return;
+    if (!lastName.trim()) {
+      setError('الاسم الأخير مطلوب');
+      return;
+    }
+
+    if (!firstName.trim()) {
+      setError('الاسم الأول مطلوب');
+      return;
+    }
+
+    if (!email.trim()) {
+      setError('البريد الإلكتروني مطلوب');
+      return;
+    }
+
+    if (!phone.trim()) {
+      setError('رقم الجوال مطلوب');
+      return;
+    }
+
+    if (!password) {
+      setError('كلمة المرور مطلوبة');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+      return;
+    }
 
     try {
-      await registerMutation.mutateAsync({ firstName, lastName, email, phone, password });
+      await registerMutation.mutateAsync({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        password,
+      });
+
+      setSuccessMessage('تم إنشاء الحساب بنجاح، يرجى تفعيل حسابك من رابط البريد الإلكتروني');
     } catch (err) {
-      const axiosError = err as { response?: { data?: { message?: string } } };
-      const message = axiosError.response?.data?.message || '';
+      const axiosError = err as {
+        response?: {
+          data?: {
+            message?: string;
+            errors?: Array<{ message?: string }>;
+          };
+        };
+      };
+
+      const fieldError = axiosError.response?.data?.errors?.[0]?.message;
+      const message = fieldError || axiosError.response?.data?.message || '';
       setError(mapErrorToArabic(message));
     }
   };
@@ -45,6 +91,7 @@ export default function RegisterForm({ onLoginClick }: RegisterFormProps) {
       </div>
 
       {error && <div className={styles.errorBox}>{error}</div>}
+      {successMessage && <div className={styles.successBox}>{successMessage}</div>}
 
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.row}>
@@ -55,7 +102,11 @@ export default function RegisterForm({ onLoginClick }: RegisterFormProps) {
               className={styles.inputCustom}
               dir="rtl"
               value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              onChange={(e) => {
+                setLastName(e.target.value);
+                if (error) setError(null);
+                if (successMessage) setSuccessMessage(null);
+              }}
             />
           </div>
           <div className={styles.field}>
@@ -65,7 +116,11 @@ export default function RegisterForm({ onLoginClick }: RegisterFormProps) {
               className={styles.inputCustom}
               dir="rtl"
               value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              onChange={(e) => {
+                setFirstName(e.target.value);
+                if (error) setError(null);
+                if (successMessage) setSuccessMessage(null);
+              }}
             />
           </div>
         </div>
@@ -78,7 +133,11 @@ export default function RegisterForm({ onLoginClick }: RegisterFormProps) {
             className={styles.inputCustom}
             dir="ltr"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (error) setError(null);
+              if (successMessage) setSuccessMessage(null);
+            }}
           />
         </div>
 
@@ -90,7 +149,11 @@ export default function RegisterForm({ onLoginClick }: RegisterFormProps) {
             className={styles.inputCustom}
             dir="ltr"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => {
+              setPhone(e.target.value);
+              if (error) setError(null);
+              if (successMessage) setSuccessMessage(null);
+            }}
           />
         </div>
 
@@ -102,7 +165,11 @@ export default function RegisterForm({ onLoginClick }: RegisterFormProps) {
             className={styles.inputCustom}
             dir="ltr"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (error) setError(null);
+              if (successMessage) setSuccessMessage(null);
+            }}
           />
         </div>
 

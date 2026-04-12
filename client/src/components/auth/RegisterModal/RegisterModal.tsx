@@ -15,7 +15,27 @@ interface ValidationErrors {
   email?: string;
   phone?: string;
   password?: string;
+  general?: string;
 }
+
+const getErrorMessage = (err: unknown): string => {
+  const axiosError = err as {
+    response?: {
+      data?: {
+        message?: string;
+        errors?: Array<{ field?: string; message?: string }>;
+      };
+    };
+  };
+
+  const fieldErrors = axiosError.response?.data?.errors ?? [];
+  if (fieldErrors.length > 0) {
+    const firstError = fieldErrors[0]?.message ?? '';
+    return mapErrorToArabic(firstError || 'يرجى التحقق من البيانات المدخلة');
+  }
+
+  return mapErrorToArabic(axiosError.response?.data?.message || 'حدث خطأ');
+};
 
 export default function RegisterModal({ isOpen, onClose, onLoginClick }: RegisterModalProps) {
   const registerMutation = useRegisterMutation();
@@ -26,60 +46,55 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
     phone: '',
     password: '',
   });
+
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const hasAnyFieldError = Boolean(
+    errors.firstName || errors.lastName || errors.email || errors.phone || errors.password
+  );
 
   const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
+    const nextErrors: ValidationErrors = {};
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'يرجى إدخال الاسم الأول';
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'يرجى إدخال الاسم الأخير';
-    }
+    if (!formData.firstName.trim()) nextErrors.firstName = 'الاسم الأول مطلوب';
+    if (!formData.lastName.trim()) nextErrors.lastName = 'الاسم الأخير مطلوب';
 
     if (!formData.email.trim()) {
-      newErrors.email = 'يرجى إدخال البريد الإلكتروني';
+      nextErrors.email = 'البريد الإلكتروني مطلوب';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'يرجى إدخال بريد إلكتروني صحيح';
+      nextErrors.email = 'البريد الإلكتروني غير صالح';
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = 'يرجى إدخال رقم الجوال';
+      nextErrors.phone = 'رقم الجوال مطلوب';
     } else if (!/^05\d{8}$/.test(formData.phone)) {
-      newErrors.phone = 'يرجى إدخال رقم جوال صحيح (05xxxxxxxx)';
+      nextErrors.phone = 'رقم الجوال غير صالح (05xxxxxxxx)';
     }
 
     if (!formData.password) {
-      newErrors.password = 'يرجى إدخال كلمة المرور';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+      nextErrors.password = 'كلمة المرور مطلوبة';
+    } else if (formData.password.length < 8) {
+      nextErrors.password = 'كلمة المرور يجب أن تكون 8 أحرف على الأقل';
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof ValidationErrors]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
-    }
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+    setSuccessMessage(null);
 
     if (!validateForm()) return;
 
     try {
       await registerMutation.mutateAsync(formData);
-      onLoginClick();
-    } catch (err: any) {
-      setErrors({ email: mapErrorToArabic(err?.message || 'حدث خطأ') });
+      setSuccessMessage('تم إنشاء الحساب بنجاح، يرجى تفعيل حسابك من رابط البريد الإلكتروني');
+      setFormData({ firstName: '', lastName: '', email: '', phone: '', password: '' });
+    } catch (err) {
+      setErrors({ general: getErrorMessage(err) });
     }
   };
 
@@ -104,114 +119,138 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
         </div>
 
         <div className={styles.body}>
-          {errors.email && (
-            <div className={`${styles.error} show`}>
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-              <span>{errors.email}</span>
+          {successMessage ? (
+            <div className={styles.successOnlyWrap}>
+              <div className={styles.success}>{successMessage}</div>
             </div>
+          ) : (
+            <>
+              {errors.general && (
+                <div className={`${styles.error} show`}>
+                  <span>{errors.general}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit}>
+                <div className={styles.row2}>
+                  <div className={styles.field}>
+                    <label>الاسم الأخير</label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      placeholder="العمري"
+                      value={formData.lastName}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, lastName: e.target.value }));
+                        if (successMessage) setSuccessMessage(null);
+                        if (errors.lastName)
+                          setErrors((prev) => ({ ...prev, lastName: undefined }));
+                      }}
+                      className={errors.lastName || hasAnyFieldError ? styles.inputError : ''}
+                    />
+                    {errors.lastName && (
+                      <span className={styles.fieldError}>{errors.lastName}</span>
+                    )}
+                  </div>
+
+                  <div className={styles.field}>
+                    <label>الاسم الأول</label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      placeholder="أحمد"
+                      value={formData.firstName}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, firstName: e.target.value }));
+                        if (successMessage) setSuccessMessage(null);
+                        if (errors.firstName)
+                          setErrors((prev) => ({ ...prev, firstName: undefined }));
+                      }}
+                      className={errors.firstName || hasAnyFieldError ? styles.inputError : ''}
+                    />
+                    {errors.firstName && (
+                      <span className={styles.fieldError}>{errors.firstName}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.field}>
+                  <label>البريد الإلكتروني</label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="ahmed@email.com"
+                    dir="ltr"
+                    value={formData.email}
+                    onChange={(e) => {
+                      setFormData((prev) => ({ ...prev, email: e.target.value }));
+                      if (successMessage) setSuccessMessage(null);
+                      if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                    }}
+                    className={errors.email || hasAnyFieldError ? styles.inputError : ''}
+                  />
+                  {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
+                </div>
+
+                <div className={styles.field}>
+                  <label>رقم الجوال</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="05XXXXXXXX"
+                    dir="ltr"
+                    value={formData.phone}
+                    onChange={(e) => {
+                      setFormData((prev) => ({ ...prev, phone: e.target.value }));
+                      if (successMessage) setSuccessMessage(null);
+                      if (errors.phone) setErrors((prev) => ({ ...prev, phone: undefined }));
+                    }}
+                    className={errors.phone || hasAnyFieldError ? styles.inputError : ''}
+                  />
+                  {errors.phone && <span className={styles.fieldError}>{errors.phone}</span>}
+                </div>
+
+                <div className={styles.field}>
+                  <label>كلمة المرور</label>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="********"
+                    dir="ltr"
+                    value={formData.password}
+                    onChange={(e) => {
+                      setFormData((prev) => ({ ...prev, password: e.target.value }));
+                      if (successMessage) setSuccessMessage(null);
+                      if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                    }}
+                    className={errors.password || hasAnyFieldError ? styles.inputError : ''}
+                  />
+                  {errors.password && <span className={styles.fieldError}>{errors.password}</span>}
+                </div>
+
+                <button
+                  className={styles.submitButton}
+                  type="submit"
+                  disabled={registerMutation.isPending}
+                >
+                  {registerMutation.isPending ? 'جاري إنشاء الحساب...' : 'إنشاء الحساب ←'}
+                </button>
+              </form>
+
+              <div className={styles.switch}>
+                لديك حساب بالفعل؟{' '}
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onLoginClick();
+                  }}
+                >
+                  تسجيل الدخول
+                </a>
+              </div>
+            </>
           )}
-
-          <div className={styles.row2}>
-            <div className={styles.field}>
-              <label>الاسم الأخير</label>
-              <input
-                type="text"
-                name="lastName"
-                placeholder="العمري"
-                value={formData.lastName}
-                onChange={handleChange}
-                className={errors.lastName ? styles.inputError : ''}
-              />
-              {errors.lastName && <span className={styles.fieldError}>{errors.lastName}</span>}
-            </div>
-            <div className={styles.field}>
-              <label>الاسم الأول</label>
-              <input
-                type="text"
-                name="firstName"
-                placeholder="أحمد"
-                value={formData.firstName}
-                onChange={handleChange}
-                className={errors.firstName ? styles.inputError : ''}
-              />
-              {errors.firstName && <span className={styles.fieldError}>{errors.firstName}</span>}
-            </div>
-          </div>
-
-          <div className={styles.field}>
-            <label>البريد الإلكتروني</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="ahmed@email.com"
-              dir="ltr"
-              value={formData.email}
-              onChange={handleChange}
-              className={errors.email ? styles.inputError : ''}
-            />
-            {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
-          </div>
-
-          <div className={styles.field}>
-            <label>رقم الجوال</label>
-            <input
-              type="tel"
-              name="phone"
-              placeholder="05XXXXXXXX"
-              dir="ltr"
-              value={formData.phone}
-              onChange={handleChange}
-              className={errors.phone ? styles.inputError : ''}
-            />
-            {errors.phone && <span className={styles.fieldError}>{errors.phone}</span>}
-          </div>
-
-          <div className={styles.field}>
-            <label>كلمة المرور</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              dir="ltr"
-              value={formData.password}
-              onChange={handleChange}
-              className={errors.password ? styles.inputError : ''}
-            />
-            {errors.password && <span className={styles.fieldError}>{errors.password}</span>}
-          </div>
-
-          <button
-            className={styles.submitButton}
-            onClick={handleSubmit}
-            disabled={registerMutation.isPending}
-          >
-            {registerMutation.isPending ? 'جاري إنشاء الحساب...' : 'إنشاء الحساب ←'}
-          </button>
-
-          <div className={styles.switch}>
-            لديك حساب بالفعل؟{' '}
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                onLoginClick();
-              }}
-            >
-              تسجيل الدخول
-            </a>
-          </div>
         </div>
       </div>
     </div>

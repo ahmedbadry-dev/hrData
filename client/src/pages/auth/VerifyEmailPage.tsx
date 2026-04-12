@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import HomeNavbar from '@/components/home/layout/HomeNavbar/HomeNavbar';
 import { Spinner } from '@/components/ui';
@@ -14,13 +14,42 @@ export default function VerifyEmailPage() {
   const navigate = useNavigate();
   const { openLogin } = useAuthModal();
 
-  const token = useMemo(() => searchParams.get('token')?.trim() ?? '', [searchParams]);
+  const token = useMemo(() => {
+    const fromQuery = searchParams.get('token')?.trim();
+    if (fromQuery) return fromQuery;
+
+    const hashValue = window.location.hash.startsWith('#')
+      ? window.location.hash.slice(1)
+      : window.location.hash;
+
+    const hashParams = new URLSearchParams(hashValue);
+    return hashParams.get('token')?.trim() ?? '';
+  }, [searchParams]);
 
   const [status, setStatus] = useState<VerifyStatus>('loading');
   const [message, setMessage] = useState('');
+  const hasRequestedVerification = useRef(false);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = status === 'error' ? 'hidden' : '';
+    }
+
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+      }
+    };
+  }, [status]);
 
   useEffect(() => {
     const verify = async () => {
+      if (hasRequestedVerification.current) {
+        return;
+      }
+
+      hasRequestedVerification.current = true;
+
       if (!token) {
         setStatus('error');
         setMessage('رابط التحقق غير صالح');
@@ -30,7 +59,7 @@ export default function VerifyEmailPage() {
       try {
         const response = await authService.verifyEmail(token);
         setStatus('success');
-        setMessage(response.message || 'تم التحقق من البريد الإلكتروني بنجاح');
+        setMessage(mapErrorToArabic(response.message || 'User verified successfully'));
       } catch (err) {
         const axiosError = err as { response?: { data?: { message?: string } } };
         const backendMessage =
@@ -47,7 +76,7 @@ export default function VerifyEmailPage() {
     <div dir="rtl">
       <HomeNavbar />
 
-      <main className={styles.pageContainer}>
+      <main className={`${styles.pageContainer} ${status === 'error' ? styles.noScroll : ''}`}>
         <section className={styles.authCard}>
           {status === 'loading' && (
             <>
