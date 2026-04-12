@@ -1,7 +1,24 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styles from '@/components/home/layout/HomeLayout/HomeLayout.module.css';
+import { useAuthModal } from '@/contexts/AuthModalContext';
+import { useAuthContext } from '@/modules/auth/context';
 
 export default function HomeCtaSection() {
+  const navigate = useNavigate();
+  const { openLogin } = useAuthModal();
+  const { isAuthenticated, isLoading } = useAuthContext();
+
+  const handleCtaClick = () => {
+    if (isLoading) return;
+
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    } else {
+      sessionStorage.setItem('redirectAfterLogin', '/dashboard');
+      openLogin();
+    }
+  };
+
   return (
     <section className={styles['cta-band']} id="cta">
       <div className={styles.reveal}>
@@ -15,9 +32,9 @@ export default function HomeCtaSection() {
         </div>
       </div>
       <div className={styles['cta-buttons']}>
-        <Link className={styles['btn-primary']} to="/dashboard">
+        <button className={styles['btn-primary']} onClick={handleCtaClick}>
           دخول لوحة التحكم ←
-        </Link>
+        </button>
         <a className={styles['btn-ghost']} href="#how">
           اعرف أكثر
         </a>

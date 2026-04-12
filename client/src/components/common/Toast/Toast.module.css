@@ -27,3 +27,8 @@
   background: #ef4444;
   color: white;
 }
+
+.toast.info {
+  background: var(--ink, #0d0d0d);
+  color: white;
+}

@@ -55,6 +55,11 @@ export const authRoutes = (authController: AuthController) => {
     validateAllMiddleware(ResetPasswordDtoSchema),
     authController.resetPassword
   );
+  router.get(
+    '/validate-reset-token',
+    authRateLimitMiddleware,
+    authController.validateResetToken
+  );
   router.patch(
     '/change-password',
     authRateLimitMiddleware,

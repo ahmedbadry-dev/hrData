@@ -1,14 +1,17 @@
 import { useMutation } from '@tanstack/react-query';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { authService, type LoginRequest } from '@/modules/auth/api/auth.service';
 import { useAuthContext } from '@/modules/auth/context';
+import { useToast } from '@/contexts/ToastContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 
 const loginMutationFn = async (credentials: LoginRequest) => authService.login(credentials);
 
 export const useLoginMutation = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { setSession } = useAuthContext();
+  const { showToast } = useToast();
+  const { closeAll } = useAuthModal();
 
   return useMutation({
     mutationFn: loginMutationFn,
@@ -18,12 +21,20 @@ export const useLoginMutation = () => {
 
       if (user && accessToken) {
         setSession({ user, accessToken });
+        closeAll();
 
-        const redirect = new URLSearchParams(location.search).get('redirect');
+        showToast({ type: 'success', message: 'مرحباً بك! تم تسجيل دخولك بنجاح' });
+
+        const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+        sessionStorage.removeItem('redirectAfterLogin');
+
         const defaultPath =
           user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard';
 
-        navigate(redirect && redirect.startsWith('/') ? redirect : defaultPath, { replace: true });
+        navigate(
+          redirectPath && redirectPath.startsWith('/') ? redirectPath : defaultPath,
+          { replace: true }
+        );
       }
     },
   });

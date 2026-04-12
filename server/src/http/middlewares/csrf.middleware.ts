@@ -6,7 +6,11 @@ import { ForbiddenException } from '@/shared/errors/ForbiddenException';
 import { AUTH_CONSTANTS } from '@/v1/modules/auth/auth.constants';
 
 const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
-const CSRF_EXEMPT_PATHS = new Set(['/api/v1/auth/login', '/api/v1/auth/register']);
+const CSRF_EXEMPT_PATHS = new Set([
+  '/api/v1/auth/login',
+  '/api/v1/auth/register',
+  '/api/v1/auth/refresh',
+]);
 
 const generateCsrfToken = (): string => {
   return crypto.randomBytes(32).toString('hex');

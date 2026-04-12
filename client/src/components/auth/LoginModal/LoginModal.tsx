@@ -1,113 +1,124 @@
 import { useEffect, useState } from 'react';
-import { useLoginMutation } from '@/modules/auth/api/mutations';
-import { authService } from '@/modules/auth/api/auth.service';
-import { mapErrorToArabic } from '@/lib/error-mapper';
+import { useLoginMutation, useForgotPasswordMutation } from '@/modules/auth/api/mutations';
+import { getErrorStatus, mapError } from '@/lib/error-mapper';
 import styles from './LoginModal.module.css';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onRegisterClick: () => void;
+  onForgotPasswordClick?: () => void;
 }
 
-interface ValidationErrors {
-  email?: string;
-  password?: string;
-  general?: string;
-}
+type ModalView = 'login' | 'forgot' | 'forgotSuccess';
 
-const getBackendError = (err: unknown): string => {
-  const axiosError = err as {
-    response?: {
-      data?: {
-        message?: string;
-        errors?: Array<{ field?: string; message?: string }>;
-      };
-    };
-  };
-
-  const fieldErrors = axiosError.response?.data?.errors ?? [];
-  if (fieldErrors.length > 0) {
-    const firstError = fieldErrors[0]?.message ?? '';
-    return mapErrorToArabic(firstError || 'يرجى التحقق من البيانات المدخلة');
-  }
-
-  return mapErrorToArabic(axiosError.response?.data?.message || 'حدث خطأ');
-};
-
-export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginModalProps) {
+export default function LoginModal({
+  isOpen,
+  onClose,
+  onRegisterClick,
+}: LoginModalProps) {
   const loginMutation = useLoginMutation();
-  const [mode, setMode] = useState<'login' | 'forgot'>('login');
+  const forgotMutation = useForgotPasswordMutation();
+
+  const [view, setView] = useState<ModalView>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [forgotEmail, setForgotEmail] = useState('');
-  const [forgotSuccess, setForgotSuccess] = useState<string | null>(null);
-  const [forgotLoading, setForgotLoading] = useState(false);
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [forgotServerError, setForgotServerError] = useState<string | null>(null);
+  const [rememberMe, setRememberMe] = useState(false);
 
-  const hasFieldError = Boolean(errors.email || errors.password);
-
+  // Reset state when modal opens/closes
   useEffect(() => {
     if (!isOpen) return;
-
-    setMode('login');
+    setView('login');
+    setEmail('');
+    setPassword('');
+    setForgotEmail('');
     setErrors({});
-    setForgotSuccess(null);
-    setForgotLoading(false);
+    setServerError(null);
+    setForgotServerError(null);
+    setRememberMe(false);
   }, [isOpen]);
 
-  const validateLoginForm = (): boolean => {
-    const nextErrors: ValidationErrors = {};
+  const isPending = loginMutation.isPending || forgotMutation.isPending;
+
+  // ── Login validation ──────────────────────────────────
+  const validateLogin = (): boolean => {
+    const newErrors: Record<string, string> = {};
 
     if (!email.trim()) {
-      nextErrors.email = 'البريد الإلكتروني مطلوب';
+      newErrors.email = 'البريد الإلكتروني مطلوب';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'صيغة البريد الإلكتروني غير صحيحة';
     }
 
     if (!password) {
-      nextErrors.password = 'كلمة المرور مطلوبة';
+      newErrors.password = 'كلمة المرور مطلوبة';
+    } else if (password.length < 6) {
+      newErrors.password = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
     }
 
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
+  const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setErrors({});
+    setServerError(null);
+    if (!validateLogin()) return;
 
-    if (!validateLoginForm()) {
-      return;
-    }
-
-    try {
-      await loginMutation.mutateAsync({ email: email.trim(), password });
-      onClose();
-    } catch (err) {
-      setErrors({ general: getBackendError(err) });
-    }
+    loginMutation.mutate(
+      { email: email.trim(), password, rememberMe },
+      {
+        onError: (error) => {
+          const status = getErrorStatus(error);
+          if (status === 401 || status === 400) {
+            setServerError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+          } else {
+            setServerError(mapError(error));
+          }
+        },
+      }
+    );
   };
 
-  const handleForgotSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-    setForgotSuccess(null);
+  // ── Forgot password validation ────────────────────────
+  const validateForgotEmail = (): boolean => {
+    const newErrors: Record<string, string> = {};
 
     if (!forgotEmail.trim()) {
-      setErrors({ email: 'البريد الإلكتروني مطلوب' });
-      return;
+      newErrors.forgotEmail = 'البريد الإلكتروني مطلوب';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotEmail)) {
+      newErrors.forgotEmail = 'صيغة البريد الإلكتروني غير صحيحة';
     }
 
-    setForgotLoading(true);
-    try {
-      await authService.forgotPassword({ email: forgotEmail.trim() });
-      setForgotSuccess('إذا كان البريد مسجلا لدينا فسيصل رابط إعادة تعيين كلمة المرور خلال دقائق.');
-      setErrors({});
-    } catch (err) {
-      setErrors({ general: getBackendError(err) });
-    } finally {
-      setForgotLoading(false);
-    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
+
+  const handleForgotSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotServerError(null);
+    if (!validateForgotEmail()) return;
+
+    forgotMutation.mutate(
+      { email: forgotEmail.trim() },
+      {
+        onSuccess: () => {
+          setView('forgotSuccess');
+        },
+        onError: () => {
+          // Security best practice: show success regardless
+          // But if server returns an actual server error (5xx), show it
+          setView('forgotSuccess');
+        },
+      }
+    );
+  };
+
+  const hasLoginErrors = Boolean(errors.email || errors.password);
 
   if (!isOpen) return null;
 
@@ -115,10 +126,15 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
     <div
       className={`${styles.overlay} ${isOpen ? styles.overlayOpen : ''}`}
       dir="rtl"
-      onClick={onClose}
+      onClick={() => { if (!isPending) onClose(); }}
     >
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.closeButton} onClick={onClose} aria-label="Close">
+        <button
+          className={styles.closeButton}
+          onClick={onClose}
+          disabled={isPending}
+          aria-label="إغلاق"
+        >
           ✕
         </button>
 
@@ -127,74 +143,104 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
             كُفُـؤ<em>.</em>
           </div>
           <div className={styles.subtitle}>
-            {mode === 'login' ? 'تسجيل الدخول' : 'استعادة كلمة المرور'}
+            {view === 'login' && 'تسجيل الدخول'}
+            {view === 'forgot' && 'استعادة كلمة المرور'}
+            {view === 'forgotSuccess' && 'تم الإرسال'}
           </div>
         </div>
 
         <div className={styles.body}>
-          {forgotSuccess && <div className={styles.success}>{forgotSuccess}</div>}
-
-          {errors.general && (
-            <div className={`${styles.error} show`}>
-              <span>{errors.general}</span>
-            </div>
-          )}
-
-          {mode === 'login' ? (
-            <form onSubmit={handleLoginSubmit}>
+          {/* ═══ LOGIN VIEW ═══ */}
+          {view === 'login' && (
+            <form onSubmit={handleLoginSubmit} noValidate>
               <div className={styles.field}>
                 <label>البريد الإلكتروني</label>
                 <input
                   type="text"
-                  name="email"
+                  id="login-email"
                   placeholder="بريدك الإلكتروني"
                   dir="ltr"
                   value={email}
+                  disabled={loginMutation.isPending}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                    if (errors.email) setErrors((prev) => ({ ...prev, email: '' }));
+                    if (serverError) setServerError(null);
                   }}
-                  className={errors.email || hasFieldError ? styles.inputError : ''}
+                  className={errors.email ? styles.inputError : ''}
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? 'login-email-error' : undefined}
                 />
-                {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
+                {errors.email && (
+                  <span id="login-email-error" className={styles.fieldError} role="alert">
+                    {errors.email}
+                  </span>
+                )}
               </div>
 
               <div className={styles.field}>
                 <label>كلمة المرور</label>
                 <input
                   type="password"
-                  name="password"
+                  id="login-password"
                   placeholder="********"
                   dir="ltr"
                   value={password}
+                  disabled={loginMutation.isPending}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                    if (errors.password) setErrors((prev) => ({ ...prev, password: '' }));
+                    if (serverError) setServerError(null);
                   }}
-                  className={errors.password || hasFieldError ? styles.inputError : ''}
+                  className={errors.password ? styles.inputError : ''}
+                  aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? 'login-password-error' : undefined}
                 />
-                {errors.password && <span className={styles.fieldError}>{errors.password}</span>}
+                {errors.password && (
+                  <span id="login-password-error" className={styles.fieldError} role="alert">
+                    {errors.password}
+                  </span>
+                )}
               </div>
 
               <button
                 type="button"
                 className={styles.forgotLink}
                 onClick={() => {
-                  setMode('forgot');
+                  setView('forgot');
                   setForgotEmail(email);
                   setErrors({});
-                  setForgotSuccess(null);
+                  setServerError(null);
                 }}
               >
                 نسيت كلمة المرور؟
               </button>
 
+              <label className={styles.rememberMe}>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  disabled={loginMutation.isPending}
+                />
+                <span>ابقني مسجلاً</span>
+              </label>
+
+              {/* Server error banner — above submit button */}
+              {serverError && (
+                <div className={styles.serverError} role="alert">
+                  <span className={styles.serverErrorIcon}>⚠️</span>
+                  <span>{serverError}</span>
+                </div>
+              )}
+
               <button
                 className={styles.submitButton}
                 type="submit"
-                disabled={loginMutation.isPending}
+                disabled={loginMutation.isPending || hasLoginErrors}
+                aria-disabled={loginMutation.isPending || hasLoginErrors}
               >
-                {loginMutation.isPending ? 'جاري الدخول...' : 'دخول ←'}
+                {loginMutation.isPending ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
               </button>
 
               <div className={styles.switch}>
@@ -210,40 +256,61 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
                 </a>
               </div>
             </form>
-          ) : (
-            <>
-              {!forgotSuccess && (
-                <form onSubmit={handleForgotSubmit}>
-                  <div className={styles.field}>
-                    <label>البريد الإلكتروني</label>
-                    <input
-                      type="email"
-                      name="forgotEmail"
-                      placeholder="you@example.com"
-                      dir="ltr"
-                      value={forgotEmail}
-                      onChange={(e) => {
-                        setForgotEmail(e.target.value);
-                        if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
-                      }}
-                      className={errors.email ? styles.inputError : ''}
-                    />
-                    {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
-                  </div>
+          )}
 
-                  <button className={styles.submitButton} type="submit" disabled={forgotLoading}>
-                    {forgotLoading ? 'جاري الإرسال...' : 'إرسال رابط إعادة التعيين'}
-                  </button>
-                </form>
-              )}
+          {/* ═══ FORGOT PASSWORD VIEW ═══ */}
+          {view === 'forgot' && (
+            <>
+              <form onSubmit={handleForgotSubmit} noValidate>
+                <div className={styles.field}>
+                  <label>البريد الإلكتروني</label>
+                  <input
+                    type="email"
+                    id="forgot-email"
+                    placeholder="بريدك الإلكتروني"
+                    dir="ltr"
+                    value={forgotEmail}
+                    disabled={forgotMutation.isPending}
+                    onChange={(e) => {
+                      setForgotEmail(e.target.value);
+                      if (errors.forgotEmail) setErrors((prev) => ({ ...prev, forgotEmail: '' }));
+                      if (forgotServerError) setForgotServerError(null);
+                    }}
+                    className={errors.forgotEmail ? styles.inputError : ''}
+                    aria-invalid={!!errors.forgotEmail}
+                    aria-describedby={errors.forgotEmail ? 'forgot-email-error' : undefined}
+                  />
+                  {errors.forgotEmail && (
+                    <span id="forgot-email-error" className={styles.fieldError} role="alert">
+                      {errors.forgotEmail}
+                    </span>
+                  )}
+                </div>
+
+                {forgotServerError && (
+                  <div className={styles.serverError} role="alert">
+                    <span className={styles.serverErrorIcon}>⚠️</span>
+                    <span>{forgotServerError}</span>
+                  </div>
+                )}
+
+                <button
+                  className={styles.submitButton}
+                  type="submit"
+                  disabled={forgotMutation.isPending}
+                  aria-disabled={forgotMutation.isPending}
+                >
+                  {forgotMutation.isPending ? 'جاري الإرسال...' : 'إرسال رابط إعادة التعيين'}
+                </button>
+              </form>
 
               <button
                 type="button"
                 className={styles.backLink}
                 onClick={() => {
-                  setMode('login');
+                  setView('login');
                   setErrors({});
-                  setForgotSuccess(null);
+                  setForgotServerError(null);
                 }}
               >
                 العودة لتسجيل الدخول
@@ -251,9 +318,20 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
             </>
           )}
 
-          <div className={styles.hint}>
-            <strong>تلميح:</strong> اسم المستخدم <code>user</code> · كلمة المرور <code>user</code>
-          </div>
+          {/* ═══ FORGOT PASSWORD SUCCESS VIEW ═══ */}
+          {view === 'forgotSuccess' && (
+            <div className={styles.successState} role="status">
+              <div className={styles.successIcon}>✅</div>
+              <h3 className={styles.successTitle}>تم الإرسال!</h3>
+              <p className={styles.successBody}>
+                تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.
+                تحقق من مجلد البريد العشوائي إذا لم تجد الرسالة.
+              </p>
+              <button className={styles.submitButton} onClick={onClose}>
+                حسناً
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

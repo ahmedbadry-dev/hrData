@@ -293,6 +293,34 @@ export class AuthService {
     return { user: excludePassword(updatedUser) };
   }
 
+  async validateResetToken(token: string): Promise<{ valid: boolean }> {
+    const verifiedToken = verifyTempToken(token);
+    if (!verifiedToken.valid) {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+    if (verifiedToken.payload.type !== 'PASSWORD_RESET') {
+      throw new UnauthorizedException('Invalid reset token');
+    }
+
+    const hashedToken = generateHashedWithSha256(token);
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: verifiedToken.payload.email,
+        resetToken: hashedToken,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+
+    if (!user.resetTokenExpiresAt || user.resetTokenExpiresAt < new Date()) {
+      throw new UnauthorizedException('Reset token has expired');
+    }
+
+    return { valid: true };
+  }
+
   async changePassword(userId: string, data: ChangePasswordDto['body']) {
     const { currentPassword, newPassword } = data;
 

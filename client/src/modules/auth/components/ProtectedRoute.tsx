@@ -1,30 +1,41 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/modules/auth/api/hooks/use-auth';
-import { Spinner } from '@/components/ui';
+import { useAuthContext } from '@/modules/auth/context';
+import { useAuthModal } from '@/contexts/AuthModalContext';
+import { useToast } from '@/contexts/ToastContext';
+import { FullPageSpinner } from '@/components/ui';
+import { useRef } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requiredRole?: 'USER' | 'ADMIN';
 }
 
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { data, isLoading } = useAuth();
+export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
+  const { user, isAuthenticated, isLoading } = useAuthContext();
+  const { openLogin } = useAuthModal();
+  const { showToast } = useToast();
   const location = useLocation();
+  const hasShownToast = useRef(false);
 
+  // Still rehydrating — never redirect prematurely
   if (isLoading) {
-    return (
-      <div
-        style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}
-      >
-        <Spinner />
-      </div>
-    );
+    return <FullPageSpinner message="جاري تحميل البيانات..." />;
   }
 
-  const isAuthenticated = data?.isAuthenticated ?? !!data?.user;
-
+  // Not authenticated — save intended path, open login modal
   if (!isAuthenticated) {
-    const redirect = encodeURIComponent(`${location.pathname}${location.search}${location.hash}`);
-    return <Navigate to={`/?mode=login&redirect=${redirect}`} state={{ from: location }} replace />;
+    sessionStorage.setItem('redirectAfterLogin', location.pathname + location.search);
+    openLogin();
+    return <Navigate to="/" replace />;
+  }
+
+  // Authenticated but wrong role
+  if (requiredRole && user?.role !== requiredRole) {
+    if (!hasShownToast.current) {
+      hasShownToast.current = true;
+      showToast({ type: 'error', message: 'ليس لديك صلاحية للوصول إلى هذه الصفحة' });
+    }
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

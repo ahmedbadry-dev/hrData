@@ -26,7 +26,8 @@ export class AuthController {
     if ('requestTwoFactor' in data) {
       return ResponseHelper.ok(res, data, 'Two factor authentication required', req.path);
     }
-    this.setRefreshTokenCookie(res, data.tokens.refreshToken);
+    const rememberMe = Boolean(req.body.rememberMe);
+    this.setRefreshTokenCookie(res, data.tokens.refreshToken, rememberMe);
     return ResponseHelper.ok(
       res,
       {
@@ -78,6 +79,15 @@ export class AuthController {
     return ResponseHelper.ok(res, data, 'Password reset successfully', req.path);
   };
 
+  validateResetToken = async (req: Request, res: Response): Promise<Response> => {
+    const token = req.query.token as string;
+    if (!token) {
+      return ResponseHelper.error(res, 'Token is required', 400, req.path);
+    }
+    const data = await this.authService.validateResetToken(token);
+    return ResponseHelper.ok(res, data, 'Token is valid', req.path);
+  };
+
   changePassword = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.authService.changePassword(req.user!.id, req.body);
     this.clearRefreshTokenCookie(res);
@@ -97,15 +107,27 @@ export class AuthController {
     };
   }
 
-  private setRefreshTokenCookie(res: Response, token: string) {
+  private setRefreshTokenCookie(res: Response, token: string, rememberMe = true) {
     const csrfToken = crypto.randomBytes(32).toString('hex');
 
-    res.cookie(AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_NAME, token, {
+    const cookieOptions: {
+      httpOnly: boolean;
+      secure: boolean;
+      sameSite: 'strict';
+      maxAge?: number;
+    } = {
       httpOnly: true,
       secure: appConfig.isProduction,
       sameSite: 'strict',
-      maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
-    });
+    };
+
+    // rememberMe = true  → persistent cookie (30 days)
+    // rememberMe = false → session cookie (no maxAge, deleted when browser closes)
+    if (rememberMe) {
+      cookieOptions.maxAge = AUTH_CONSTANTS.REMEMBER_ME_MAX_AGE;
+    }
+
+    res.cookie(AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_NAME, token, cookieOptions);
 
     res.cookie(AUTH_CONSTANTS.CSRF_TOKEN_COOKIE_NAME, csrfToken, {
       httpOnly: false,

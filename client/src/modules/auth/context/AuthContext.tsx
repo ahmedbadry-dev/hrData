@@ -22,6 +22,11 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Module-level deduplication: prevents StrictMode double-fire from
+// calling /auth/refresh twice (token rotation consumes the old token
+// on the first call, so the second call would fail with 401).
+let restorePromise: Promise<void> | null = null;
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(getAccessToken());
@@ -59,23 +64,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [applyGmailState]);
 
   const restoreSession = useCallback(async () => {
+    // If a restore is already in flight (e.g. from StrictMode double-mount),
+    // wait for the existing one instead of starting a second refresh call.
+    if (restorePromise) {
+      await restorePromise;
+      return;
+    }
+
     setIsLoading(true);
 
-    try {
-      const response = await authService.refresh();
-      const sessionUser = response.data?.user ?? null;
-      const nextAccessToken = response.data?.tokens?.accessToken ?? null;
+    restorePromise = (async () => {
+      try {
+        const response = await authService.refresh();
+        const sessionUser = response.data?.user ?? null;
+        const nextAccessToken = response.data?.tokens?.accessToken ?? null;
 
-      if (!sessionUser || !nextAccessToken) {
+        if (!sessionUser || !nextAccessToken) {
+          clearSession();
+          return;
+        }
+
+        setSession({ user: sessionUser, accessToken: nextAccessToken });
+        await restoreGmailConnection();
+      } catch {
         clearSession();
-        return;
+      } finally {
+        restorePromise = null;
       }
+    })();
 
-      setSession({ user: sessionUser, accessToken: nextAccessToken });
-      await restoreGmailConnection();
-    } catch {
-      clearSession();
-    }
+    await restorePromise;
   }, [clearSession, restoreGmailConnection, setSession]);
 
   const connectGmail = useCallback(async () => {
@@ -95,9 +113,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     applyGmailState(null);
   }, [applyGmailState]);
 
+  // Restore session on mount. If StrictMode fires this twice,
+  // the module-level restorePromise deduplication ensures only
+  // one /auth/refresh call is made.
   useEffect(() => {
     void restoreSession();
-  }, [restoreSession]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const handleAuthRequired = () => {

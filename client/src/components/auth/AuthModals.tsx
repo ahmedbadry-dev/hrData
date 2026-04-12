@@ -8,7 +8,15 @@ export default function AuthModals() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isLoginOpen, isRegisterOpen, closeAll, openRegister, openLogin } = useAuthModal();
+  const {
+    isLoginOpen,
+    isRegisterOpen,
+    isForgotPasswordOpen,
+    closeAll,
+    openRegister,
+    openLogin,
+    openForgotPassword,
+  } = useAuthModal();
 
   const mode = searchParams.get('mode');
 
@@ -28,10 +36,12 @@ export default function AuthModals() {
       openLogin();
     } else if (mode === 'register') {
       openRegister();
-    } else {
-      closeAll();
+    } else if (mode === 'forgot-password') {
+      openForgotPassword();
+    } else if (!mode) {
+      // Only close if there's no mode param — don't interfere with programmatic opens
     }
-  }, [mode, openLogin, openRegister, closeAll]);
+  }, [mode, openLogin, openRegister, openForgotPassword]);
 
   const handleLoginClose = () => {
     closeAll();
@@ -49,11 +59,18 @@ export default function AuthModals() {
     navigateWithParams(nextParams);
   };
 
+  const handleForgotPasswordClose = () => {
+    closeAll();
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('mode');
+    navigateWithParams(nextParams);
+  };
+
   return (
     <>
       <LoginModal
-        isOpen={isLoginOpen}
-        onClose={handleLoginClose}
+        isOpen={isLoginOpen || isForgotPasswordOpen}
+        onClose={isForgotPasswordOpen ? handleForgotPasswordClose : handleLoginClose}
         onRegisterClick={() => {
           openRegister();
           const nextParams = new URLSearchParams(searchParams);

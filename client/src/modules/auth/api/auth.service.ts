@@ -29,6 +29,7 @@ export interface Tokens {
 export interface LoginRequest {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface LoginResponse {
@@ -109,6 +110,15 @@ const resetPassword = async (
   return data;
 };
 
+const validateResetToken = async (
+  token: string
+): Promise<ApiResponse<{ valid: boolean }>> => {
+  const { data } = await axiosClient.get<ApiResponse<{ valid: boolean }>>(
+    `/auth/validate-reset-token?token=${encodeURIComponent(token)}`
+  );
+  return data;
+};
+
 const getGmailStatus = async (): Promise<ApiResponse<GmailStatusResponse>> => {
   const { data } = await axiosClient.get<ApiResponse<GmailStatusResponse>>('/gmail/status');
   return data;
@@ -133,6 +143,7 @@ export const authService = {
   verifyEmail,
   forgotPassword,
   resetPassword,
+  validateResetToken,
   getGmailStatus,
   getGmailAuthUrl,
   disconnectGmail,

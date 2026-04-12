@@ -59,3 +59,29 @@ export const mapErrorToArabic = (message: string): string => {
 
   return 'حدث خطأ';
 };
+
+interface AxiosLikeError {
+  response?: {
+    status?: number;
+    data?: {
+      message?: string;
+      errors?: Array<{ field?: string; message?: string }>;
+    };
+  };
+}
+
+export const getErrorStatus = (error: unknown): number | undefined => {
+  return (error as AxiosLikeError).response?.status;
+};
+
+export const mapError = (error: unknown): string => {
+  const axiosError = error as AxiosLikeError;
+
+  const fieldErrors = axiosError.response?.data?.errors ?? [];
+  if (fieldErrors.length > 0) {
+    const firstError = fieldErrors[0]?.message ?? '';
+    return mapErrorToArabic(firstError || 'يرجى التحقق من البيانات المدخلة');
+  }
+
+  return mapErrorToArabic(axiosError.response?.data?.message || 'حدث خطأ');
+};
