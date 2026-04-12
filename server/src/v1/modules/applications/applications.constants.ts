@@ -18,6 +18,7 @@ export const APPLICATIONS_CONSTANTS = {
     APPLICATION_NOT_FOUND: 'Application not found',
     NO_SAVED_JOBS_PROVIDED: 'No saved jobs provided',
     NO_DEFAULT_CV: 'No default CV found. Please upload a CV first.',
+    NO_VALID_HR_EMAILS: 'No valid HR email addresses found for selected jobs.',
     JOB_NOT_SAVED: 'One or more jobs are not saved by the user',
     INVALID_SEND_TIME: 'Invalid send time. Use "immediately" or an ISO date string.',
   },

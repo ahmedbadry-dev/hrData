@@ -1,7 +1,11 @@
+import { PrismaClient } from 'generated/prisma';
 import prisma from '@/config/db.config';
 import { BadRequestException } from '@/shared/errors/BadRequestException';
+import { toStoredCvPath } from './cv-storage.util';
 
 export class CvsService {
+  constructor(private readonly prismaClient: PrismaClient = prisma) {}
+
   async uploadCv(
     userId: string,
     file: {
@@ -20,16 +24,16 @@ export class CvsService {
       throw new BadRequestException('File size must be less than 5MB');
     }
 
-    const fileUrl = `/uploads/cvs/${file.filename}`;
+    const fileUrl = toStoredCvPath(file.filename);
 
     if (isDefault) {
-      await prisma.cv.updateMany({
+      await this.prismaClient.cv.updateMany({
         where: { userId, isDefault: true },
         data: { isDefault: false },
       });
     }
 
-    const cv = await prisma.cv.create({
+    const cv = await this.prismaClient.cv.create({
       data: {
         userId,
         fileName: file.originalname,
@@ -43,7 +47,7 @@ export class CvsService {
   }
 
   async getUserCvs(userId: string) {
-    return prisma.cv.findMany({
+    return this.prismaClient.cv.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       select: {
@@ -58,7 +62,7 @@ export class CvsService {
   }
 
   async deleteCv(userId: string, cvId: string) {
-    const cv = await prisma.cv.findFirst({
+    const cv = await this.prismaClient.cv.findFirst({
       where: { id: cvId, userId },
     });
 
@@ -66,13 +70,20 @@ export class CvsService {
       throw new BadRequestException('CV not found');
     }
 
-    await prisma.cv.delete({ where: { id: cvId } });
+    await this.prismaClient.$transaction(async (tx) => {
+      await tx.application.updateMany({
+        where: { cvId },
+        data: { cvId: null },
+      });
+
+      await tx.cv.delete({ where: { id: cvId } });
+    });
 
     return { success: true };
   }
 
   async setDefaultCv(userId: string, cvId: string) {
-    const cv = await prisma.cv.findFirst({
+    const cv = await this.prismaClient.cv.findFirst({
       where: { id: cvId, userId },
     });
 
@@ -80,14 +91,18 @@ export class CvsService {
       throw new BadRequestException('CV not found');
     }
 
-    await prisma.$transaction([
-      prisma.cv.updateMany({
+    await this.prismaClient.$transaction([
+      this.prismaClient.cv.updateMany({
         where: { userId, isDefault: true },
         data: { isDefault: false },
       }),
-      prisma.cv.update({
+      this.prismaClient.cv.update({
         where: { id: cvId },
         data: { isDefault: true },
+      }),
+      this.prismaClient.application.updateMany({
+        where: { userId, cvId: null, status: 'SCHEDULED' },
+        data: { cvId },
       }),
     ]);
 

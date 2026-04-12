@@ -99,10 +99,8 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
 
     setForgotLoading(true);
     try {
-      const response = await authService.forgotPassword({ email: forgotEmail.trim() });
-      setForgotSuccess(
-        mapErrorToArabic(response.message || 'Password reset token sent successfully')
-      );
+      await authService.forgotPassword({ email: forgotEmail.trim() });
+      setForgotSuccess('إذا كان البريد مسجلا لدينا فسيصل رابط إعادة تعيين كلمة المرور خلال دقائق.');
       setErrors({});
     } catch (err) {
       setErrors({ general: getBackendError(err) });

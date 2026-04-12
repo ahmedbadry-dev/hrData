@@ -23,8 +23,6 @@ export interface UserApplication {
   status: 'pending' | 'sent' | 'opened' | 'replied' | 'failed';
 }
 
-export const PAGE_NAME = '22.html';
-
 export const mockJobs: UserJob[] = Array.from({ length: 20 }, (_, i) => ({
   company: [
     'مجموعة شاكر',
@@ -68,27 +66,3 @@ export const mockJobs: UserJob[] = Array.from({ length: 20 }, (_, i) => ({
   date: '٢٠٢٦/٠٤/٠٤',
   email: `recruitment${i + 1}@company.com`,
 }));
-
-export const getSavedJobs = (): SavedJob[] => {
-  try {
-    return JSON.parse(localStorage.getItem('savedJobs') || '[]') as SavedJob[];
-  } catch {
-    return [];
-  }
-};
-
-export const setSavedJobs = (jobs: SavedJob[]) => {
-  localStorage.setItem('savedJobs', JSON.stringify(jobs));
-};
-
-export const getApplications = (): UserApplication[] => {
-  try {
-    return JSON.parse(localStorage.getItem('applications') || '[]') as UserApplication[];
-  } catch {
-    return [];
-  }
-};
-
-export const setApplications = (apps: UserApplication[]) => {
-  localStorage.setItem('applications', JSON.stringify(apps));
-};

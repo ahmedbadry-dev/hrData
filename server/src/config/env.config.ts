@@ -35,6 +35,40 @@ export const getEnvVarAsBoolean = (key: string, defaultValue?: boolean): boolean
   return value === 'true';
 };
 
+const hasInsecureSecretPattern = (value: string): boolean => {
+  const normalized = value.toLowerCase();
+  return (
+    normalized.includes('change-in-production') ||
+    normalized.includes('your-super-secret') ||
+    normalized.includes('default-encryption-key')
+  );
+};
+
+const ensureMinLength = (key: string, value: string, minLength: number): string => {
+  if (value.length < minLength) {
+    throw new Error(`Environment variable ${key} must be at least ${minLength} characters.`);
+  }
+
+  if (hasInsecureSecretPattern(value)) {
+    throw new Error(`Environment variable ${key} contains an insecure placeholder value.`);
+  }
+
+  return value;
+};
+
+const ensureHexLength = (key: string, value: string, expectedHexLength: number): string => {
+  const normalized = value.trim();
+  const hexPattern = /^[0-9a-fA-F]+$/;
+
+  if (normalized.length !== expectedHexLength || !hexPattern.test(normalized)) {
+    throw new Error(
+      `Environment variable ${key} must be a ${expectedHexLength}-character hex string.`
+    );
+  }
+
+  return normalized;
+};
+
 const nodeEnv = getEnvVariable('NODE_ENV', 'development');
 
 export const appConfig = {
@@ -48,13 +82,17 @@ export const appConfig = {
 };
 
 export const jwtConfig = {
-  accessSecret: getEnvVariable('JWT_ACCESS_SECRET'),
+  accessSecret: ensureMinLength('JWT_ACCESS_SECRET', getEnvVariable('JWT_ACCESS_SECRET'), 32),
   accessExpiresIn: getEnvVariable('JWT_ACCESS_EXPIRES_IN', '15m'),
-  refreshSecret: getEnvVariable('JWT_REFRESH_SECRET'),
+  refreshSecret: ensureMinLength('JWT_REFRESH_SECRET', getEnvVariable('JWT_REFRESH_SECRET'), 32),
   refreshExpiresIn: getEnvVariable('JWT_REFRESH_EXPIRES_IN', '7d'),
-  verificationSecret: getEnvVariable(
+  verificationSecret: ensureMinLength(
     'JWT_VERIFICATION_TEMP_SECRET',
-    appConfig.isProduction ? undefined : 'kafoo-verification-secret-123'
+    getEnvVariable(
+      'JWT_VERIFICATION_TEMP_SECRET',
+      appConfig.isProduction ? undefined : 'kafoo-verification-secret-development-only-0000000000'
+    ),
+    32
   ),
   verificationExpiresIn: getEnvVariable('JWT_VERIFICATION_EXPIRES_IN', '15m'),
 };
@@ -82,10 +120,21 @@ export const emailConfig = {
   password: getEnvVariable('SMTP_PASSWORD', ''),
   from: getEnvVariable('EMAIL_FROM', 'noreply@kafoo.com'),
   serverUrl: getEnvVariable('SERVER_URL', 'http://localhost:5000'),
+  allowSelfSignedTls: getEnvVarAsBoolean('SMTP_ALLOW_SELF_SIGNED_TLS', false),
+};
+
+export const gmailOAuthConfig = {
+  clientId: getEnvVariable('GMAIL_OAUTH_CLIENT_ID', ''),
+  clientSecret: getEnvVariable('GMAIL_OAUTH_CLIENT_SECRET', ''),
+  redirectUri: getEnvVariable(
+    'GMAIL_OAUTH_REDIRECT_URI',
+    `${emailConfig.serverUrl}/api/v1/gmail/callback`
+  ),
+  scope: getEnvVariable('GMAIL_OAUTH_SCOPE', 'openid email profile https://mail.google.com/'),
 };
 
 export const encryptionConfig = {
-  encryptionKey: getEnvVariable('ENCRYPTION_KEY'),
+  encryptionKey: ensureHexLength('ENCRYPTION_KEY', getEnvVariable('ENCRYPTION_KEY'), 64),
 };
 
 export const env = {
@@ -94,5 +143,6 @@ export const env = {
   redisConfig,
   corsConfig,
   emailConfig,
+  gmailOAuthConfig,
   encryptionConfig,
 };

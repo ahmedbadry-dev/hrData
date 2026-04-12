@@ -12,32 +12,52 @@ import { authenticationMiddleware } from '../../../http/middlewares/auth.middlew
 import { ForgotPasswordDtoSchema } from './dto/forgot-password.dto';
 import { ResetPasswordDtoSchema } from './dto/reset-password.dto';
 import { ChangePasswordDtoSchema } from './dto/change-password.dto';
+import { authRateLimitMiddleware } from '@/http/middlewares/rate-limit.middleware';
 
 export const authRoutes = (authController: AuthController) => {
   const router = Router();
 
-  router.post('/register', validateBodyMiddleware(CreateUserDtoSchema), authController.register);
+  router.post(
+    '/register',
+    authRateLimitMiddleware,
+    validateBodyMiddleware(CreateUserDtoSchema),
+    authController.register
+  );
   router.post(
     '/verify-email',
+    authRateLimitMiddleware,
     validateQueryMiddleware(VerifyEmailDtoSchema),
     authController.verifyEmail
   );
-  router.post('/login', validateBodyMiddleware(LoginDtoSchema), authController.login);
-  router.post('/logout', authenticationMiddleware, authController.logout);
-  router.post('/logout-all', authenticationMiddleware, authController.logoutAll);
-  router.post('/refresh', authController.refresh);
+  router.post(
+    '/login',
+    authRateLimitMiddleware,
+    validateBodyMiddleware(LoginDtoSchema),
+    authController.login
+  );
+  router.post('/logout', authRateLimitMiddleware, authenticationMiddleware, authController.logout);
+  router.post(
+    '/logout-all',
+    authRateLimitMiddleware,
+    authenticationMiddleware,
+    authController.logoutAll
+  );
+  router.post('/refresh', authRateLimitMiddleware, authController.refresh);
   router.post(
     '/forgot-password',
+    authRateLimitMiddleware,
     validateBodyMiddleware(ForgotPasswordDtoSchema),
     authController.forgotPassword
   );
   router.post(
     '/reset-password',
+    authRateLimitMiddleware,
     validateAllMiddleware(ResetPasswordDtoSchema),
     authController.resetPassword
   );
   router.patch(
     '/change-password',
+    authRateLimitMiddleware,
     authenticationMiddleware,
     validateBodyMiddleware(ChangePasswordDtoSchema),
     authController.changePassword

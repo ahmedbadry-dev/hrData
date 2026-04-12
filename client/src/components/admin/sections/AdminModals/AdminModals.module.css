@@ -146,4 +146,13 @@
   .modal-box {
     padding: 22px 18px;
   }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-ghost {
+    width: 100%;
+  }
 }

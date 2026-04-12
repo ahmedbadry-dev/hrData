@@ -1,18 +1,16 @@
 import { Application, ApplicationStatus, Prisma, PrismaClient } from 'generated/prisma';
 
 import { APPLICATIONS_CONSTANTS } from './applications.constants';
-import { emailConfig } from '@/config/env.config';
 import {
   ApplicationResponse,
   PaginatedApplicationsResponse,
   ScheduleApplicationResponse,
 } from './types/applications.types';
 import { emailSendQueue } from '@/config/bullmq';
-import { appConfig } from '@/config/env.config';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
 import { BadRequestException } from '@/shared/errors/BadRequestException';
 import { EmailSendJobData } from '@/workers/email-send.worker';
-import { PaginationMeta } from '@/shared/utils/api-response';
+import { resolvePagination, buildPaginationMeta } from '@/shared/utils/paginate.util';
 
 export class ApplicationsService {
   constructor(private readonly prisma: PrismaClient) {}
@@ -21,7 +19,13 @@ export class ApplicationsService {
     userId: string,
     query: { page?: number | undefined; limit?: number | undefined; status?: string | undefined }
   ): Promise<PaginatedApplicationsResponse> {
-    const { page, limit, skip } = this.resolvePagination(query);
+    const { page, limit, skip } = resolvePagination(query, {
+      minPage: APPLICATIONS_CONSTANTS.PAGINATION.MIN_PAGE,
+      defaultPage: APPLICATIONS_CONSTANTS.PAGINATION.DEFAULT_PAGE,
+      minLimit: APPLICATIONS_CONSTANTS.PAGINATION.MIN_LIMIT,
+      defaultLimit: APPLICATIONS_CONSTANTS.PAGINATION.DEFAULT_LIMIT,
+      maxLimit: APPLICATIONS_CONSTANTS.PAGINATION.MAX_LIMIT,
+    });
 
     const where: Prisma.ApplicationWhereInput = {
       userId,
@@ -50,7 +54,12 @@ export class ApplicationsService {
 
     return {
       applications: applications.map((app) => this.mapApplicationResponse(app)),
-      pagination: this.buildPaginationMeta(total, page, limit),
+      pagination: buildPaginationMeta(
+        total,
+        page,
+        limit,
+        APPLICATIONS_CONSTANTS.PAGINATION.MIN_PAGE
+      ),
     };
   }
 
@@ -126,7 +135,13 @@ export class ApplicationsService {
     const isImmediate = sendTime === 'immediately';
     const scheduledAt = isImmediate ? null : new Date(sendTime);
 
-    const applicationsToCreate = savedJobs.map((savedJob) => ({
+    const validSavedJobs = savedJobs.filter((savedJob) => Boolean(savedJob.job.hrEmail));
+
+    if (validSavedJobs.length === 0) {
+      throw new BadRequestException(APPLICATIONS_CONSTANTS.MESSAGES.NO_VALID_HR_EMAILS);
+    }
+
+    const applicationsToCreate = validSavedJobs.map((savedJob) => ({
       userId,
       jobId: savedJob.jobId,
       cvId: cv.id,
@@ -138,11 +153,17 @@ export class ApplicationsService {
       data: applicationsToCreate,
     });
 
-    for (let index = 0; index < createdApplications.length; index++) {
-      const app = createdApplications[index];
-      const savedJob = savedJobs[index];
+    const createdApplicationsByJobId = new Map(
+      createdApplications.map((createdApplication) => [
+        createdApplication.jobId,
+        createdApplication,
+      ])
+    );
 
-      if (!savedJob.job.hrEmail) {
+    for (let index = 0; index < validSavedJobs.length; index++) {
+      const savedJob = validSavedJobs[index];
+      const app = createdApplicationsByJobId.get(savedJob.jobId);
+      if (!app) {
         continue;
       }
 
@@ -151,10 +172,10 @@ export class ApplicationsService {
         userId,
         userName,
         userEmail: user.email,
-        hrEmail: savedJob.job.hrEmail,
+        hrEmail: savedJob.job.hrEmail!,
         jobTitle: savedJob.job.title,
         companyName: savedJob.job.companyName,
-        cvUrl: cv.fileUrl.startsWith('/') ? `${emailConfig.serverUrl}${cv.fileUrl}` : cv.fileUrl,
+        cvPath: cv.fileUrl,
       };
 
       if (isImmediate) {
@@ -205,31 +226,6 @@ export class ApplicationsService {
     await this.prisma.application.delete({
       where: { id: applicationId },
     });
-  }
-
-  private resolvePagination(query: { page?: number | undefined; limit?: number | undefined }): {
-    page: number;
-    limit: number;
-    skip: number;
-  } {
-    const page = Number(query.page ?? APPLICATIONS_CONSTANTS.PAGINATION.DEFAULT_PAGE);
-    const limit = Number(query.limit ?? APPLICATIONS_CONSTANTS.PAGINATION.DEFAULT_LIMIT);
-    const skip = (page - APPLICATIONS_CONSTANTS.PAGINATION.MIN_PAGE) * limit;
-
-    return { page, limit, skip };
-  }
-
-  private buildPaginationMeta(total: number, page: number, limit: number): PaginationMeta {
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      page,
-      limit,
-      total,
-      totalPages,
-      hasNextPage: page < totalPages,
-      hasPreviousPage: page > APPLICATIONS_CONSTANTS.PAGINATION.MIN_PAGE,
-    };
   }
 
   private mapApplicationResponse(

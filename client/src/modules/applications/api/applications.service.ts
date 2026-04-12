@@ -40,3 +40,11 @@ export const scheduleApplication = async (
 export const cancelApplication = async (id: string): Promise<void> => {
   await axiosClient.delete(`/applications/${id}`);
 };
+
+export const fetchApplicationCvFile = async (cvId: string): Promise<Blob> => {
+  const response = await axiosClient.get(`/cvs/${cvId}/file`, {
+    responseType: 'blob',
+  });
+
+  return response.data as Blob;
+};

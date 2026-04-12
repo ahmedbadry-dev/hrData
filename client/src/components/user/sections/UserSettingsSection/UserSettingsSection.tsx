@@ -6,15 +6,17 @@ import styles from './UserSettingsSection.module.css';
 
 interface UserSettingsSectionProps {
   gmailConnected: boolean;
+  gmailEmail: string | null;
   savedCount: number;
   returnToAutoApply: boolean;
   onConnect: () => Promise<void>;
-  onDisconnect: () => void;
+  onDisconnect: () => Promise<void>;
   onGoAutoApply: () => void;
 }
 
 export default function UserSettingsSection({
   gmailConnected,
+  gmailEmail,
   savedCount,
   returnToAutoApply,
   onConnect,
@@ -68,7 +70,7 @@ export default function UserSettingsSection({
           <div className={styles['control-row']}>
             <div>
               <div className={styles['row-title']}>البريد المرتبط</div>
-              <div className={styles['row-sub']}>user@gmail.com</div>
+              <div className={styles['row-sub']}>{gmailEmail || '—'}</div>
             </div>
           </div>
         ) : null}

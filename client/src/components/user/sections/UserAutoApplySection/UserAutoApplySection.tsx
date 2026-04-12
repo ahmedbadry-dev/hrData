@@ -9,6 +9,7 @@ import type { Cv } from '@/modules/cvs/api/cvs.service';
 interface UserAutoApplySectionProps {
   savedJobs: SavedJob[];
   gmailConnected: boolean;
+  gmailEmail: string | null;
   onGoToSettings: () => void;
   onGoSavedJobs: () => void;
   onStartSending: (payload: {
@@ -34,6 +35,7 @@ const professionalEmailBody = `السلام عليكم ورحمة الله وب�
 export default function UserAutoApplySection({
   savedJobs,
   gmailConnected,
+  gmailEmail,
   onGoToSettings,
   onGoSavedJobs,
   onStartSending,
@@ -222,7 +224,7 @@ export default function UserAutoApplySection({
       <div className={styles['connected-box']}>
         <div>
           <div className={styles['connected-title']}>حساب Gmail مربوط بنجاح</div>
-          <div className={styles['connected-email']}>user@gmail.com</div>
+          <div className={styles['connected-email']}>{gmailEmail || 'gmail@connected-account'}</div>
         </div>
         <Button className={styles['btn-ghost']} onClick={onGoToSettings}>
           تغيير

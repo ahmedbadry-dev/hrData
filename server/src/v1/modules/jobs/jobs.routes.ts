@@ -10,7 +10,11 @@ import { JobIdParamDtoSchema } from './dto/job-id-param.dto';
 import { SearchJobsDtoSchema } from './dto/search-jobs.dto';
 import { CreateJobDtoSchema } from './dto/create-job.dto';
 import { CreateBulkJobsDtoSchema } from './dto/create-bulk-jobs.dto';
+import { BulkSaveJobsDtoSchema } from './dto/bulk-save-jobs.dto';
+import { BulkUnsaveJobsDtoSchema } from './dto/bulk-unsave-jobs.dto';
 import { JobsController } from './jobs.controller';
+import { UserRole } from 'generated/prisma';
+import { authorizationMiddleware } from '@/http/middlewares/auth.middleware';
 
 export const jobsRoutes = (jobsController: JobsController): Router => {
   const router = Router();
@@ -18,6 +22,7 @@ export const jobsRoutes = (jobsController: JobsController): Router => {
   router.post(
     '/',
     authenticationMiddleware,
+    authorizationMiddleware(UserRole.ADMIN),
     validateBodyMiddleware(CreateJobDtoSchema),
     jobsController.createJob
   );
@@ -25,6 +30,7 @@ export const jobsRoutes = (jobsController: JobsController): Router => {
   router.post(
     '/bulk',
     authenticationMiddleware,
+    authorizationMiddleware(UserRole.ADMIN),
     validateBodyMiddleware(CreateBulkJobsDtoSchema),
     jobsController.createBulkJobs
   );
@@ -64,11 +70,25 @@ export const jobsRoutes = (jobsController: JobsController): Router => {
     jobsController.saveJob
   );
 
+  router.post(
+    '/save/bulk',
+    authenticationMiddleware,
+    validateBodyMiddleware(BulkSaveJobsDtoSchema),
+    jobsController.saveJobs
+  );
+
   router.delete(
     '/:id/save',
     authenticationMiddleware,
     validateParamsMiddleware(JobIdParamDtoSchema),
     jobsController.unsaveJob
+  );
+
+  router.delete(
+    '/save/bulk',
+    authenticationMiddleware,
+    validateBodyMiddleware(BulkUnsaveJobsDtoSchema),
+    jobsController.unsaveJobs
   );
 
   return router;

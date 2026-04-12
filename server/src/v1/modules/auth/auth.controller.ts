@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
+import crypto from 'node:crypto';
 import { AuthService } from './auth.service';
 import { AUTH_CONSTANTS } from './auth.constants';
 import ResponseHelper from '@/shared/utils/api-response';
 import { UAParser } from 'ua-parser-js';
+import { appConfig } from '@/config/env.config';
 
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -38,13 +40,13 @@ export class AuthController {
 
   logout = async (req: Request, res: Response): Promise<Response> => {
     await this.authService.logout(req.user!.id, req.cookies.refreshToken);
-    res.clearCookie('refreshToken');
+    this.clearRefreshTokenCookie(res);
     return ResponseHelper.ok(res, {}, 'User logged out successfully', req.path);
   };
 
   logoutAll = async (req: Request, res: Response): Promise<Response> => {
     await this.authService.logoutAll(req.user!.id);
-    res.clearCookie('refreshToken');
+    this.clearRefreshTokenCookie(res);
     return ResponseHelper.ok(res, {}, 'User logged out from all devices successfully', req.path);
   };
 
@@ -63,9 +65,9 @@ export class AuthController {
   };
 
   forgotPassword = async (req: Request, res: Response): Promise<Response> => {
-    const { user } = await this.authService.forgotPassword(req.body);
+    const data = await this.authService.forgotPassword(req.body);
 
-    return ResponseHelper.ok(res, { user }, 'Password reset token sent successfully', req.path);
+    return ResponseHelper.ok(res, data, 'Password reset token sent successfully', req.path);
   };
 
   resetPassword = async (req: Request, res: Response): Promise<Response> => {
@@ -96,17 +98,25 @@ export class AuthController {
   }
 
   private setRefreshTokenCookie(res: Response, token: string) {
-    const isProduction = process.env.NODE_ENV === 'production';
+    const csrfToken = crypto.randomBytes(32).toString('hex');
 
     res.cookie(AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_NAME, token, {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
+      secure: appConfig.isProduction,
+      sameSite: 'strict',
       maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
+    });
+
+    res.cookie(AUTH_CONSTANTS.CSRF_TOKEN_COOKIE_NAME, csrfToken, {
+      httpOnly: false,
+      secure: appConfig.isProduction,
+      sameSite: 'strict',
+      path: '/',
     });
   }
 
   private clearRefreshTokenCookie(res: Response) {
     res.clearCookie(AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_NAME);
+    res.clearCookie(AUTH_CONSTANTS.CSRF_TOKEN_COOKIE_NAME);
   }
 }

@@ -29,6 +29,16 @@ export interface SaveJobResponse {
   savedAt: Date;
 }
 
+export interface BulkSaveJobsResponse {
+  savedJobIds: string[];
+  alreadySavedJobIds: string[];
+}
+
+export interface BulkUnsaveJobsResponse {
+  removedJobIds: string[];
+  notSavedJobIds: string[];
+}
+
 export interface BulkCreateJobsResponse {
   createdJobs: JobResponse[];
   failedJobs: Array<{

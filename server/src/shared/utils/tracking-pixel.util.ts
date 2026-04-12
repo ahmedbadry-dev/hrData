@@ -1,6 +1,6 @@
-import { appConfig } from '@/config/env.config';
+import { emailConfig } from '@/config/env.config';
 
-const BASE_URL = appConfig.appUrl.replace(/\/+$/, '');
+const BASE_URL = emailConfig.serverUrl.replace(/\/+$/, '');
 
 export const generateTrackingPixelUrl = (token: string): string => {
   return `${BASE_URL}/api/v1/track/open/${token}`;

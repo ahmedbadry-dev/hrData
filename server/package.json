@@ -32,6 +32,7 @@
     "cors": "latest",
     "dotenv": "latest",
     "express": "latest",
+    "express-rate-limit": "^7.5.0",
     "helmet": "latest",
     "ioredis": "^5.10.1",
     "jsonwebtoken": "^9.0.3",

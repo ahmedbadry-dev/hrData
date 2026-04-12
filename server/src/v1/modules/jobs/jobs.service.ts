@@ -1,7 +1,11 @@
 import { DateFilter, Job, Prisma, PrismaClient, SavedJob } from 'generated/prisma';
 import { ConflictException } from '@/shared/errors/ConflictException';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
-import { PaginationMeta } from '@/shared/utils/api-response';
+import {
+  buildPaginationMeta,
+  resolvePagination,
+  type PaginationParams,
+} from '@/shared/utils/paginate.util';
 import { GetJobsDto } from './dto/get-jobs.dto';
 import { SearchJobsDto } from './dto/search-jobs.dto';
 import { CreateJobDto } from './dto/create-job.dto';
@@ -11,20 +15,22 @@ import {
   PaginatedJobsResponse,
   SaveJobResponse,
   BulkCreateJobsResponse,
+  BulkSaveJobsResponse,
+  BulkUnsaveJobsResponse,
 } from './types/jobs.types';
 import { JOBS_CONSTANTS } from './jobs.constants';
-
-interface PaginationParams {
-  page: number;
-  limit: number;
-  skip: number;
-}
 
 export class JobsService {
   constructor(private readonly prisma: PrismaClient) {}
 
   async getJobs(userId: string, query: GetJobsDto['query']): Promise<PaginatedJobsResponse> {
-    const pagination = this.resolvePagination(query);
+    const pagination = resolvePagination(query, {
+      minPage: JOBS_CONSTANTS.PAGINATION.MIN_PAGE,
+      defaultPage: JOBS_CONSTANTS.PAGINATION.DEFAULT_PAGE,
+      minLimit: JOBS_CONSTANTS.PAGINATION.MIN_LIMIT,
+      defaultLimit: JOBS_CONSTANTS.PAGINATION.DEFAULT_LIMIT,
+      maxLimit: JOBS_CONSTANTS.PAGINATION.MAX_LIMIT,
+    });
     const where = this.buildBaseJobsWhere(query);
 
     return this.getPaginatedJobsWithSavedState(userId, where, pagination);
@@ -40,7 +46,13 @@ export class JobsService {
   }
 
   async getSavedJobs(userId: string, query: GetJobsDto['query']): Promise<PaginatedJobsResponse> {
-    const { page, limit, skip } = this.resolvePagination(query);
+    const { page, limit, skip } = resolvePagination(query, {
+      minPage: JOBS_CONSTANTS.PAGINATION.MIN_PAGE,
+      defaultPage: JOBS_CONSTANTS.PAGINATION.DEFAULT_PAGE,
+      minLimit: JOBS_CONSTANTS.PAGINATION.MIN_LIMIT,
+      defaultLimit: JOBS_CONSTANTS.PAGINATION.DEFAULT_LIMIT,
+      maxLimit: JOBS_CONSTANTS.PAGINATION.MAX_LIMIT,
+    });
 
     const [savedJobs, total] = await this.prisma.$transaction([
       this.prisma.savedJob.findMany({
@@ -57,12 +69,18 @@ export class JobsService {
 
     return {
       jobs: savedJobs.map((savedJob) => this.mapJobWithSaved(savedJob.job, savedSet)),
-      pagination: this.buildPaginationMeta(total, page, limit),
+      pagination: buildPaginationMeta(total, page, limit, JOBS_CONSTANTS.PAGINATION.MIN_PAGE),
     };
   }
 
   async searchJobs(userId: string, query: SearchJobsDto['query']): Promise<PaginatedJobsResponse> {
-    const pagination = this.resolvePagination(query);
+    const pagination = resolvePagination(query, {
+      minPage: JOBS_CONSTANTS.PAGINATION.MIN_PAGE,
+      defaultPage: JOBS_CONSTANTS.PAGINATION.DEFAULT_PAGE,
+      minLimit: JOBS_CONSTANTS.PAGINATION.MIN_LIMIT,
+      defaultLimit: JOBS_CONSTANTS.PAGINATION.DEFAULT_LIMIT,
+      maxLimit: JOBS_CONSTANTS.PAGINATION.MAX_LIMIT,
+    });
     const where = this.buildSearchJobsWhere(query);
 
     return this.getPaginatedJobsWithSavedState(userId, where, pagination);
@@ -102,6 +120,60 @@ export class JobsService {
     });
   }
 
+  async saveJobs(userId: string, jobIds: string[]): Promise<BulkSaveJobsResponse> {
+    const uniqueJobIds = [...new Set(jobIds)];
+    const existingJobs = await this.prisma.job.findMany({
+      where: { id: { in: uniqueJobIds } },
+      select: { id: true },
+    });
+
+    if (existingJobs.length !== uniqueJobIds.length) {
+      throw new NotFoundException(JOBS_CONSTANTS.MESSAGES.JOB_NOT_FOUND);
+    }
+
+    const existingSavedJobs = await this.prisma.savedJob.findMany({
+      where: { userId, jobId: { in: uniqueJobIds } },
+      select: { jobId: true },
+    });
+
+    const alreadySavedJobIds = new Set(existingSavedJobs.map((savedJob) => savedJob.jobId));
+    const toSaveJobIds = uniqueJobIds.filter((jobId) => !alreadySavedJobIds.has(jobId));
+
+    if (toSaveJobIds.length > 0) {
+      await this.prisma.savedJob.createMany({
+        data: toSaveJobIds.map((jobId) => ({ userId, jobId })),
+      });
+    }
+
+    return {
+      savedJobIds: toSaveJobIds,
+      alreadySavedJobIds: [...alreadySavedJobIds],
+    };
+  }
+
+  async unsaveJobs(userId: string, jobIds: string[]): Promise<BulkUnsaveJobsResponse> {
+    const uniqueJobIds = [...new Set(jobIds)];
+    const existingSavedJobs = await this.prisma.savedJob.findMany({
+      where: { userId, jobId: { in: uniqueJobIds } },
+      select: { jobId: true },
+    });
+
+    const removableJobIds = existingSavedJobs.map((savedJob) => savedJob.jobId);
+    const removableSet = new Set(removableJobIds);
+    const notSavedJobIds = uniqueJobIds.filter((jobId) => !removableSet.has(jobId));
+
+    if (removableJobIds.length > 0) {
+      await this.prisma.savedJob.deleteMany({
+        where: { userId, jobId: { in: removableJobIds } },
+      });
+    }
+
+    return {
+      removedJobIds: removableJobIds,
+      notSavedJobIds,
+    };
+  }
+
   async createJob(data: CreateJobDto['body']): Promise<JobResponse> {
     const createData: Parameters<typeof this.prisma.job.create>[0]['data'] = {
       title: data.title,
@@ -136,72 +208,54 @@ export class JobsService {
   async createBulkJobs(
     jobsData: CreateBulkJobsDto['body']['jobs']
   ): Promise<BulkCreateJobsResponse> {
-    const createdJobs: JobResponse[] = [];
-    const failedJobs: BulkCreateJobsResponse['failedJobs'] = [];
+    const createManyData: Prisma.JobCreateManyInput[] = jobsData.map((data) => {
+      const createData: Prisma.JobCreateManyInput = {
+        title: data.title,
+        companyName: data.companyName,
+        source: data.source,
+        language: data.language || 'ar',
+        location: data.location ?? null,
+        category: data.category ?? null,
+        description: data.description ?? null,
+        hrEmail: data.hrEmail || null,
+        sourceUrl: data.sourceUrl || null,
+        postedAt: data.postedAt ? new Date(data.postedAt) : null,
+        expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+      };
 
-    for (let index = 0; index < jobsData.length; index++) {
-      const data = jobsData[index];
+      return createData;
+    });
 
-      try {
-        const createData: Parameters<typeof this.prisma.job.create>[0]['data'] = {
-          title: data.title,
-          companyName: data.companyName,
-          source: data.source,
-          language: data.language || 'ar',
-        };
+    const createdJobs = await this.prisma.$transaction(async (tx) => {
+      const result = await tx.job.createMany({ data: createManyData, skipDuplicates: true });
 
-        if (data.location) createData.location = data.location;
-        if (data.category) createData.category = data.category;
-        if (data.description) createData.description = data.description;
-        if (data.hrEmail) createData.hrEmail = data.hrEmail;
-        if (data.sourceUrl) createData.sourceUrl = data.sourceUrl;
-        if (data.postedAt) createData.postedAt = new Date(data.postedAt);
-        if (data.expiresAt) createData.expiresAt = new Date(data.expiresAt);
-
-        const job = await this.prisma.job.create({
-          data: createData,
-        });
-
-        createdJobs.push(this.mapJobWithSaved(job, new Set()));
-      } catch (error: unknown) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-          failedJobs.push({
-            index,
-            title: data.title,
-            companyName: data.companyName,
-            reason: JOBS_CONSTANTS.MESSAGES.JOB_ALREADY_EXISTS,
-          });
-        } else {
-          failedJobs.push({
-            index,
-            title: data.title,
-            companyName: data.companyName,
-            reason: error instanceof Error ? error.message : 'Unknown error',
-          });
-        }
+      if (result.count !== jobsData.length) {
+        throw new ConflictException(JOBS_CONSTANTS.MESSAGES.BULK_CREATE_PARTIAL_SUCCESS);
       }
-    }
+
+      const uniqueJobWhere: Prisma.JobWhereInput[] = createManyData.map((job) => ({
+        title: job.title,
+        companyName: job.companyName,
+        location: job.location ?? null,
+      }));
+
+      return tx.job.findMany({
+        where: {
+          OR: uniqueJobWhere,
+        },
+        orderBy: JOBS_CONSTANTS.ORDER_BY.CREATED_AT_DESC,
+      });
+    });
 
     return {
-      createdJobs,
-      failedJobs,
+      createdJobs: createdJobs.map((job) => this.mapJobWithSaved(job, new Set())),
+      failedJobs: [],
       summary: {
         total: jobsData.length,
         created: createdJobs.length,
-        failed: failedJobs.length,
+        failed: 0,
       },
     };
-  }
-
-  private resolvePagination(query: {
-    page?: number | undefined;
-    limit?: number | undefined;
-  }): PaginationParams {
-    const page = Number(query.page ?? JOBS_CONSTANTS.PAGINATION.DEFAULT_PAGE);
-    const limit = Number(query.limit ?? JOBS_CONSTANTS.PAGINATION.DEFAULT_LIMIT);
-    const skip = (page - JOBS_CONSTANTS.PAGINATION.MIN_PAGE) * limit;
-
-    return { page, limit, skip };
   }
 
   private buildBaseJobsWhere(
@@ -235,6 +289,7 @@ export class JobsService {
 
     return {
       ...this.buildBaseJobsWhere(query),
+      ...(query.isExpired !== undefined ? { isExpired: query.isExpired } : {}),
       ...(postedAgo ? { postedAt: { lte: postedAgo } } : {}),
     };
   }
@@ -277,7 +332,12 @@ export class JobsService {
 
     return {
       jobs: jobs.map((job) => this.mapJobWithSaved(job, savedSet)),
-      pagination: this.buildPaginationMeta(total, pagination.page, pagination.limit),
+      pagination: buildPaginationMeta(
+        total,
+        pagination.page,
+        pagination.limit,
+        JOBS_CONSTANTS.PAGINATION.MIN_PAGE
+      ),
     };
   }
 
@@ -309,19 +369,6 @@ export class JobsService {
     return this.prisma.savedJob.findUnique({
       where: this.buildSavedJobLookupWhere(userId, jobId),
     });
-  }
-
-  private buildPaginationMeta(total: number, page: number, limit: number): PaginationMeta {
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      page,
-      limit,
-      total,
-      totalPages,
-      hasNextPage: page < totalPages,
-      hasPreviousPage: page > JOBS_CONSTANTS.PAGINATION.MIN_PAGE,
-    };
   }
 
   private async getSavedJobIds(userId: string, jobIds: string[]): Promise<Set<string>> {

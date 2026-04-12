@@ -9,4 +9,5 @@ export interface UserJob {
   city: string;
   date: string;
   email: string;
+  jobId?: string;
 }
