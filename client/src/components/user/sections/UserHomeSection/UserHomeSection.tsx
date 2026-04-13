@@ -5,6 +5,10 @@ import styles from './UserHomeSection.module.css';
 
 interface UserHomeSectionProps {
   savedCount: number;
+  applicationsCount?: number;
+  repliesCount?: number;
+  totalJobs?: number;
+  weeklyData?: number[];
 }
 
 function useAnimatedCounter(target: number, suffix = '') {
@@ -31,12 +35,16 @@ function useAnimatedCounter(target: number, suffix = '') {
   return value;
 }
 
-export default function UserHomeSection({ savedCount }: UserHomeSectionProps) {
+export default function UserHomeSection({
+  savedCount,
+  applicationsCount = 0,
+  repliesCount = 0,
+  totalJobs = 0,
+  weeklyData,
+}: UserHomeSectionProps) {
   const chartRef = useRef<HTMLCanvasElement | null>(null);
-  const totalEmails = useAnimatedCounter(124);
-  const openRate = useAnimatedCounter(68, '%');
   const saved = useAnimatedCounter(savedCount);
-  const replies = useAnimatedCounter(20);
+  const replies = useAnimatedCounter(repliesCount);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -44,11 +52,11 @@ export default function UserHomeSection({ savedCount }: UserHomeSectionProps) {
     const chart = new Chart(chartRef.current, {
       type: 'bar',
       data: {
-        labels: ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'],
+        labels: ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
         datasets: [
           {
             label: 'الإيميلات المرسلة',
-            data: [12, 19, 15, 25, 22],
+            data: weeklyData || [0, 0, 0, 0, 0, 0, 0],
             backgroundColor: '#0d0d0d',
             borderColor: '#0d0d0d',
             borderWidth: 1,
@@ -96,20 +104,6 @@ export default function UserHomeSection({ savedCount }: UserHomeSectionProps) {
           className={styles['stat-card']}
           valueClassName={styles['stat-val']}
           titleClassName={styles['stat-tit']}
-          value={totalEmails}
-          title="إجمالي Email المرسل"
-        />
-        <StatCard
-          className={styles['stat-card']}
-          valueClassName={styles['stat-val']}
-          titleClassName={styles['stat-tit']}
-          value={openRate}
-          title="معدل الفتح"
-        />
-        <StatCard
-          className={styles['stat-card']}
-          valueClassName={styles['stat-val']}
-          titleClassName={styles['stat-tit']}
           value={saved}
           title="الوظائف المحفوظة"
         />
@@ -117,8 +111,22 @@ export default function UserHomeSection({ savedCount }: UserHomeSectionProps) {
           className={styles['stat-card']}
           valueClassName={styles['stat-val']}
           titleClassName={styles['stat-tit']}
+          value={applicationsCount}
+          title="إجمالي التقديمات"
+        />
+        <StatCard
+          className={styles['stat-card']}
+          valueClassName={styles['stat-val']}
+          titleClassName={styles['stat-tit']}
           value={replies}
-          title="الوظائف المتاحه"
+          title="الردود"
+        />
+        <StatCard
+          className={styles['stat-card']}
+          valueClassName={styles['stat-val']}
+          titleClassName={styles['stat-tit']}
+          value={totalJobs}
+          title="إجمالي الوظائف"
         />
       </div>
 

@@ -94,7 +94,7 @@ export class UsersService {
   async activateUser(userId: string): Promise<ActivateUserResponse> {
     const user = await this.findUserOrThrow(userId);
 
-    if (user.status !== UserStatus.SUSPENDED) {
+    if (user.status === UserStatus.ACTIVE) {
       throw new ConflictException(USERS_CONSTANTS.MESSAGES.USER_ALREADY_ACTIVE);
     }
 
@@ -124,18 +124,30 @@ export class UsersService {
   }
 
   private buildUsersWhere(query: GetUsersDto['query']): Prisma.UserWhereInput {
-    const where: Prisma.UserWhereInput = {};
+    const where: Prisma.UserWhereInput = {
+      role: UserRole.USER,
+    };
 
     if (query.keyword) {
       where.OR = [
         { fullName: { contains: query.keyword, mode: USERS_CONSTANTS.TEXT_SEARCH_MODE } },
+        { firstName: { contains: query.keyword, mode: USERS_CONSTANTS.TEXT_SEARCH_MODE } },
+        { lastName: { contains: query.keyword, mode: USERS_CONSTANTS.TEXT_SEARCH_MODE } },
         { email: { contains: query.keyword, mode: USERS_CONSTANTS.TEXT_SEARCH_MODE } },
         { phone: { contains: query.keyword, mode: USERS_CONSTANTS.TEXT_SEARCH_MODE } },
       ];
     }
 
     if (query.status) {
-      where.status = query.status;
+      const statusMap: Record<string, UserStatus> = {
+        SUSPENDED: UserStatus.SUSPENDED,
+        ACTIVE: UserStatus.ACTIVE,
+        PENDING_VERIFICATION: UserStatus.PENDING_VERIFICATION,
+      };
+      const statusValue = statusMap[query.status.toUpperCase()];
+      if (statusValue) {
+        where.status = statusValue;
+      }
     }
 
     return where;

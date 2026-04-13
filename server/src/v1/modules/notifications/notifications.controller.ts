@@ -1,6 +1,6 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import ResponseHelper from '@/shared/utils/api-response';
-import { GetNotificationsDto } from './dto/get-notifications.dto';
+import { GetNotificationsDto, GetNotificationsDtoSchema } from './dto/get-notifications.dto';
 import { NotificationIdParamDto } from './dto/notification-id-param.dto';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { NOTIFICATIONS_MESSAGES } from './notifications.constants';
@@ -30,7 +30,8 @@ export class NotificationsController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      const { page = 1, limit = 10 } = req.query as GetNotificationsDto['query'];
+      const { query } = GetNotificationsDtoSchema.parse({ query: req.query });
+      const { page = 1, limit = 10 } = query;
       const data = await this.notificationsService.listAllNotifications(page, limit);
       ResponseHelper.ok(res, data, NOTIFICATIONS_MESSAGES.LIST, req.path);
     } catch (error) {

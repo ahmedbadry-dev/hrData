@@ -48,6 +48,8 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@bull-board/api": "^6.21.2",
+    "@bull-board/express": "^6.21.2",
     "@faker-js/faker": "^10.4.0",
     "@types/babel__traverse": "^7.28.0",
     "@types/bcrypt": "^6.0.0",

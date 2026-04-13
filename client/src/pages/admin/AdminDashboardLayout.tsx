@@ -1,34 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { AdminLayout, type AdminPageKey } from '@/components/admin/layout';
-import {
-  AdminModals,
-  AdminToast,
-  type AnnouncementForm,
-  type EditUserForm,
-} from '@/components/admin/sections';
-import {
-  initialAdminAnnouncements,
-  initialAdminUsers,
-  initialScraperLogs,
-} from '@/components/admin/sections/adminData';
+import { AdminToast, initialScraperLogs } from '@/components/admin/sections';
 
 export type AdminDashboardContextType = {
-  users: typeof initialAdminUsers;
-  filteredUsers: typeof initialAdminUsers;
-  searchQuery: string;
-  setSearchQuery: (val: string) => void;
-  activeFilter: 'all' | 'active' | 'suspended';
-  setActiveFilter: (val: 'all' | 'active' | 'suspended') => void;
-  toggleUserStatus: (id: number) => void;
-  deleteUser: (id: number) => void;
-  openEditUser: (id: number) => void;
   openActivityId: number | null;
   setOpenActivityId: React.Dispatch<React.SetStateAction<number | null>>;
-
-  announcements: typeof initialAdminAnnouncements;
-  deleteAnnouncement: (id: number) => void;
-  openCreateAnnouncement: () => void;
 
   scraperRunning: boolean;
   scraperLogs: typeof initialScraperLogs;
@@ -55,34 +32,12 @@ export default function AdminDashboardLayout() {
   else if (location.pathname.includes('/admin/settings')) activePage = 'settings';
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-
-  const [users, setUsers] = useState(initialAdminUsers);
-  const [announcements, setAnnouncements] = useState(initialAdminAnnouncements);
   const [scraperLogs, setScraperLogs] = useState(initialScraperLogs);
   const [scraperRunning, setScraperRunning] = useState(true);
   const [savedToken, setSavedToken] = useState('');
   const [tokenVisible, setTokenVisible] = useState(false);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'suspended'>('all');
   const [openActivityId, setOpenActivityId] = useState<number | null>(null);
-
-  const [editingUserId, setEditingUserId] = useState<number | null>(null);
-  const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState<EditUserForm>({
-    name: '',
-    email: '',
-    phone: '',
-    status: 'active',
-  });
-
-  const [announceOpen, setAnnounceOpen] = useState(false);
-  const [announceForm, setAnnounceForm] = useState<AnnouncementForm>({
-    title: '',
-    body: '',
-    type: 'info',
-    target: 'جميع المستخدمين',
-  });
 
   const [toast, setToast] = useState<{
     visible: boolean;
@@ -96,105 +51,6 @@ export default function AdminDashboardLayout() {
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ visible: true, message, type });
-  };
-
-  const filteredUsers = useMemo(() => {
-    let list = users;
-    if (activeFilter !== 'all') list = list.filter((u) => u.status === activeFilter);
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (u) =>
-          u.name.includes(searchQuery) || u.email.toLowerCase().includes(q) || u.phone.includes(q)
-      );
-    }
-
-    return list;
-  }, [users, activeFilter, searchQuery]);
-
-  const openEditUser = (id: number) => {
-    const user = users.find((u) => u.id === id);
-    if (!user) return;
-
-    setEditingUserId(id);
-    setEditForm({
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      status: user.status,
-    });
-    setEditOpen(true);
-  };
-
-  const saveEditedUser = () => {
-    if (editingUserId === null) return;
-    setUsers((prev) => prev.map((u) => (u.id === editingUserId ? { ...u, ...editForm } : u)));
-    setEditOpen(false);
-    setEditingUserId(null);
-    showToast('تم حفظ بيانات المستخدم');
-  };
-
-  const toggleUserStatus = (id: number) => {
-    const user = users.find((u) => u.id === id);
-    if (!user) return;
-
-    const action = user.status === 'active' ? 'إيقاف' : 'تفعيل';
-    if (!window.confirm(`هل تريد ${action} حساب ${user.name}؟`)) return;
-
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === id ? { ...u, status: u.status === 'active' ? 'suspended' : 'active' } : u
-      )
-    );
-    showToast(`تم ${action} الحساب`);
-  };
-
-  const deleteUser = (id: number) => {
-    const user = users.find((u) => u.id === id);
-    if (!user) return;
-
-    if (!window.confirm(`هل تريد حذف حساب ${user.name} نهائياً؟`)) return;
-    setUsers((prev) => prev.filter((u) => u.id !== id));
-    if (openActivityId === id) setOpenActivityId(null);
-    showToast('تم حذف المستخدم', 'error');
-  };
-
-  const deleteAnnouncement = (id: number) => {
-    if (!window.confirm('حذف هذا الإشعار؟')) return;
-    setAnnouncements((prev) => prev.filter((a) => a.id !== id));
-    showToast('تم حذف الإشعار', 'error');
-  };
-
-  const openCreateAnnouncement = () => setAnnounceOpen(true);
-
-  const saveAnnouncement = () => {
-    if (!announceForm.title.trim()) {
-      showToast('أدخل عنوان الإشعار', 'error');
-      return;
-    }
-
-    const nextId = (announcements[0]?.id ?? 0) + 1;
-    setAnnouncements((prev) => [
-      {
-        id: nextId,
-        title: announceForm.title,
-        body: announceForm.body,
-        type: announceForm.type,
-        target: announceForm.target,
-        date: new Date().toLocaleDateString('ar-SA'),
-      },
-      ...prev,
-    ]);
-
-    setAnnounceOpen(false);
-    setAnnounceForm({
-      title: '',
-      body: '',
-      type: 'info',
-      target: 'جميع المستخدمين',
-    });
-    showToast('تم إرسال الإشعار');
   };
 
   const saveToken = (token: string) => {
@@ -263,20 +119,8 @@ export default function AdminDashboardLayout() {
   };
 
   const contextValue: AdminDashboardContextType = {
-    users,
-    filteredUsers,
-    searchQuery,
-    setSearchQuery,
-    activeFilter,
-    setActiveFilter,
-    toggleUserStatus,
-    deleteUser,
-    openEditUser,
     openActivityId,
     setOpenActivityId,
-    announcements,
-    deleteAnnouncement,
-    openCreateAnnouncement,
     scraperRunning,
     scraperLogs,
     savedToken,
@@ -301,22 +145,6 @@ export default function AdminDashboardLayout() {
       >
         <Outlet context={contextValue} />
       </AdminLayout>
-
-      <AdminModals
-        editOpen={editOpen}
-        editForm={editForm}
-        onEditChange={(patch) => setEditForm((prev) => ({ ...prev, ...patch }))}
-        onSaveEdit={saveEditedUser}
-        onCloseEdit={() => {
-          setEditOpen(false);
-          setEditingUserId(null);
-        }}
-        announceOpen={announceOpen}
-        announceForm={announceForm}
-        onAnnounceChange={(patch) => setAnnounceForm((prev) => ({ ...prev, ...patch }))}
-        onSaveAnnounce={saveAnnouncement}
-        onCloseAnnounce={() => setAnnounceOpen(false)}
-      />
 
       <AdminToast
         message={toast.message}

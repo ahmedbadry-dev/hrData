@@ -3,11 +3,11 @@ import { useOutletContext } from 'react-router-dom';
 import { UserSearchSection } from '@/components/user/sections';
 import { useJobsList } from '@/modules/jobs/api/hooks';
 import type { DashboardContextType } from './UserDashboardLayout';
-import type { Job, UserJob } from '@/modules/jobs/types';
+import type { UserJob } from '@/modules/jobs/types';
 
 const ITEMS_PER_PAGE = 10;
 
-const mapJobToUserJob = (job: Job): UserJob & { jobId: string } => ({
+const mapJobToUserJob = (job: any): UserJob & { jobId: string } => ({
   company: job.companyName,
   role: job.title,
   major: job.category || '',
@@ -24,25 +24,27 @@ export default function DashboardJobsPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [country, setCountry] = useState('all');
   const [timeFilter, setTimeFilter] = useState('all');
-  const [page, setPage] = useState(1);
 
-  const { data } = useJobsList({
-    page,
+  const queryParams = {
     limit: ITEMS_PER_PAGE,
     search: searchQuery || undefined,
     location: country !== 'all' ? country : undefined,
     dateFilter: timeFilter !== 'all' ? timeFilter : undefined,
-  });
+  };
 
-  const jobs: UserJob[] = (data?.data?.jobs || []).map(mapJobToUserJob);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useJobsList(queryParams);
+
+  const jobs: UserJob[] =
+    data?.pages.flatMap((page: any) => page.data.jobs.map(mapJobToUserJob)) || [];
 
   const search = () => {
     setHasSearched(true);
-    setPage(1);
   };
 
   const loadMore = () => {
-    setPage((prev) => prev + 1);
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
   };
 
   const handleSaveAllVisible = () => {
@@ -55,7 +57,8 @@ export default function DashboardJobsPage() {
       onSearchQueryChange={setSearchQuery}
       onSearch={search}
       jobs={jobs}
-      visibleCount={jobs.length}
+      hasNextPage={hasNextPage}
+      isLoadingMore={isFetchingNextPage}
       hasSearched={hasSearched}
       selectedCard={null}
       onSelectCard={() => {}}

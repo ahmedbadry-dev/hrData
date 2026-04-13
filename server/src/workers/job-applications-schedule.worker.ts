@@ -3,7 +3,7 @@ import nodemailer, { Transporter } from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { randomUUID } from 'crypto';
 
-import { emailSendQueue } from '@/config/bullmq';
+import { jobApplicationsScheduleQueue } from '@/config/bullmq';
 import redis from '@/config/redis';
 import { emailConfig } from '@/config/env.config';
 import { transporterSingleton } from '@/config/mailer.config';
@@ -14,7 +14,7 @@ import logger from '@/shared/utils/logger.util';
 import { ApplicationStatus } from 'generated/prisma';
 import { resolveStoredCvPath } from '@/v1/modules/cvs/cv-storage.util';
 
-export interface EmailSendJobData {
+export interface JobApplicationsScheduleJobData {
   applicationId: string;
   userId: string;
   userName: string;
@@ -25,9 +25,9 @@ export interface EmailSendJobData {
   cvPath: string | null;
 }
 
-export const emailSendWorker = new Worker<EmailSendJobData>(
-  emailSendQueue.name,
-  async (job: Job<EmailSendJobData>) => {
+export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJobData>(
+  jobApplicationsScheduleQueue.name,
+  async (job: Job<JobApplicationsScheduleJobData>) => {
     const { applicationId, userName, userEmail, hrEmail, jobTitle, companyName, cvPath } = job.data;
 
     let attachmentPath: string | undefined;
@@ -111,16 +111,16 @@ export const emailSendWorker = new Worker<EmailSendJobData>(
   }
 );
 
-emailSendWorker.on('completed', (job) => {
+jobApplicationsScheduleWorker.on('completed', (job) => {
   logger.info(`🎉 Job ${job.id} completed successfully`);
 });
 
-emailSendWorker.on('failed', (job, error) => {
+jobApplicationsScheduleWorker.on('failed', (job, error) => {
   logger.error(`💥 Job ${job?.id} failed`, { error: error.message });
 });
 
-emailSendWorker.on('error', (error) => {
+jobApplicationsScheduleWorker.on('error', (error) => {
   logger.error(`💥 Worker error`, { error: error.message });
 });
 
-logger.info('✅ Email send worker started');
+logger.info('✅ Job applications schedule worker started');

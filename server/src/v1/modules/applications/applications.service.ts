@@ -6,10 +6,10 @@ import {
   PaginatedApplicationsResponse,
   ScheduleApplicationResponse,
 } from './types/applications.types';
-import { emailSendQueue } from '@/config/bullmq';
+import { jobApplicationsScheduleQueue } from '@/config/bullmq';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
 import { BadRequestException } from '@/shared/errors/BadRequestException';
-import { EmailSendJobData } from '@/workers/email-send.worker';
+import { JobApplicationsScheduleJobData } from '@/workers/job-applications-schedule.worker';
 import { resolvePagination, buildPaginationMeta } from '@/shared/utils/paginate.util';
 
 export class ApplicationsService {
@@ -47,7 +47,7 @@ export class ApplicationsService {
         },
         skip,
         take: limit,
-        orderBy: APPLICATIONS_CONSTANTS.ORDER_BY.CREATED_AT_DESC,
+        orderBy: APPLICATIONS_CONSTANTS.ORDER_BY.STATUS_PENDING_FIRST,
       }),
       this.prisma.application.count({ where }),
     ]);
@@ -167,7 +167,7 @@ export class ApplicationsService {
         continue;
       }
 
-      const jobData: EmailSendJobData = {
+      const jobData: JobApplicationsScheduleJobData = {
         applicationId: app.id,
         userId,
         userName,
@@ -180,7 +180,7 @@ export class ApplicationsService {
 
       if (isImmediate) {
         const delayMs = index * delay;
-        await emailSendQueue.add('send-email', jobData, {
+        await jobApplicationsScheduleQueue.add(jobApplicationsScheduleQueue.name, jobData, {
           delay: delayMs,
           attempts: 3,
           backoff: {
@@ -191,7 +191,7 @@ export class ApplicationsService {
           removeOnFail: false,
         });
       } else {
-        await emailSendQueue.add('send-email', jobData, {
+        await jobApplicationsScheduleQueue.add(jobApplicationsScheduleQueue.name, jobData, {
           delay: scheduledAt!.getTime() - Date.now() + index * delay,
           attempts: 3,
           backoff: {

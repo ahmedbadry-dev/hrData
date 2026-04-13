@@ -16,6 +16,11 @@
   padding-bottom: 12px;
 }
 
+.welcome-state {
+  padding: 60px 0;
+  text-align: center;
+}
+
 .search-box {
   display: flex;
   border: 2px solid var(--ink);

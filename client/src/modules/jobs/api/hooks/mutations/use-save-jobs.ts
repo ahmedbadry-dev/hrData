@@ -1,15 +1,26 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-
+import { useMutation, useQueryClient, mutationOptions } from '@tanstack/react-query';
 import { jobsService } from '../../jobs.service';
+import type { UseMutationOptions as CustomUseMutationOptions } from '@/lib/react-query/types';
 
-export const useSaveJobs = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
+export const useSaveJobsMutationOptions = () => {
+  return mutationOptions({
     mutationFn: (jobIds: string[]) => jobsService.saveJobs(jobIds),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      queryClient.invalidateQueries({ queryKey: ['saved-jobs'] });
+  });
+};
+
+export type UseSaveJobsMutationOptions = CustomUseMutationOptions<
+  typeof useSaveJobsMutationOptions
+>;
+
+export const useSaveJobs = (options?: UseSaveJobsMutationOptions) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    ...useSaveJobsMutationOptions(),
+    ...options,
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['jobs', 'list'] });
+      queryClient.invalidateQueries({ queryKey: ['saved-jobs', 'list'] });
+      options?.onSuccess?.(...args);
     },
   });
 };

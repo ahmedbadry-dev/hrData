@@ -13,7 +13,8 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
   const registerMutation = useRegisterMutation();
 
   const [isRegistered, setIsRegistered] = useState(false);
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -21,11 +22,11 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
 
-  // Reset state when modal opens
   useEffect(() => {
     if (!isOpen) return;
     setIsRegistered(false);
-    setFullName('');
+    setFirstName('');
+    setLastName('');
     setEmail('');
     setPhone('');
     setPassword('');
@@ -37,16 +38,24 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!fullName.trim()) {
-      newErrors.fullName = 'الاسم الكامل مطلوب';
-    } else if (fullName.trim().length < 2) {
-      newErrors.fullName = 'الاسم يجب أن يكون حرفين على الأقل';
+    if (!lastName.trim()) {
+      newErrors.lastName = 'الاسم الأخير مطلوب';
+    }
+
+    if (!firstName.trim()) {
+      newErrors.firstName = 'الاسم الأول مطلوب';
     }
 
     if (!email.trim()) {
       newErrors.email = 'البريد الإلكتروني مطلوب';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = 'صيغة البريد الإلكتروني غير صحيحة';
+    }
+
+    if (!phone.trim()) {
+      newErrors.phone = 'رقم الجوال مطلوب';
+    } else if (!/^05\d{8}$/.test(phone.trim())) {
+      newErrors.phone = 'رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام';
     }
 
     if (!password) {
@@ -70,13 +79,14 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
     setServerError(null);
     if (!validate()) return;
 
-    // Split fullName into firstName + lastName
-    const nameParts = fullName.trim().split(/\s+/);
-    const firstName = nameParts[0] ?? '';
-    const lastName = nameParts.slice(1).join(' ') || firstName;
-
     registerMutation.mutate(
-      { firstName, lastName, email: email.trim(), phone: phone.trim() || '0500000000', password },
+      {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        password,
+      },
       {
         onSuccess: () => {
           setIsRegistered(true);
@@ -96,7 +106,9 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
     <div
       className={`${styles.overlay} ${isOpen ? styles.overlayOpen : ''}`}
       dir="rtl"
-      onClick={() => { if (!registerMutation.isPending) onClose(); }}
+      onClick={() => {
+        if (!registerMutation.isPending) onClose();
+      }}
     >
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button
@@ -112,9 +124,7 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
           <div className={styles.logo}>
             كُفُـؤ<em>.</em>
           </div>
-          <div className={styles.subtitle}>
-            {isRegistered ? 'تم بنجاح' : 'إنشاء حساب جديد'}
-          </div>
+          <div className={styles.subtitle}>{isRegistered ? 'تم بنجاح' : 'إنشاء حساب جديد'}</div>
         </div>
 
         <div className={styles.body}>
@@ -124,8 +134,8 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
               <div className={styles.successIcon}>🎉</div>
               <h3 className={styles.successTitle}>تم إنشاء حسابك بنجاح!</h3>
               <p className={styles.successBody}>
-                لتفعيل حسابك، يرجى التوجه إلى بريدك الإلكتروني
-                والنقر على رابط التحقق الذي أرسلناه إليك.
+                لتفعيل حسابك، يرجى التوجه إلى بريدك الإلكتروني والنقر على رابط التحقق الذي أرسلناه
+                إليك.
               </p>
               <p className={styles.successHint}>
                 💡 تحقق من مجلد البريد العشوائي (Spam) إذا لم تجد الرسالة.
@@ -145,29 +155,59 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
               )}
 
               <form onSubmit={handleSubmit} noValidate>
-                {/* Full Name */}
-                <div className={styles.field}>
-                  <label>الاسم الكامل</label>
-                  <input
-                    type="text"
-                    id="register-fullName"
-                    placeholder="أحمد العمري"
-                    value={fullName}
-                    disabled={registerMutation.isPending}
-                    onChange={(e) => {
-                      setFullName(e.target.value);
-                      if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: '' }));
-                      if (serverError) setServerError(null);
-                    }}
-                    className={errors.fullName ? styles.inputError : ''}
-                    aria-invalid={!!errors.fullName}
-                    aria-describedby={errors.fullName ? 'register-fullName-error' : undefined}
-                  />
-                  {errors.fullName && (
-                    <span id="register-fullName-error" className={styles.fieldError} role="alert">
-                      {errors.fullName}
-                    </span>
-                  )}
+                <div className={styles.row2}>
+                  <div className={styles.field}>
+                    <label>الاسم الأخير</label>
+                    <input
+                      type="text"
+                      id="register-lastName"
+                      placeholder="العمري"
+                      dir="rtl"
+                      value={lastName}
+                      disabled={registerMutation.isPending}
+                      onChange={(e) => {
+                        setLastName(e.target.value);
+                        if (errors.lastName) setErrors((prev) => ({ ...prev, lastName: '' }));
+                        if (serverError) setServerError(null);
+                      }}
+                      className={errors.lastName ? styles.inputError : ''}
+                      aria-invalid={!!errors.lastName}
+                      aria-describedby={errors.lastName ? 'register-lastName-error' : undefined}
+                    />
+                    {errors.lastName && (
+                      <span id="register-lastName-error" className={styles.fieldError} role="alert">
+                        {errors.lastName}
+                      </span>
+                    )}
+                  </div>
+                  <div className={styles.field}>
+                    <label>الاسم الأول</label>
+                    <input
+                      type="text"
+                      id="register-firstName"
+                      placeholder="أحمد"
+                      dir="rtl"
+                      value={firstName}
+                      disabled={registerMutation.isPending}
+                      onChange={(e) => {
+                        setFirstName(e.target.value);
+                        if (errors.firstName) setErrors((prev) => ({ ...prev, firstName: '' }));
+                        if (serverError) setServerError(null);
+                      }}
+                      className={errors.firstName ? styles.inputError : ''}
+                      aria-invalid={!!errors.firstName}
+                      aria-describedby={errors.firstName ? 'register-firstName-error' : undefined}
+                    />
+                    {errors.firstName && (
+                      <span
+                        id="register-firstName-error"
+                        className={styles.fieldError}
+                        role="alert"
+                      >
+                        {errors.firstName}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Email */}
@@ -192,6 +232,32 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
                   {errors.email && (
                     <span id="register-email-error" className={styles.fieldError} role="alert">
                       {errors.email}
+                    </span>
+                  )}
+                </div>
+
+                {/* Phone */}
+                <div className={styles.field}>
+                  <label>رقم الجوال</label>
+                  <input
+                    type="tel"
+                    id="register-phone"
+                    placeholder="05XXXXXXXX"
+                    dir="ltr"
+                    value={phone}
+                    disabled={registerMutation.isPending}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      if (errors.phone) setErrors((prev) => ({ ...prev, phone: '' }));
+                      if (serverError) setServerError(null);
+                    }}
+                    className={errors.phone ? styles.inputError : ''}
+                    aria-invalid={!!errors.phone}
+                    aria-describedby={errors.phone ? 'register-phone-error' : undefined}
+                  />
+                  {errors.phone && (
+                    <span id="register-phone-error" className={styles.fieldError} role="alert">
+                      {errors.phone}
                     </span>
                   )}
                 </div>

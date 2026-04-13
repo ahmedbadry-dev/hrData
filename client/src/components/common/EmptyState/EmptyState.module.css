@@ -4,16 +4,18 @@
 }
 
 .symbol {
-  font-size: 120px;
+  font-size: 80px;
   font-weight: 900;
-  color: var(--cream);
+  color: var(--muted);
   line-height: 1;
   margin-bottom: 20px;
+  opacity: 0.4;
 }
 
 .title {
-  color: var(--warm);
-  font-size: 16px;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 700;
   max-width: 360px;
   margin: 0 auto;
 }

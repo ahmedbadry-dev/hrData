@@ -2,6 +2,23 @@ import { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
 import { PageHeader, StatCard } from '@/components/common';
 import styles from './AdminAnalyticsSection.module.css';
+import type {
+  OverviewStats,
+  AdvancedOverviewStats,
+  DailyDataPoint,
+  TopJobDataPoint,
+  ApplicationStatusDistribution,
+  UserActivityDataPoint,
+} from '@/modules/admin/analytics/api/types';
+
+interface AdminAnalyticsSectionProps {
+  overview?: OverviewStats;
+  advanced?: AdvancedOverviewStats;
+  topJobs?: TopJobDataPoint[];
+  applicationsPerDay?: DailyDataPoint[];
+  statusDistribution?: ApplicationStatusDistribution;
+  userActivity?: UserActivityDataPoint[];
+}
 
 function useAnimatedCounter(target: number, suffix = '') {
   const [value, setValue] = useState(`0${suffix}`);
@@ -26,11 +43,18 @@ function useAnimatedCounter(target: number, suffix = '') {
   return value;
 }
 
-export default function AdminAnalyticsSection() {
-  const total = useAnimatedCounter(2847);
-  const openRate = useAnimatedCounter(68, '%');
-  const auto = useAnimatedCounter(74, '%');
-  const active = useAnimatedCounter(1084);
+export default function AdminAnalyticsSection({
+  overview,
+  advanced,
+  topJobs,
+  applicationsPerDay,
+  statusDistribution,
+  userActivity,
+}: AdminAnalyticsSectionProps) {
+  const total = useAnimatedCounter(overview?.totalApplicationsSent ?? 0);
+  const openRate = useAnimatedCounter(overview?.emailOpenedPercentage ?? 0, '%');
+  const auto = useAnimatedCounter(advanced?.autoSuccessRate ?? 0, '%');
+  const active = useAnimatedCounter(advanced?.activeUsers ?? 0);
 
   const topJobsRef = useRef<HTMLCanvasElement | null>(null);
   const usersActivityRef = useRef<HTMLCanvasElement | null>(null);
@@ -38,17 +62,21 @@ export default function AdminAnalyticsSection() {
   const dailyApplyRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
+    if (!overview && !advanced && !topJobs?.length && !userActivity?.length) {
+      return;
+    }
+
     const charts: Chart[] = [];
 
-    if (topJobsRef.current) {
+    if (topJobsRef.current && topJobs?.length) {
       charts.push(
         new Chart(topJobsRef.current, {
           type: 'bar',
           data: {
-            labels: ['أخصائي مبيعات', 'مطور برمجيات', 'محاسب عام', 'مدير مشروع', 'مصمم جرافيك'],
+            labels: topJobs.map((j) => j.title),
             datasets: [
               {
-                data: [124, 98, 87, 76, 65],
+                data: topJobs.map((j) => j.count),
                 backgroundColor: ['#0d0d0d', '#c0392b', '#1a6b4a', '#b8860b', '#1a4a8a'],
                 borderWidth: 0,
                 barThickness: 26,
@@ -79,22 +107,27 @@ export default function AdminAnalyticsSection() {
       );
     }
 
-    if (usersActivityRef.current) {
+    if (usersActivityRef.current && userActivity?.length) {
+      const labels = userActivity.map((d) => {
+        const date = new Date(d.date);
+        const days = ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+        return days[date.getDay()];
+      });
       charts.push(
         new Chart(usersActivityRef.current, {
           type: 'bar',
           data: {
-            labels: ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس'],
+            labels,
             datasets: [
               {
                 label: 'نشط',
-                data: [210, 285, 260, 310, 275],
+                data: userActivity.map((d) => d.activeUsers),
                 backgroundColor: '#0d0d0d',
                 barThickness: 18,
               },
               {
                 label: 'جلسات جديدة',
-                data: [45, 62, 58, 71, 66],
+                data: userActivity.map((d) => d.newSessions),
                 backgroundColor: 'rgba(13,13,13,.25)',
                 barThickness: 18,
               },
@@ -127,7 +160,7 @@ export default function AdminAnalyticsSection() {
       );
     }
 
-    if (autoSuccessRef.current) {
+    if (autoSuccessRef.current && statusDistribution) {
       charts.push(
         new Chart(autoSuccessRef.current, {
           type: 'doughnut',
@@ -135,7 +168,11 @@ export default function AdminAnalyticsSection() {
             labels: ['ناجح', 'فشل', 'قيد الإرسال'],
             datasets: [
               {
-                data: [74, 12, 14],
+                data: [
+                  statusDistribution.success,
+                  statusDistribution.failed,
+                  statusDistribution.pending,
+                ],
                 backgroundColor: ['#1a6b4a', '#c0392b', '#b8860b'],
                 borderWidth: 3,
                 borderColor: '#f5f0e8',
@@ -166,16 +203,15 @@ export default function AdminAnalyticsSection() {
       );
     }
 
-    if (dailyApplyRef.current) {
-      const data = Array.from({ length: 30 }, () => Math.floor(Math.random() * 120) + 40);
+    if (dailyApplyRef.current && applicationsPerDay?.length) {
       charts.push(
         new Chart(dailyApplyRef.current, {
           type: 'line',
           data: {
-            labels: Array.from({ length: 30 }, (_, i) => `${i + 1}`),
+            labels: applicationsPerDay.map((d) => d.date.split('-')[2]),
             datasets: [
               {
-                data,
+                data: applicationsPerDay.map((d) => d.count),
                 borderColor: '#c0392b',
                 backgroundColor: 'rgba(192,57,43,.06)',
                 borderWidth: 2,
@@ -212,7 +248,7 @@ export default function AdminAnalyticsSection() {
     return () => {
       charts.forEach((chart) => chart.destroy());
     };
-  }, []);
+  }, [topJobs, userActivity, applicationsPerDay, statusDistribution, overview, advanced]);
 
   return (
     <section>

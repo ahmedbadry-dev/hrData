@@ -14,7 +14,7 @@ export const scraperQueue = new Queue('job-scraper', {
   },
 });
 
-export const emailSendQueue = new Queue('email-send', {
+export const jobApplicationsScheduleQueue = new Queue('job-applications-schedule', {
   connection: redis,
   defaultJobOptions: {
     attempts: 3,
