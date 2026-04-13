@@ -1,24 +1,18 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import HomeNavbar from '@/components/home/layout/HomeNavbar/HomeNavbar';
 import { Spinner } from '@/components/ui';
 import { authService } from '@/modules/auth/api/auth.service';
 import { useResetPasswordMutation } from '@/modules/auth/api/mutations';
-import { useAuthModal } from '@/contexts/AuthModalContext';
 import { mapError } from '@/lib/error-mapper';
-import styles from './AuthPages.module.css';
+import styles from './ResetPasswordPage.module.css';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token')?.trim() ?? '';
 
-  // ── Token validation phase ──
-  const {
-    isLoading: isValidating,
-    isError: isTokenInvalid,
-    isSuccess: isTokenValid,
-  } = useQuery({
+  const { isLoading: isValidating, isError: isTokenInvalid } = useQuery({
     queryKey: ['validate-reset-token', token],
     queryFn: () => authService.validateResetToken(token),
     enabled: !!token,
@@ -27,119 +21,30 @@ export default function ResetPasswordPage() {
     gcTime: 0,
   });
 
-  // 1. No token in URL
-  if (!token) {
-    return (
-      <div dir="rtl">
-        <HomeNavbar />
-        <main className={styles.pageContainer}>
-          <InvalidTokenState />
-        </main>
-      </div>
-    );
-  }
-
-  // 2. Validating token
-  if (isValidating) {
-    return (
-      <div dir="rtl">
-        <HomeNavbar />
-        <main className={styles.pageContainer}>
-          <section className={styles.authCard}>
-            <div className={`${styles.iconWrap} ${styles.iconLoading}`}>🔗</div>
-            <h1 className={styles.title}>جاري التحقق من الرابط...</h1>
-            <p className={styles.subtitle}>لحظات قليلة...</p>
-            <Spinner size="lg" aria-label="جاري التحميل" />
-          </section>
-        </main>
-      </div>
-    );
-  }
-
-  // 3. Invalid token
-  if (isTokenInvalid) {
-    return (
-      <div dir="rtl">
-        <HomeNavbar />
-        <main className={styles.pageContainer}>
-          <InvalidTokenState />
-        </main>
-      </div>
-    );
-  }
-
-  // 4. Valid token — show form
-  if (isTokenValid) {
-    return (
-      <div dir="rtl">
-        <HomeNavbar />
-        <main className={styles.pageContainer}>
-          <NewPasswordForm token={token} />
-        </main>
-      </div>
-    );
-  }
-
-  return null;
-}
-
-// ╔══════════════════════════════════════════╗
-// ║  InvalidTokenState                       ║
-// ╚══════════════════════════════════════════╝
-function InvalidTokenState() {
-  const navigate = useNavigate();
-  const { openForgotPassword } = useAuthModal();
-
-  return (
-    <section className={styles.authCard} role="alert">
-      <div className={`${styles.iconWrap} ${styles.iconError}`}>❌</div>
-      <h1 className={styles.title}>رابط غير صالح أو منتهي الصلاحية</h1>
-      <p className={styles.subtitle}>
-        رابط إعادة تعيين كلمة المرور الذي استخدمته غير صالح
-        أو انتهت صلاحيته. يرجى طلب رابط جديد.
-      </p>
-      <div className={styles.actions}>
-        <button
-          className={styles.solidBtn}
-          onClick={() => {
-            navigate('/', { replace: true });
-            openForgotPassword();
-          }}
-        >
-          طلب رابط جديد
-        </button>
-      </div>
-    </section>
-  );
-}
-
-// ╔══════════════════════════════════════════╗
-// ║  NewPasswordForm                         ║
-// ╚══════════════════════════════════════════╝
-function NewPasswordForm({ token }: { token: string }) {
-  const navigate = useNavigate();
-  const { openLogin } = useAuthModal();
   const resetMutation = useResetPasswordMutation();
 
-  const [newPassword, setNewPassword] = useState('');
+  const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [isResetSuccess, setIsResetSuccess] = useState(false);
+  const [errors, setErrors] = useState<{
+    password?: string;
+    confirmPassword?: string;
+    server?: string;
+  }>({});
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: typeof errors = {};
 
-    if (!newPassword) {
-      newErrors.newPassword = 'كلمة المرور الجديدة مطلوبة';
-    } else if (newPassword.length < 8 || !/\d/.test(newPassword)) {
-      newErrors.newPassword = 'يجب أن تكون 8 أحرف على الأقل وتحتوي على رقم واحد';
+    if (!password) {
+      newErrors.password = 'كلمة المرور مطلوبة';
+    } else if (password.length < 8 || !/\d/.test(password)) {
+      newErrors.password = 'يجب أن تكون 8 أحرف على الأقل وتحتوي على رقم';
     }
 
     if (!confirmPassword) {
       newErrors.confirmPassword = 'تأكيد كلمة المرور مطلوب';
-    } else if (confirmPassword !== newPassword) {
-      newErrors.confirmPassword = 'كلمة المرور غير متطابقة';
+    } else if (confirmPassword !== password) {
+      newErrors.confirmPassword = 'كلمات المرور غير متطابقة';
     }
 
     setErrors(newErrors);
@@ -148,124 +53,237 @@ function NewPasswordForm({ token }: { token: string }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setServerError(null);
+    setErrors({});
     if (!validate()) return;
 
     resetMutation.mutate(
-      { token, payload: { password: newPassword, confirmPassword } },
+      { token, payload: { password, confirmPassword } },
       {
         onSuccess: () => {
-          setIsResetSuccess(true);
+          setStatus('success');
         },
         onError: (error) => {
-          setServerError(mapError(error));
+          setErrors({ server: mapError(error) });
         },
       }
     );
   };
 
-  const hasErrors = Object.values(errors).some((v) => Boolean(v));
+  let content: React.ReactNode;
 
-  // ── SUCCESS STATE ──
-  if (isResetSuccess) {
-    return (
-      <section className={styles.authCard} role="status">
-        <div className={`${styles.iconWrap} ${styles.iconSuccess}`}>✅</div>
-        <h1 className={styles.title}>تم تغيير كلمة المرور بنجاح!</h1>
-        <p className={styles.subtitle}>
-          يمكنك الآن تسجيل الدخول باستخدام كلمة مرورك الجديدة.
-        </p>
-        <div className={styles.actions}>
-          <button
-            className={styles.solidBtn}
-            onClick={() => {
-              navigate('/', { replace: true });
-              openLogin();
-            }}
+  if (!token) {
+    content = (
+      <div className={styles['error-panel']}>
+        <div className={styles['error-icon-wrap']}>
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
           >
-            الذهاب إلى الصفحة الرئيسية
-          </button>
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
         </div>
-      </section>
+        <h2 className={styles['error-title']}>رابط غير صالح</h2>
+        <p className={styles['error-message']}>
+          رابط إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية. يرجى طلب رابط جديد.
+        </p>
+        <div className={styles['action-row']}>
+          <Link to="/" className={styles['submit-btn']} style={{ textDecoration: 'none' }}>
+            العودة للرئيسية
+          </Link>
+        </div>
+      </div>
+    );
+  } else if (isValidating) {
+    content = (
+      <div className={styles['form-card']}>
+        <Spinner size="lg" aria-label="جاري التحقق" />
+        <p style={{ marginTop: 16, color: 'var(--muted)' }}>جاري التحقق من الرابط...</p>
+      </div>
+    );
+  } else if (isTokenInvalid || status === 'error') {
+    content = (
+      <div className={styles['error-panel']}>
+        <div className={styles['error-icon-wrap']}>
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+        </div>
+        <h2 className={styles['error-title']}>رابط غير صالح</h2>
+        <p className={styles['error-message']}>
+          رابط إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية. يرجى طلب رابط جديد.
+        </p>
+        <div className={styles['action-row']}>
+          <Link to="/" className={styles['submit-btn']} style={{ textDecoration: 'none' }}>
+            العودة للرئيسية
+          </Link>
+        </div>
+      </div>
+    );
+  } else if (status === 'success') {
+    content = (
+      <div className={styles['success-panel']}>
+        <div className={styles['success-icon-wrap']}>
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <h2 className={styles['success-title']}>تم بنجاح!</h2>
+        <p className={styles['success-message']}>
+          تم تعيين كلمة المرور الجديدة. يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.
+        </p>
+        <Link
+          to="/?mode=login"
+          className={styles['submit-btn']}
+          style={{ display: 'block', textDecoration: 'none', textAlign: 'center' }}
+        >
+          تسجيل الدخول ←
+        </Link>
+      </div>
+    );
+  } else {
+    content = (
+      <>
+        <h2 className={styles['form-title']}>تعيين كلمة مرور جديدة</h2>
+        <p className={styles['form-subtitle']}>أدخل كلمة المرور الجديدة لحسابك</p>
+
+        {errors.server && (
+          <div className={styles['server-error']}>
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span>{errors.server}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className={styles.field}>
+            <label>كلمة المرور الجديدة</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password) setErrors((prev) => ({ ...prev, password: '' }));
+              }}
+              placeholder="8 أحرف على الأقل"
+              dir="ltr"
+              className={errors.password ? styles['input-error'] : ''}
+            />
+            {errors.password && <span className={styles['field-error']}>{errors.password}</span>}
+          </div>
+
+          <div className={styles.field}>
+            <label>تأكيد كلمة المرور</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: '' }));
+              }}
+              placeholder="أعد إدخال كلمة المرور"
+              dir="ltr"
+              className={errors.confirmPassword ? styles['input-error'] : ''}
+            />
+            {errors.confirmPassword && (
+              <span className={styles['field-error']}>{errors.confirmPassword}</span>
+            )}
+          </div>
+
+          <button type="submit" className={styles['submit-btn']} disabled={resetMutation.isPending}>
+            {resetMutation.isPending ? 'جاري الحفظ...' : 'حفظ كلمة المرور الجديدة ←'}
+          </button>
+        </form>
+
+        <div className={styles['back-link']}>
+          <Link to="/">العودة للرئيسية</Link>
+        </div>
+      </>
     );
   }
 
-  // ── FORM ──
   return (
-    <section className={styles.authCard}>
-      <div className={`${styles.iconWrap} ${styles.iconLoading}`}>🔐</div>
-      <h1 className={styles.title}>إعادة تعيين كلمة المرور</h1>
-      <p className={styles.subtitle}>أدخل كلمة مرور جديدة لحسابك</p>
+    <div className={styles['reset-page']}>
+      <HomeNavbar />
+      <div className={styles['reset-hero']}>
+        <div className={styles['reset-left']}>
+          <div className={styles.eyebrow}>أمان الحساب</div>
+          <h1 className={styles.headline}>
+            استعادة
+            <br />
+            <em>كلمة المرور</em>
+          </h1>
+          <p className={styles['body-text']}>
+            أدخل كلمة المرور الجديدة لتعيينها على حسابك. تأكد من اختيار كلمة مرور قوية تحتوي على 8
+            أحرف على الأقل.
+          </p>
 
-      {serverError && (
-        <div className={styles.errorBanner} role="alert">
-          <span>⚠️</span>
-          <span>{serverError}</span>
-        </div>
-      )}
-
-      <form className={styles.form} onSubmit={handleSubmit} noValidate>
-        <div className={styles.field}>
-          <label>كلمة المرور الجديدة</label>
-          <input
-            id="reset-newPassword"
-            className={`${styles.input} ${errors.newPassword ? styles.inputError : ''}`}
-            type="password"
-            dir="ltr"
-            value={newPassword}
-            disabled={resetMutation.isPending}
-            onChange={(e) => {
-              setNewPassword(e.target.value);
-              if (errors.newPassword) setErrors((prev) => ({ ...prev, newPassword: '' }));
-              if (serverError) setServerError(null);
-            }}
-            placeholder="********"
-            aria-invalid={!!errors.newPassword}
-            aria-describedby={errors.newPassword ? 'reset-newPassword-error' : undefined}
-          />
-          {errors.newPassword && (
-            <span id="reset-newPassword-error" className={styles.errorText} role="alert">
-              {errors.newPassword}
-            </span>
-          )}
+          <div className={styles['form-card']}>{content}</div>
         </div>
 
-        <div className={styles.field}>
-          <label>تأكيد كلمة المرور الجديدة</label>
-          <input
-            id="reset-confirmPassword"
-            className={`${styles.input} ${errors.confirmPassword ? styles.inputError : ''}`}
-            type="password"
-            dir="ltr"
-            value={confirmPassword}
-            disabled={resetMutation.isPending}
-            onChange={(e) => {
-              setConfirmPassword(e.target.value);
-              if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: '' }));
-              if (serverError) setServerError(null);
-            }}
-            placeholder="********"
-            aria-invalid={!!errors.confirmPassword}
-            aria-describedby={errors.confirmPassword ? 'reset-confirmPassword-error' : undefined}
-          />
-          {errors.confirmPassword && (
-            <span id="reset-confirmPassword-error" className={styles.errorText} role="alert">
-              {errors.confirmPassword}
-            </span>
-          )}
+        <div className={styles['reset-right']}>
+          <div className={styles.stamp}>
+            استعادة
+            <br />
+            كلمة المرور
+            <br />
+            2026
+          </div>
+          <div>
+            <div className={styles['featured-card']}>
+              <div className={styles['fc-tag']}>نصيحة</div>
+              <div className={styles['fc-title']}>استخدم كلمة مرور قوية</div>
+              <div className={styles['fc-meta']}>🔐 مزيج من الأحرف والأرقام والرموز</div>
+            </div>
+            <div className={styles['featured-card']}>
+              <div className={styles['fc-tag']}>تحذير</div>
+              <div className={styles['fc-title']}>لا تشارك كلمة المرور</div>
+              <div className={styles['fc-meta']}>🚫 لن نطلب منك كلمة المرور أبداً</div>
+            </div>
+            <div className={styles['featured-card']}>
+              <div className={styles['fc-tag']}>معلومات</div>
+              <div className={styles['fc-title']}>الرابط ينتهي خلال 30 دقيقة</div>
+              <div className={styles['fc-meta']}>⏰ بعد ذلك سيتوجب طلب رابط جديد</div>
+            </div>
+          </div>
         </div>
-
-        <div className={styles.actions}>
-          <button
-            className={styles.solidBtn}
-            type="submit"
-            disabled={resetMutation.isPending || hasErrors}
-            aria-disabled={resetMutation.isPending || hasErrors}
-          >
-            {resetMutation.isPending ? 'جاري تغيير كلمة المرور...' : 'تغيير كلمة المرور'}
-          </button>
-        </div>
-      </form>
-    </section>
+      </div>
+    </div>
   );
 }
