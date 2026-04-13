@@ -1,16 +1,45 @@
-import { useOutletContext } from 'react-router-dom';
 import { AdminAnnouncementsSection } from '@/components/admin/sections';
-import type { AdminDashboardContextType } from './AdminDashboardLayout';
+import {
+  useNotificationsList,
+  useCreateNotification,
+  useDeleteNotification,
+} from '@/modules/admin/notifications/api/hooks';
 
 export default function AdminNotificationsPage() {
-  const { announcements, deleteAnnouncement, openCreateAnnouncement } =
-    useOutletContext<AdminDashboardContextType>();
+  const { data, refetch } = useNotificationsList({ limit: 20 });
+  const createMutation = useCreateNotification();
+  const deleteMutation = useDeleteNotification();
+
+  const announcements =
+    data?.data?.notifications.map((n) => ({
+      id: Number(n.id),
+      title: n.title,
+      body: n.body,
+      type: n.type as 'info' | 'warn' | 'success' | 'danger',
+      target: n.target,
+      date: new Date(n.createdAt).toLocaleDateString('ar-SA'),
+    })) || [];
+
+  const handleDelete = (id: number) => {
+    if (!window.confirm('حذف هذا الإشعار؟')) return;
+    deleteMutation.mutate(String(id), { onSuccess: () => refetch() });
+  };
+
+  const handleCreate = () => {
+    const title = window.prompt('عنوان الإشعار');
+    if (!title) return;
+    const body = window.prompt('محتوى الإشعار') || '';
+    createMutation.mutate(
+      { title, body, type: 'info', target: 'ALL' },
+      { onSuccess: () => refetch() }
+    );
+  };
 
   return (
     <AdminAnnouncementsSection
       announcements={announcements}
-      onDelete={deleteAnnouncement}
-      onOpenCreate={openCreateAnnouncement}
+      onDelete={handleDelete}
+      onOpenCreate={handleCreate}
     />
   );
 }

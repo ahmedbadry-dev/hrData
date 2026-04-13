@@ -1,9 +1,14 @@
 import type { UserApplication } from '@/components/user/sections/userData';
 import { EmptyState, PageHeader } from '@/components/common';
+import { Button } from '@/components/ui';
 import styles from './UserAnalyticsSection.module.css';
 
 interface UserAnalyticsSectionProps {
   applications: UserApplication[];
+  hasNextPage?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
+  onCancel?: (id: string) => void;
 }
 
 const statusColors: Record<UserApplication['status'], { color: string; text: string }> = {
@@ -14,7 +19,13 @@ const statusColors: Record<UserApplication['status'], { color: string; text: str
   failed: { color: '#c0392b', text: 'فشل الإرسال' },
 };
 
-export default function UserAnalyticsSection({ applications }: UserAnalyticsSectionProps) {
+export default function UserAnalyticsSection({
+  applications,
+  hasNextPage,
+  isLoadingMore,
+  onLoadMore,
+  onCancel,
+}: UserAnalyticsSectionProps) {
   if (applications.length === 0) {
     return (
       <section>
@@ -41,7 +52,17 @@ export default function UserAnalyticsSection({ applications }: UserAnalyticsSect
       <div className={styles['results-list']}>
         {applications.map((app, index) => {
           const status = statusColors[app.status] ?? statusColors.pending;
-          const dateStr = new Date(app.date).toLocaleDateString('ar-SA');
+          const dateStr = app.date
+            ? new Date(app.date).toLocaleDateString('ar-SA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })
+            : new Date().toLocaleDateString('ar-SA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              });
 
           return (
             <div
@@ -66,6 +87,16 @@ export default function UserAnalyticsSection({ applications }: UserAnalyticsSect
                 >
                   <div style={{ color: status.color }}>{status.text}</div>
                 </div>
+
+                {onCancel && app.id && app.status === 'pending' && (
+                  <button
+                    type="button"
+                    className={styles['cancel-btn']}
+                    onClick={() => onCancel(app.id!)}
+                  >
+                    إلغاء
+                  </button>
+                )}
               </div>
 
               <div className={styles['card-email']}>
@@ -76,6 +107,14 @@ export default function UserAnalyticsSection({ applications }: UserAnalyticsSect
           );
         })}
       </div>
+
+      {hasNextPage ? (
+        <div className={styles['load-more-wrap']}>
+          <Button className={styles['btn-load-more']} onClick={onLoadMore} disabled={isLoadingMore}>
+            {isLoadingMore ? 'جاري التحميل...' : 'تحميل المزيد'}
+          </Button>
+        </div>
+      ) : null}
     </section>
   );
 }
