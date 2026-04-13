@@ -333,6 +333,27 @@
   }
 }
 
+.load-more-wrap {
+  margin-top: 0;
+  border: 1px solid var(--cream);
+  border-top: none;
+  text-align: center;
+  padding: 20px;
+}
+
+.btn-load-more {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+  padding: 10px 20px;
+  font-size: 12px;
+}
+
+.btn-load-more:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
 @media (max-width: 580px) {
   .section-headline {
     font-size: 20px;

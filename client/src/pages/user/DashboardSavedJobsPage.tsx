@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { UserSavedJobsSection } from '@/components/user/sections';
 import { useSavedJobsList, useUnsaveJob } from '@/modules/jobs/api/hooks';
@@ -21,12 +22,16 @@ const mapJobToSavedJob = (job: any): SavedJob => ({
 export default function DashboardSavedJobsPage() {
   const { removeAllSaved } = useOutletContext<DashboardContextType>();
   const unsaveJob = useUnsaveJob();
+  const [page, setPage] = useState(1);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useSavedJobsList({
+  const { data, isLoading } = useSavedJobsList({
     limit: ITEMS_PER_PAGE,
+    page,
   });
 
-  const savedJobs = data?.pages.flatMap((page: any) => page.data.jobs.map(mapJobToSavedJob)) || [];
+  const savedJobs = data?.data?.jobs.map(mapJobToSavedJob) || [];
+  const pagination = data?.data?.pagination;
+  const hasNextPage = pagination?.hasNextPage || false;
 
   const handleRemoveByIndex = (index: number) => {
     const job = savedJobs[index];
@@ -35,14 +40,18 @@ export default function DashboardSavedJobsPage() {
     }
   };
 
+  const handleLoadMore = () => {
+    setPage((prev) => prev + 1);
+  };
+
   return (
     <UserSavedJobsSection
       savedJobs={savedJobs}
       onRemoveByIndex={handleRemoveByIndex}
       onRemoveAll={removeAllSaved}
       hasNextPage={hasNextPage}
-      isLoadingMore={isFetchingNextPage}
-      onLoadMore={fetchNextPage}
+      isLoadingMore={isLoading}
+      onLoadMore={handleLoadMore}
     />
   );
 }

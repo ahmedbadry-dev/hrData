@@ -24,27 +24,29 @@ export default function DashboardJobsPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [country, setCountry] = useState('all');
   const [timeFilter, setTimeFilter] = useState('all');
+  const [page, setPage] = useState(1);
 
   const queryParams = {
     limit: ITEMS_PER_PAGE,
+    page,
     search: searchQuery || undefined,
     location: country !== 'all' ? country : undefined,
     dateFilter: timeFilter !== 'all' ? timeFilter : undefined,
   };
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useJobsList(queryParams);
+  const { data, isLoading } = useJobsList(queryParams);
 
-  const jobs: UserJob[] =
-    data?.pages.flatMap((page: any) => page.data.jobs.map(mapJobToUserJob)) || [];
+  const jobs: UserJob[] = data?.data?.jobs.map(mapJobToUserJob) || [];
+  const pagination = data?.data?.pagination;
+  const hasNextPage = pagination?.hasNextPage || false;
 
   const search = () => {
     setHasSearched(true);
+    setPage(1);
   };
 
   const loadMore = () => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
+    setPage((prev) => prev + 1);
   };
 
   const handleSaveAllVisible = () => {
@@ -58,7 +60,7 @@ export default function DashboardJobsPage() {
       onSearch={search}
       jobs={jobs}
       hasNextPage={hasNextPage}
-      isLoadingMore={isFetchingNextPage}
+      isLoadingMore={isLoading}
       hasSearched={hasSearched}
       selectedCard={null}
       onSelectCard={() => {}}

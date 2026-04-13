@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { UserSearchSection } from '@/components/user/sections';
-import { useJobsListQuery } from '@/modules/jobs/api/hooks';
+import { useJobsList } from '@/modules/jobs/api/hooks';
 import type { Job, UserJob } from '@/modules/jobs/types';
 
 const ITEMS_PER_PAGE = 10;
@@ -21,7 +21,7 @@ export default function PublicJobsPage() {
   const [timeFilter, setTimeFilter] = useState('all');
   const [page, setPage] = useState(1);
 
-  const { data } = useJobsListQuery({
+  const { data } = useJobsList({
     page,
     limit: ITEMS_PER_PAGE,
     search: searchQuery || undefined,

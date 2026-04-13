@@ -16,6 +16,9 @@ interface AdminUsersSectionProps {
   onToggleActivity: (id: string | number) => void;
   onSearch?: () => void;
   openActivityId: number | null;
+  hasNextPage?: boolean;
+  isLoading?: boolean;
+  onLoadMore?: () => void;
 }
 
 export default function AdminUsersSection({
@@ -30,6 +33,9 @@ export default function AdminUsersSection({
   onToggleActivity,
   onSearch,
   openActivityId,
+  hasNextPage,
+  isLoading,
+  onLoadMore,
 }: AdminUsersSectionProps) {
   const activeUser = users.find((u) => u.id === openActivityId) ?? null;
 
@@ -163,6 +169,18 @@ export default function AdminUsersSection({
               </tbody>
             </table>
           </div>
+
+          {hasNextPage && (
+            <div className={styles['load-more-wrap']}>
+              <Button
+                className={cn(styles['btn-load-more'])}
+                onClick={onLoadMore}
+                disabled={isLoading}
+              >
+                {isLoading ? 'جاري التحميل...' : 'تحميل المزيد'}
+              </Button>
+            </div>
+          )}
         </>
       )}
 
