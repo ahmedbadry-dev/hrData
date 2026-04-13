@@ -30,14 +30,11 @@ export default function PublicJobsPage() {
   });
 
   const jobs: UserJob[] = (data?.data?.jobs || []).map(mapJobToUserJob);
+  const totalPages = data?.data?.pagination?.totalPages || 1;
 
   const search = () => {
     setHasSearched(true);
     setPage(1);
-  };
-
-  const loadMore = () => {
-    setPage((prev) => prev + 1);
   };
 
   return (
@@ -46,12 +43,13 @@ export default function PublicJobsPage() {
       onSearchQueryChange={setSearchQuery}
       onSearch={search}
       jobs={jobs}
-      hasNextPage={jobs.length === ITEMS_PER_PAGE}
-      isLoadingMore={false}
+      currentPage={page}
+      totalPages={totalPages}
+      isLoading={false}
       hasSearched={hasSearched}
       selectedCard={null}
       onSelectCard={() => {}}
-      onLoadMore={loadMore}
+      onPageChange={setPage}
       savedJobs={[]}
       onToggleSave={() => {}}
       onSaveAllVisible={() => {}}

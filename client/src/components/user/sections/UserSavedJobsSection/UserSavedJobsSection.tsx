@@ -2,6 +2,7 @@ import type { SavedJob } from '@/components/user/sections/userData';
 import { EmptyState } from '@/components/common';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { getPageNumbers } from '@/lib/pagination';
 import styles from './UserSavedJobsSection.module.css';
 import searchStyles from '../UserSearchSection/UserSearchSection.module.css';
 
@@ -9,18 +10,20 @@ interface UserSavedJobsSectionProps {
   savedJobs: SavedJob[];
   onRemoveByIndex: (index: number) => void;
   onRemoveAll: () => void;
-  hasNextPage?: boolean;
-  isLoadingMore?: boolean;
-  onLoadMore?: () => void;
+  currentPage?: number;
+  totalPages?: number;
+  isLoading?: boolean;
+  onPageChange?: (page: number) => void;
 }
 
 export default function UserSavedJobsSection({
   savedJobs,
   onRemoveByIndex,
   onRemoveAll,
-  hasNextPage,
-  isLoadingMore,
-  onLoadMore,
+  currentPage = 1,
+  totalPages = 1,
+  isLoading,
+  onPageChange,
 }: UserSavedJobsSectionProps) {
   if (savedJobs.length === 0) {
     return (
@@ -89,14 +92,40 @@ export default function UserSavedJobsSection({
         ))}
       </div>
 
-      {hasNextPage && (
-        <div className={searchStyles['load-more-wrap']}>
+      {totalPages > 1 && onPageChange && (
+        <div className={searchStyles['pagination']}>
           <Button
-            className={searchStyles['btn-load-more']}
-            onClick={onLoadMore}
-            disabled={isLoadingMore}
+            className={searchStyles['page-btn']}
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1 || isLoading}
           >
-            {isLoadingMore ? 'جاري التحميل...' : 'تحميل المزيد'}
+            السابق
+          </Button>
+          {getPageNumbers(currentPage, totalPages).map((page, idx) =>
+            page === '...' ? (
+              <span key={`ellipsis-${idx}`} className={searchStyles['ellipsis']}>
+                ...
+              </span>
+            ) : (
+              <Button
+                key={page}
+                className={cn(
+                  searchStyles['page-btn'],
+                  page === currentPage && searchStyles['active']
+                )}
+                onClick={() => onPageChange(page)}
+                disabled={isLoading}
+              >
+                {page}
+              </Button>
+            )
+          )}
+          <Button
+            className={searchStyles['page-btn']}
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages || isLoading}
+          >
+            التالي
           </Button>
         </div>
       )}

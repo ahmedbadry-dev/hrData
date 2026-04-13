@@ -38,15 +38,15 @@ export default function DashboardJobsPage() {
 
   const jobs: UserJob[] = data?.data?.jobs.map(mapJobToUserJob) || [];
   const pagination = data?.data?.pagination;
-  const hasNextPage = pagination?.hasNextPage || false;
+  const totalPages = pagination?.totalPages || 1;
 
   const search = () => {
     setHasSearched(true);
     setPage(1);
   };
 
-  const loadMore = () => {
-    setPage((prev) => prev + 1);
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
   };
 
   const handleSaveAllVisible = () => {
@@ -59,12 +59,13 @@ export default function DashboardJobsPage() {
       onSearchQueryChange={setSearchQuery}
       onSearch={search}
       jobs={jobs}
-      hasNextPage={hasNextPage}
-      isLoadingMore={isLoading}
+      currentPage={page}
+      totalPages={totalPages}
+      isLoading={isLoading}
       hasSearched={hasSearched}
       selectedCard={null}
       onSelectCard={() => {}}
-      onLoadMore={loadMore}
+      onPageChange={handlePageChange}
       savedJobs={savedJobs}
       onToggleSave={toggleSave}
       onSaveAllVisible={handleSaveAllVisible}

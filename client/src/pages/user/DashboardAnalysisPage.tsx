@@ -47,23 +47,20 @@ export default function DashboardAnalysisPage() {
   );
 
   const pagination = data?.data?.pagination;
-  const hasNextPage = pagination?.hasNextPage || false;
+  const totalPages = pagination?.totalPages || 1;
 
   const handleCancel = (id: string) => {
     if (!window.confirm('هل أنت متأكد من إلغاء هذه الطلبات؟')) return;
     cancelMutation.mutate(id);
   };
 
-  const handleLoadMore = () => {
-    setPage((prev) => prev + 1);
-  };
-
   return (
     <UserAnalyticsSection
       applications={applications}
-      hasNextPage={hasNextPage}
-      isLoadingMore={isLoading}
-      onLoadMore={handleLoadMore}
+      currentPage={page}
+      totalPages={totalPages}
+      isLoading={isLoading}
+      onPageChange={setPage}
       onCancel={handleCancel}
     />
   );

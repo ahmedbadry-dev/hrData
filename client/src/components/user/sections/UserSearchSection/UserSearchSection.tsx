@@ -3,6 +3,7 @@ import type { UserJob } from '@/modules/jobs/types';
 import { EmptyState, SearchBox, Select } from '@/components/common';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { getPageNumbers } from '@/lib/pagination';
 import styles from './UserSearchSection.module.css';
 
 interface UserSearchSectionProps {
@@ -10,12 +11,13 @@ interface UserSearchSectionProps {
   onSearchQueryChange: (value: string) => void;
   onSearch: () => void;
   jobs: UserJob[];
-  hasNextPage?: boolean;
-  isLoadingMore?: boolean;
+  currentPage?: number;
+  totalPages?: number;
+  isLoading?: boolean;
   hasSearched: boolean;
   selectedCard: string | null;
   onSelectCard: (key: string) => void;
-  onLoadMore: () => void;
+  onPageChange: (page: number) => void;
   savedJobs: SavedJob[];
   onToggleSave: (job: UserJob) => void;
   onSaveAllVisible: () => void;
@@ -49,12 +51,13 @@ export default function UserSearchSection({
   onSearchQueryChange,
   onSearch,
   jobs,
-  hasNextPage,
-  isLoadingMore,
+  currentPage = 1,
+  totalPages = 1,
+  isLoading,
   hasSearched,
   selectedCard,
   onSelectCard,
-  onLoadMore,
+  onPageChange,
   savedJobs,
   onToggleSave,
   onSaveAllVisible,
@@ -186,17 +189,40 @@ export default function UserSearchSection({
             })}
           </div>
 
-          {hasNextPage ? (
-            <div className={styles['load-more-wrap']}>
+          {totalPages > 1 && (
+            <div className={styles['pagination']}>
               <Button
-                className={styles['btn-load-more']}
-                onClick={onLoadMore}
-                disabled={isLoadingMore}
+                className={styles['page-btn']}
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={currentPage === 1 || isLoading}
               >
-                {isLoadingMore ? 'جاري التحميل...' : 'تحميل المزيد'}
+                السابق
+              </Button>
+              {getPageNumbers(currentPage, totalPages).map((page, idx) =>
+                page === '...' ? (
+                  <span key={`ellipsis-${idx}`} className={styles['ellipsis']}>
+                    ...
+                  </span>
+                ) : (
+                  <Button
+                    key={page}
+                    className={cn(styles['page-btn'], page === currentPage && styles['active'])}
+                    onClick={() => onPageChange(page)}
+                    disabled={isLoading}
+                  >
+                    {page}
+                  </Button>
+                )
+              )}
+              <Button
+                className={styles['page-btn']}
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={currentPage === totalPages || isLoading}
+              >
+                التالي
               </Button>
             </div>
-          ) : null}
+          )}
         </>
       )}
     </section>

@@ -73,7 +73,7 @@ export default function AdminUsersPage() {
     })) || [];
 
   const pagination = data?.data?.pagination;
-  const hasNextPage = pagination?.hasNextPage || false;
+  const totalPages = pagination?.totalPages || 1;
 
   const handleToggleStatus = (id: string | number) => {
     const user = users.find((u) => String(u.id) === String(id));
@@ -127,10 +127,6 @@ export default function AdminUsersPage() {
     // Future: show user activity details modal
   };
 
-  const handleLoadMore = () => {
-    setPage((prev) => prev + 1);
-  };
-
   const displayFilter =
     activeFilter === 'all'
       ? 'all'
@@ -164,9 +160,10 @@ export default function AdminUsersPage() {
         onToggleActivity={handleToggleActivity}
         onSearch={() => refetch()}
         openActivityId={null}
-        hasNextPage={hasNextPage}
+        currentPage={page}
+        totalPages={totalPages}
         isLoading={isLoading}
-        onLoadMore={handleLoadMore}
+        onPageChange={setPage}
       />
 
       <AdminModals

@@ -31,7 +31,7 @@ export default function DashboardSavedJobsPage() {
 
   const savedJobs = data?.data?.jobs.map(mapJobToSavedJob) || [];
   const pagination = data?.data?.pagination;
-  const hasNextPage = pagination?.hasNextPage || false;
+  const totalPages = pagination?.totalPages || 1;
 
   const handleRemoveByIndex = (index: number) => {
     const job = savedJobs[index];
@@ -40,18 +40,15 @@ export default function DashboardSavedJobsPage() {
     }
   };
 
-  const handleLoadMore = () => {
-    setPage((prev) => prev + 1);
-  };
-
   return (
     <UserSavedJobsSection
       savedJobs={savedJobs}
       onRemoveByIndex={handleRemoveByIndex}
       onRemoveAll={removeAllSaved}
-      hasNextPage={hasNextPage}
-      isLoadingMore={isLoading}
-      onLoadMore={handleLoadMore}
+      currentPage={page}
+      totalPages={totalPages}
+      isLoading={isLoading}
+      onPageChange={setPage}
     />
   );
 }
