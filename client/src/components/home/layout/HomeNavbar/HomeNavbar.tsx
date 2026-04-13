@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useAuth } from '@/modules/auth/api/hooks/use-auth';
 import { useLogoutMutation } from '@/modules/auth/api/mutations';
@@ -16,19 +16,19 @@ export default function HomeNavbar() {
 
   return (
     <nav className={styles.nav}>
-      <Link className={styles['nav-logo']} to="/">
+      <a className={styles['nav-logo']} href="#">
         كُفُـؤ<em>.</em>
-      </Link>
+      </a>
       <div className={styles['nav-links']}>
-        <Link className={styles['nav-link']} to="/#how">
+        <a className={styles['nav-link']} href="#how">
           كيف يعمل
-        </Link>
-        <Link className={styles['nav-link']} to="/#features">
+        </a>
+        <a className={styles['nav-link']} href="#features">
           المميزات
-        </Link>
-        <Link className={styles['nav-link']} to="/#cta">
+        </a>
+        <a className={styles['nav-link']} href="#cta">
           للشركات
-        </Link>
+        </a>
 
         {isAuthenticated ? (
           <>
