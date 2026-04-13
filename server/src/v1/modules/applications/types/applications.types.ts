@@ -3,7 +3,6 @@ import { ApplicationStatus, Job } from 'generated/prisma';
 export interface ApplicationResponse {
   id: string;
   jobId: string;
-  cvId: string | null;
   status: ApplicationStatus;
   scheduledAt: Date | null;
   sentAt: Date | null;

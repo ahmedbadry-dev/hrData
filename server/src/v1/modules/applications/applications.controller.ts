@@ -36,14 +36,33 @@ export class ApplicationsController {
   };
 
   scheduleApplications = async (req: Request, res: Response): Promise<Response> => {
-    const { jobIds, sendTime, delayBetweenEmails, cvId } =
-      req.body as ScheduleApplicationsDto['body'];
+    const {
+      jobIds,
+      sendTime,
+      delayBetweenEmails,
+      cv: cvData,
+    } = req.body as ScheduleApplicationsDto['body'];
+    let cvFile = req.file;
+
+    if (!cvFile && cvData && typeof cvData === 'object') {
+      const cvObj = cvData as { name?: string; type?: string; size?: number; data?: string };
+      const base64Data = cvObj.data?.replace(/^data:[^;]+;base64,/, '') || '';
+      cvFile = {
+        fieldname: 'cv',
+        originalname: cvObj.name || 'CV.pdf',
+        encoding: '7bit',
+        mimetype: cvObj.type || 'application/pdf',
+        size: cvObj.size || 0,
+        buffer: Buffer.from(base64Data, 'base64'),
+      } as any;
+    }
+
     const data = await this.applicationsService.scheduleApplications(
       req.user!.id,
       jobIds,
       sendTime,
       delayBetweenEmails,
-      cvId
+      cvFile
     );
     return ResponseHelper.created(
       res,

@@ -121,7 +121,6 @@ export class UsersService {
     await this.prisma.$transaction([
       this.prisma.session.deleteMany({ where: { userId } }),
       this.prisma.savedJob.deleteMany({ where: { userId } }),
-      this.prisma.cv.deleteMany({ where: { userId } }),
       this.prisma.emailTemplate.deleteMany({ where: { userId } }),
       this.prisma.application.deleteMany({ where: { userId } }),
       this.prisma.notification.deleteMany({ where: { userId } }),

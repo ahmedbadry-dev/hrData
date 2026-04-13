@@ -30,12 +30,16 @@ export type DashboardContextType = {
   removeAllSaved: () => void;
   connectGmail: () => Promise<void>;
   disconnectGmail: () => Promise<void>;
-  startSending: (payload: {
-    selected: SavedJob[];
-    scheduleTime: string;
-    delay: string;
-    cvId: string | null;
-  }) => void;
+  startSending: (
+    payload: {
+      selected: SavedJob[];
+      scheduleTime: string;
+      delay: string;
+      cv: File | null;
+    },
+    onSuccess: () => void,
+    onError: () => void
+  ) => void;
   isLoadingSaved: boolean;
 };
 
@@ -163,12 +167,16 @@ export default function UserDashboardLayout() {
     await disconnectGmail();
   };
 
-  const startSending = (payload: {
-    selected: SavedJob[];
-    scheduleTime: string;
-    delay: string;
-    cvId: string | null;
-  }) => {
+  const startSending = (
+    payload: {
+      selected: SavedJob[];
+      scheduleTime: string;
+      delay: string;
+      cv: File | null;
+    },
+    onSuccess: () => void,
+    onError: () => void
+  ) => {
     const jobIds = payload.selected.map((job) => job.jobId).filter((id): id is string => !!id);
 
     if (jobIds.length === 0) {
@@ -176,7 +184,7 @@ export default function UserDashboardLayout() {
       return;
     }
 
-    if (!payload.cvId) {
+    if (!payload.cv) {
       alert('يرجى رفع سيرة ذاتية');
       return;
     }
@@ -216,11 +224,15 @@ export default function UserDashboardLayout() {
     console.log(`📤 Client scheduleTime mapping: "${payload.scheduleTime}" → "${sendTime}"`);
 
     scheduleApplicationMutation.mutate(
-      { jobIds, sendTime, delayBetweenEmails, cvId: payload.cvId! },
+      { jobIds, sendTime, delayBetweenEmails, cv: payload.cv! },
       {
+        onSuccess: () => {
+          onSuccess();
+        },
         onError: (error: unknown) => {
           alert('حدث خطأ في جدولة التقديم');
           console.error(error);
+          onError();
         },
       }
     );

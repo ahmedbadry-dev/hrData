@@ -19,7 +19,6 @@ export interface ApplicationJob {
 export interface Application {
   id: string;
   jobId: string;
-  cvId: string | null;
   status: ApplicationStatusType;
   scheduledAt: string | null;
   sentAt: string | null;
@@ -47,7 +46,7 @@ export interface ScheduleApplicationsRequest {
   jobIds: string[];
   sendTime: string;
   delayBetweenEmails?: number;
-  cvId?: string;
+  cv?: File;
 }
 
 export interface ScheduleApplicationsResponse {

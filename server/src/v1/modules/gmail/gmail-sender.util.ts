@@ -20,7 +20,7 @@ export class GmailSender {
       htmlBody: string;
       from?: string | undefined;
       replyTo?: string | undefined;
-      attachments?: Array<{ filename: string; path: string }> | undefined;
+      attachments?: Array<{ filename: string; path?: string; content?: Buffer }> | undefined;
     }
   ): Promise<{ messageId: string }> {
     const token = await this.prisma.gmailToken.findUnique({
@@ -66,7 +66,14 @@ export class GmailSender {
       const fs = await import('fs/promises');
       mailOptions.attachments = [];
       for (const attachment of options.attachments) {
-        const fileBuffer = await fs.readFile(attachment.path);
+        let fileBuffer: Buffer;
+        if (attachment.content) {
+          fileBuffer = attachment.content;
+        } else if (attachment.path) {
+          fileBuffer = await fs.readFile(attachment.path);
+        } else {
+          continue;
+        }
         mailOptions.attachments.push({
           filename: attachment.filename,
           content: fileBuffer,

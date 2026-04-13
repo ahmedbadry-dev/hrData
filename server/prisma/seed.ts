@@ -752,6 +752,7 @@ async function main() {
           status,
           scheduledAt,
           sentAt,
+          retryCount: Math.floor(Math.random() * 3),
           createdAt: randomDate(thirtyDaysAgo, now),
         },
       });
