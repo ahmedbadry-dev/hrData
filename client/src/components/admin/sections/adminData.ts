@@ -1,12 +1,13 @@
 export interface AdminUser {
-  id: number;
+  id: string | number;
   name: string;
   phone: string;
   email: string;
-  status: 'active' | 'suspended';
+  status: 'active' | 'suspended' | 'pending_verification';
   applied: number;
   saved: number;
   joined: string;
+  rowIndex?: number;
 }
 
 export interface AdminAnnouncement {

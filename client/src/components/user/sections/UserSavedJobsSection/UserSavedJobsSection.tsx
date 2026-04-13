@@ -3,17 +3,24 @@ import { EmptyState } from '@/components/common';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import styles from './UserSavedJobsSection.module.css';
+import searchStyles from '../UserSearchSection/UserSearchSection.module.css';
 
 interface UserSavedJobsSectionProps {
   savedJobs: SavedJob[];
   onRemoveByIndex: (index: number) => void;
   onRemoveAll: () => void;
+  hasNextPage?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
 }
 
 export default function UserSavedJobsSection({
   savedJobs,
   onRemoveByIndex,
   onRemoveAll,
+  hasNextPage,
+  isLoadingMore,
+  onLoadMore,
 }: UserSavedJobsSectionProps) {
   if (savedJobs.length === 0) {
     return (
@@ -52,7 +59,12 @@ export default function UserSavedJobsSection({
                   <span className={styles['meta-chip']}>📍 {job.city}</span>
                   <span className={styles['meta-chip']}>🎓 {job.major}</span>
                   <span className={styles['meta-chip']}>
-                    📅 {new Date(job.timestamp).toLocaleDateString('ar-SA')}
+                    📅{' '}
+                    {new Date(job.timestamp).toLocaleDateString('ar-SA', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
                   </span>
                 </div>
               </div>
@@ -76,6 +88,18 @@ export default function UserSavedJobsSection({
           </div>
         ))}
       </div>
+
+      {hasNextPage && (
+        <div className={searchStyles['load-more-wrap']}>
+          <Button
+            className={searchStyles['btn-load-more']}
+            onClick={onLoadMore}
+            disabled={isLoadingMore}
+          >
+            {isLoadingMore ? 'جاري التحميل...' : 'تحميل المزيد'}
+          </Button>
+        </div>
+      )}
     </section>
   );
 }

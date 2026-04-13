@@ -98,17 +98,32 @@ export default function UserApplicationsSection({ statusFilter }: UserApplicatio
               <div className={styles['timestamps']}>
                 {application.scheduledAt && (
                   <span className={styles['timestamp']}>
-                    📅 مجدولة: {new Date(application.scheduledAt).toLocaleDateString('ar-SA')}
+                    📅 مجدولة:{' '}
+                    {new Date(application.scheduledAt).toLocaleDateString('ar-SA', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
                   </span>
                 )}
                 {application.sentAt && (
                   <span className={styles['timestamp']}>
-                    ✓ أرسلت: {new Date(application.sentAt).toLocaleDateString('ar-SA')}
+                    ✓ أرسلت:{' '}
+                    {new Date(application.sentAt).toLocaleDateString('ar-SA', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
                   </span>
                 )}
                 {application.openedAt && (
                   <span className={styles['timestamp']}>
-                    👁 تم الاطلاع: {new Date(application.openedAt).toLocaleDateString('ar-SA')}
+                    👁 تم الاطلاع:{' '}
+                    {new Date(application.openedAt).toLocaleDateString('ar-SA', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
                   </span>
                 )}
               </div>

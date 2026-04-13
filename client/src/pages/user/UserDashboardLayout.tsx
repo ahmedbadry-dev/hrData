@@ -7,8 +7,9 @@ import {
   useUnsaveJob,
   useSaveJobs,
   useUnsaveJobs,
+  useJobsListQuery,
 } from '@/modules/jobs/api/hooks';
-import { UseScheduleApplication } from '@/modules/applications/api/hooks';
+import { UseApplicationsList, UseScheduleApplication } from '@/modules/applications/api/hooks';
 import { useLogoutMutation } from '@/modules/auth/api/mutations';
 import { useAuth } from '@/modules/auth/api/hooks';
 import type { SavedJob } from '@/components/user/sections/userData';
@@ -16,6 +17,11 @@ import type { UserJob } from '@/modules/jobs/types';
 
 export type DashboardContextType = {
   savedJobs: SavedJob[];
+  applicationsCount: number;
+  sentCount: number;
+  repliesCount: number;
+  totalJobs: number;
+  weeklySentCounts: number[];
   gmailConnected: boolean;
   gmailEmail: string | null;
   toggleSave: (job: UserJob) => void;
@@ -41,7 +47,6 @@ export default function UserDashboardLayout() {
   let activePage: UserPageKey = 'home';
   if (location.pathname.includes('/dashboard/jobs')) activePage = 'search';
   else if (location.pathname.includes('/dashboard/saved-jobs')) activePage = 'saved';
-  else if (location.pathname.includes('/dashboard/applications')) activePage = 'applications';
   else if (location.pathname.includes('/dashboard/auto-apply')) activePage = 'auto-apply';
   else if (location.pathname.includes('/dashboard/analysis')) activePage = 'analytics';
   else if (location.pathname.includes('/dashboard/settings')) activePage = 'settings';
@@ -51,12 +56,42 @@ export default function UserDashboardLayout() {
   const gmailEmail = authData.gmailEmail;
 
   const { data: savedJobsData, isLoading: isLoadingSaved } = useSavedJobs({ limit: 100 });
+  const { data: jobsData } = useJobsListQuery({ limit: 1 });
+  const { data: applicationsData } = UseApplicationsList({ limit: 100 });
   const saveJobMutation = useSaveJob();
   const saveJobsMutation = useSaveJobs();
   const unsaveJobMutation = useUnsaveJob();
   const unsaveJobsMutation = useUnsaveJobs();
   const scheduleApplicationMutation = UseScheduleApplication();
   const logoutMutation = useLogoutMutation();
+
+  const applications = applicationsData?.data?.applications || [];
+  const applicationsCount = applications.length;
+  const sentCount = applications.filter((a: { status: string }) =>
+    ['SENT', 'EMAIL_SENT', 'EMAIL_OPENED'].includes(a.status)
+  ).length;
+  const repliesCount = applications.filter(
+    (a: { status: string }) => a.status === 'REPLIED'
+  ).length;
+  const totalJobs = jobsData?.data?.pagination?.total ?? 0;
+
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - dayOfWeek);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const weeklySentCounts = Array(7).fill(0);
+  applications.forEach((app: { createdAt?: string }) => {
+    if (!app.createdAt) return;
+    const appDate = new Date(app.createdAt);
+    if (appDate >= startOfWeek && appDate <= today) {
+      const idx = appDate.getDay();
+      if (['SENT', 'EMAIL_SENT', 'EMAIL_OPENED'].includes(app.status)) {
+        weeklySentCounts[idx] = (weeklySentCounts[idx] || 0) + 1;
+      }
+    }
+  });
 
   const savedJobs: SavedJob[] = (savedJobsData?.data?.jobs || []).map((job) => ({
     page: 'dashboard',
@@ -153,7 +188,7 @@ export default function UserDashboardLayout() {
       { jobIds, sendTime, delayBetweenEmails, cvId: payload.cvId! },
       {
         onSuccess: () => {
-          navigate('/dashboard/applications');
+          navigate('/dashboard/analysis');
         },
         onError: (error: unknown) => {
           alert('حدث خطأ في جدولة التقديم');
@@ -175,9 +210,6 @@ export default function UserDashboardLayout() {
       case 'saved':
         navigate('/dashboard/saved-jobs');
         break;
-      case 'applications':
-        navigate('/dashboard/applications');
-        break;
       case 'auto-apply':
         navigate('/dashboard/auto-apply');
         break;
@@ -191,7 +223,12 @@ export default function UserDashboardLayout() {
   };
 
   const contextValue: DashboardContextType = {
-    savedJobs,
+    savedJobs: savedJobs || [],
+    applicationsCount: applicationsCount || 0,
+    sentCount: sentCount || 0,
+    repliesCount: repliesCount || 0,
+    totalJobs: totalJobs || 0,
+    weeklySentCounts,
     gmailConnected,
     gmailEmail,
     toggleSave,

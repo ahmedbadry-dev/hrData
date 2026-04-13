@@ -14,12 +14,13 @@ export interface SavedJob extends UserJob {
 }
 
 export interface UserApplication {
+  id?: string;
   company: string;
   role: string;
   email: string;
   major: string;
   city: string;
-  date: string;
+  date: string | null;
   status: 'pending' | 'sent' | 'opened' | 'replied' | 'failed';
 }
 

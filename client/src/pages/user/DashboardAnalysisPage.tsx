@@ -1,9 +1,12 @@
-import { useOutletContext } from 'react-router-dom';
 import { UserAnalyticsSection } from '@/components/user/sections';
-import { UseApplicationsList } from '@/modules/applications/api/hooks';
+import {
+  UseApplicationsListInfinite,
+  UseCancelApplication,
+} from '@/modules/applications/api/hooks';
 import type { Application, ApplicationStatusType } from '@/modules/applications/types';
-import type { DashboardContextType } from './UserDashboardLayout';
 import type { UserApplication } from '@/components/user/sections/userData';
+
+const ITEMS_PER_PAGE = 10;
 
 const mapStatusToUserApp = (status: ApplicationStatusType): UserApplication['status'] => {
   switch (status) {
@@ -23,28 +26,36 @@ const mapStatusToUserApp = (status: ApplicationStatusType): UserApplication['sta
 };
 
 export default function DashboardAnalysisPage() {
-  useOutletContext<DashboardContextType>();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = UseApplicationsListInfinite({
+    limit: ITEMS_PER_PAGE,
+  });
+  const cancelMutation = UseCancelApplication();
 
-  const { data: applicationsData } = UseApplicationsList({ limit: 100 });
+  const applications: UserApplication[] = (
+    data?.pages.flatMap((page) => page.data?.applications || []) || []
+  ).map((app: Application) => ({
+    id: app.id,
+    company: app.job?.companyName || '',
+    role: app.job?.title || '',
+    email: app.job?.hrEmail || '',
+    major: app.job?.category || '',
+    city: app.job?.location || '',
+    date: app.scheduledAt || app.sentAt || null,
+    status: mapStatusToUserApp(app.status),
+  }));
 
-  const formatDate = (dateStr: string | null): string => {
-    if (!dateStr) return new Date().toLocaleDateString('ar-SA');
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return new Date().toLocaleDateString('ar-SA');
-    return date.toLocaleDateString('ar-SA');
+  const handleCancel = (id: string) => {
+    if (!window.confirm('هل أنت متأكد من إلغاء هذه الطلبات؟')) return;
+    cancelMutation.mutate(id);
   };
 
-  const applications: UserApplication[] = (applicationsData?.data?.applications || []).map(
-    (app: Application) => ({
-      company: app.job?.companyName || '',
-      role: app.job?.title || '',
-      email: app.job?.hrEmail || '',
-      major: app.job?.category || '',
-      city: app.job?.location || '',
-      date: formatDate(app.scheduledAt),
-      status: mapStatusToUserApp(app.status),
-    })
+  return (
+    <UserAnalyticsSection
+      applications={applications}
+      hasNextPage={hasNextPage}
+      isLoadingMore={isFetchingNextPage}
+      onLoadMore={fetchNextPage}
+      onCancel={handleCancel}
+    />
   );
-
-  return <UserAnalyticsSection applications={applications} />;
 }

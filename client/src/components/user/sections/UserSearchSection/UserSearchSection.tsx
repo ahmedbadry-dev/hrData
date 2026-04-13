@@ -10,7 +10,8 @@ interface UserSearchSectionProps {
   onSearchQueryChange: (value: string) => void;
   onSearch: () => void;
   jobs: UserJob[];
-  visibleCount: number;
+  hasNextPage?: boolean;
+  isLoadingMore?: boolean;
   hasSearched: boolean;
   selectedCard: string | null;
   onSelectCard: (key: string) => void;
@@ -48,7 +49,8 @@ export default function UserSearchSection({
   onSearchQueryChange,
   onSearch,
   jobs,
-  visibleCount,
+  hasNextPage,
+  isLoadingMore,
   hasSearched,
   selectedCard,
   onSelectCard,
@@ -62,8 +64,6 @@ export default function UserSearchSection({
   onTimeFilterChange,
   showSaveButtons = true,
 }: UserSearchSectionProps) {
-  const visibleJobs = jobs.slice(0, visibleCount);
-
   const isSaved = (job: UserJob) =>
     savedJobs.some(
       (s: SavedJob) =>
@@ -117,7 +117,7 @@ export default function UserSearchSection({
           </div>
 
           <div className={styles['results-list']}>
-            {visibleJobs.map((job) => {
+            {jobs.map((job) => {
               const key = `${job.company}-${job.role}`;
               const saved = isSaved(job);
               const selected = selectedCard === key;
@@ -135,7 +135,16 @@ export default function UserSearchSection({
                       <div className={styles['meta-row']}>
                         <span className={styles['meta-chip']}>📍 {job.city}</span>
                         <span className={styles['meta-chip']}>🎓 {job.major}</span>
-                        <span className={styles['meta-chip']}>📅 {job.date}</span>
+                        <span className={styles['meta-chip']}>
+                          📅{' '}
+                          {job.date
+                            ? new Date(job.date).toLocaleDateString('ar-SA', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              })
+                            : ''}
+                        </span>
                       </div>
                     </div>
 
@@ -177,10 +186,14 @@ export default function UserSearchSection({
             })}
           </div>
 
-          {visibleCount < jobs.length ? (
+          {hasNextPage ? (
             <div className={styles['load-more-wrap']}>
-              <Button className={styles['btn-load-more']} onClick={onLoadMore}>
-                تحميل المزيد
+              <Button
+                className={styles['btn-load-more']}
+                onClick={onLoadMore}
+                disabled={isLoadingMore}
+              >
+                {isLoadingMore ? 'جاري التحميل...' : 'تحميل المزيد'}
               </Button>
             </div>
           ) : null}

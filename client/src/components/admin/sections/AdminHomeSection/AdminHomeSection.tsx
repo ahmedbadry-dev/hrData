@@ -13,11 +13,16 @@ import { PageHeader, StatCard } from '@/components/common';
 import { Badge } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { AdminLog } from '@/components/admin/sections/adminData';
+import type { OverviewStats, DailyDataPoint } from '@/modules/admin/analytics/api/types';
 import styles from './AdminHomeSection.module.css';
 
 Chart.register(CategoryScale, LinearScale, LineElement, PointElement, Filler, Tooltip, Legend);
 
 interface AdminHomeSectionProps {
+  stats?: OverviewStats;
+  loginsData?: DailyDataPoint[];
+  applicationsData?: DailyDataPoint[];
+  errorsData?: DailyDataPoint[];
   logs: AdminLog[];
 }
 
@@ -44,24 +49,35 @@ function useAnimatedCounter(target: number, suffix = '') {
   return value;
 }
 
-export default function AdminHomeSection({ logs }: AdminHomeSectionProps) {
-  const users = useAnimatedCounter(1247);
-  const jobs = useAnimatedCounter(20);
-  const apply = useAnimatedCounter(184);
-  const success = useAnimatedCounter(68, '%');
+export default function AdminHomeSection({
+  stats,
+  loginsData,
+  applicationsData,
+  errorsData,
+  logs,
+}: AdminHomeSectionProps) {
+  const users = useAnimatedCounter(stats?.totalUsers ?? 0);
+  const jobs = useAnimatedCounter(stats?.totalJobs ?? 0);
+  const apply = useAnimatedCounter(stats?.totalApplicationsSent ?? 0);
+  const success = useAnimatedCounter(stats?.emailOpenedPercentage ?? 0, '%');
   const chartRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     if (!chartRef.current) return;
 
+    const days = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+    const logins = loginsData?.map((d) => d.count) ?? [];
+    const applies = applicationsData?.map((d) => d.count) ?? [];
+    const errs = errorsData?.map((d) => d.count) ?? [];
+
     const chart = new Chart(chartRef.current, {
       type: 'line',
       data: {
-        labels: ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'],
+        labels: days,
         datasets: [
           {
             label: 'تسجيلات',
-            data: [18, 25, 32, 28, 41, 37, 23],
+            data: logins.length ? logins : [0, 0, 0, 0, 0, 0, 0],
             borderColor: '#1a4a8a',
             backgroundColor: 'rgba(26,74,138,.08)',
             borderWidth: 2,
@@ -72,7 +88,7 @@ export default function AdminHomeSection({ logs }: AdminHomeSectionProps) {
           },
           {
             label: 'تقديمات',
-            data: [42, 65, 58, 74, 89, 76, 54],
+            data: applies.length ? applies : [0, 0, 0, 0, 0, 0, 0],
             borderColor: '#1a6b4a',
             backgroundColor: 'rgba(26,107,74,.08)',
             borderWidth: 2,
@@ -83,7 +99,7 @@ export default function AdminHomeSection({ logs }: AdminHomeSectionProps) {
           },
           {
             label: 'أخطاء',
-            data: [2, 1, 4, 2, 1, 3, 1],
+            data: errs.length ? errs : [0, 0, 0, 0, 0, 0, 0],
             borderColor: '#c0392b',
             backgroundColor: 'rgba(192,57,43,.06)',
             borderWidth: 2,
@@ -127,7 +143,7 @@ export default function AdminHomeSection({ logs }: AdminHomeSectionProps) {
     });
 
     return () => chart.destroy();
-  }, []);
+  }, [loginsData, applicationsData, errorsData]);
 
   return (
     <section>
@@ -146,7 +162,10 @@ export default function AdminHomeSection({ logs }: AdminHomeSectionProps) {
           trendClassName={styles['stat-change']}
           value={users}
           title="المستخدمون"
-          trend={{ value: '↑ +٢٣ اليوم', direction: 'up' }}
+          trend={{
+            value: stats?.newUsersToday ? `↑ +${stats.newUsersToday} اليوم` : '',
+            direction: 'up',
+          }}
         />
 
         <StatCard
@@ -156,7 +175,10 @@ export default function AdminHomeSection({ logs }: AdminHomeSectionProps) {
           trendClassName={styles['stat-change']}
           value={jobs}
           title="الوظائف"
-          trend={{ value: '↑ +٥ جديدة', direction: 'up' }}
+          trend={{
+            value: stats?.newJobsToday ? `↑ +${stats.newJobsToday} جديدة` : '',
+            direction: 'up',
+          }}
         />
 
         <StatCard
@@ -165,8 +187,13 @@ export default function AdminHomeSection({ logs }: AdminHomeSectionProps) {
           titleClassName={styles['stat-tit']}
           trendClassName={styles['stat-change']}
           value={apply}
-          title="تقديمات اليوم"
-          trend={{ value: '↑ +٤٧ هذا الأسبوع', direction: 'up' }}
+          title="تقديمات"
+          trend={{
+            value: stats?.applicationsThisWeek
+              ? `↑ +${stats.applicationsThisWeek} هذا الأسبوع`
+              : '',
+            direction: 'up',
+          }}
         />
 
         <StatCard

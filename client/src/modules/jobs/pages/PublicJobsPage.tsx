@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { UserSearchSection } from '@/components/user/sections';
-import { useJobsList } from '@/modules/jobs/api/hooks';
+import { useJobsListQuery } from '@/modules/jobs/api/hooks';
 import type { Job, UserJob } from '@/modules/jobs/types';
 
 const ITEMS_PER_PAGE = 10;
@@ -21,11 +21,12 @@ export default function PublicJobsPage() {
   const [timeFilter, setTimeFilter] = useState('all');
   const [page, setPage] = useState(1);
 
-  const { data } = useJobsList({
+  const { data } = useJobsListQuery({
     page,
     limit: ITEMS_PER_PAGE,
     search: searchQuery || undefined,
     location: country !== 'all' ? country : undefined,
+    dateFilter: timeFilter !== 'all' ? timeFilter : undefined,
   });
 
   const jobs: UserJob[] = (data?.data?.jobs || []).map(mapJobToUserJob);
@@ -45,7 +46,8 @@ export default function PublicJobsPage() {
       onSearchQueryChange={setSearchQuery}
       onSearch={search}
       jobs={jobs}
-      visibleCount={jobs.length}
+      hasNextPage={jobs.length === ITEMS_PER_PAGE}
+      isLoadingMore={false}
       hasSearched={hasSearched}
       selectedCard={null}
       onSelectCard={() => {}}

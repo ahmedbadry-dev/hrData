@@ -13,7 +13,6 @@ import UserDashboardLayout from '@/pages/user/UserDashboardLayout';
 import DashboardHomePage from '@/pages/user/DashboardHomePage';
 import DashboardJobsPage from '@/pages/user/DashboardJobsPage';
 import DashboardSavedJobsPage from '@/pages/user/DashboardSavedJobsPage';
-import { DashboardApplicationsPage } from '@/modules/applications/pages';
 import DashboardAutoApplyPage from '@/pages/user/DashboardAutoApplyPage';
 import DashboardAnalysisPage from '@/pages/user/DashboardAnalysisPage';
 import DashboardSettingsPage from '@/pages/user/DashboardSettingsPage';
@@ -44,7 +43,6 @@ export default function AppRoutes() {
         <Route index element={<DashboardHomePage />} />
         <Route path="jobs" element={<DashboardJobsPage />} />
         <Route path="saved-jobs" element={<DashboardSavedJobsPage />} />
-        <Route path="applications" element={<DashboardApplicationsPage />} />
         <Route path="auto-apply" element={<DashboardAutoApplyPage />} />
         <Route path="analysis" element={<DashboardAnalysisPage />} />
         <Route path="settings" element={<DashboardSettingsPage />} />

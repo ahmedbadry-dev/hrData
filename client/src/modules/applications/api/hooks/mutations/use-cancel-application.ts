@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient, mutationOptions } from '@tanstack/react-query';
 import { cancelApplication } from '../../applications.service';
-import { useApplicationsListQueryOptions } from '../queries/use-applications-list';
+import type { UseMutationOptions as CustomUseMutationOptions } from '@/lib/react-query/types';
 
 export const useCancelApplicationMutationOptions = () => {
   return mutationOptions({
@@ -8,12 +8,18 @@ export const useCancelApplicationMutationOptions = () => {
   });
 };
 
-export const UseCancelApplication = () => {
+export type UseCancelApplicationMutationOptions = CustomUseMutationOptions<
+  typeof useCancelApplicationMutationOptions
+>;
+
+export const UseCancelApplication = (options?: UseCancelApplicationMutationOptions) => {
   const queryClient = useQueryClient();
   return useMutation({
     ...useCancelApplicationMutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: useApplicationsListQueryOptions().queryKey });
+    ...options,
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['applications', 'list'] });
+      options?.onSuccess?.(...args);
     },
   });
 };
