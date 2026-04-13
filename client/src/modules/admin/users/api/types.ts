@@ -22,7 +22,8 @@ export interface PaginatedUsers {
 }
 
 export interface UpdateUserRequest {
-  fullName?: string;
-  email?: string;
+  firstName?: string;
+  lastName?: string;
   phone?: string;
+  accountStatus?: 'ACTIVE' | 'SUSPENDED';
 }

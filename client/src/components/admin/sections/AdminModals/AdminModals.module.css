@@ -88,6 +88,12 @@
   border-color: var(--accent);
 }
 
+.readonly-field {
+  background: var(--cream) !important;
+  color: var(--muted) !important;
+  cursor: not-allowed;
+}
+
 .modal-actions {
   display: flex;
   gap: 10px;

@@ -1,6 +1,7 @@
 import type { JobLocation } from 'generated/prisma';
 import { llmClient } from '@/config/llm';
 import logger from '@/shared/utils/logger.util';
+import { Groq } from 'groq-sdk';
 
 export interface JobEnrichmentResult {
   title: string;
@@ -21,48 +22,51 @@ export interface JobEnrichmentResponse {
 }
 
 export class JobEnrichmentService {
-  private readonly apiUrl = `${llmClient.baseUrl || 'https://openrouter.ai/api/v1'}/chat/completions`;
-  private readonly model = 'google/gemma-4-31b-it:free';
+  private groq: Groq | null = null;
+
+  constructor() {
+    if (llmClient.isConfigured) {
+      // pass baseURL if customized, else rely on groq default
+      const options: any = { apiKey: llmClient.apiKey };
+      if (llmClient.baseUrl) {
+        options.baseURL = llmClient.baseUrl;
+      }
+      this.groq = new Groq(options);
+    }
+  }
 
   async enrich(bodyText: string, sourceUrl: string): Promise<JobEnrichmentResponse> {
-    if (!llmClient.isConfigured) {
-      throw new Error('LLM is not configured (missing OpenRouter API key)');
+    if (!llmClient.isConfigured || !this.groq) {
+      throw new Error('LLM is not configured (missing GROQ API key)');
     }
 
     const prompt = this.buildPrompt(bodyText, sourceUrl);
 
     try {
-      const response = await fetch(this.apiUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${llmClient.apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://kafoo.ai',
-          'X-Title': 'Kafoo App',
-        },
-        body: JSON.stringify({
-          model: this.model,
-          messages: [
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-          reasoning: { enabled: true },
-        }),
+      const chatCompletion = await this.groq.chat.completions.create({
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        model: 'qwen/qwen3-32b',
+        temperature: 0.6,
+        max_completion_tokens: 4096,
+        top_p: 0.95,
+        stream: true,
+        reasoning_effort: 'default',
+        stop: null,
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`OpenRouter API error: ${response.status} ${errorText}`);
+      let rawText = '';
+      for await (const chunk of chatCompletion) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        rawText += content;
+        process.stdout.write(content);
       }
 
-      const result = (await response.json()) as any;
-      const assistantMessage = result.choices[0].message;
-      const rawText = assistantMessage.content || '';
-
-      // If we needed to continue the conversation in the future,
-      // we would preserve assistantMessage.reasoning_details
+      console.log(''); // Newline after stream finishes
 
       // Clean markdown code blocks if the model wrapped the JSON
       const cleanText = rawText

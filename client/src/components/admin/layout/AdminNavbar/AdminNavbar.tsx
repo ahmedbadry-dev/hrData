@@ -1,3 +1,4 @@
+import { useAuth } from '@/modules/auth/api/hooks';
 import styles from './AdminNavbar.module.css';
 
 interface AdminNavbarProps {
@@ -5,6 +6,9 @@ interface AdminNavbarProps {
 }
 
 export default function AdminNavbar({ onToggleSidebar }: AdminNavbarProps) {
+  const { data: authData } = useAuth();
+  const firstName = authData?.user?.firstName || authData?.user?.fullName?.split(' ')[0] || '';
+
   return (
     <header className={styles['site-header']}>
       <div className={styles['header-left']}>
@@ -34,7 +38,7 @@ export default function AdminNavbar({ onToggleSidebar }: AdminNavbarProps) {
       </div>
 
       <div className={styles['header-right']}>
-        <span className={styles['admin-user']}>مرحباً، المدير ◈</span>
+        <span className={styles['admin-user']}>مرحباً، {firstName}</span>
         <div className={styles['header-stamp']}>
           إدارة
           <br />

@@ -1,6 +1,6 @@
 # Kafoo Project Full Documentation
 
-Last Updated: 2026-04-10
+Last Updated: 2026-04-13
 
 ## 1) Project Overview
 
@@ -10,11 +10,12 @@ Kafoo is a monorepo web application with:
 - Monorepo orchestration via npm workspaces in root
 
 Current implementation status summary:
-- Core backend foundation is implemented (Express boot, middleware stack, Prisma wiring, Redis, BullMQ queues, mailer setup).
-- Main backend functional modules implemented: auth, jobs, admin users management, tracking pixel, health checks.
-- Frontend UI for landing/auth/user/admin is implemented with RTL-oriented Arabic UX.
-- A large part of frontend is currently mock/localStorage-driven and not fully connected to backend APIs yet.
-- Some backend tests are present, mainly around auth, jobs DTO/service behavior, middleware, crypto, and error handling.
+- Core backend foundation is fully operational (Express, Middleware, Prisma, Redis, BullMQ).
+- Most planned backend functional modules are implemented: auth, jobs, applications, cvs, gmail, analytics, notifications, tracking pixel, health checks.
+- Scraper system is implemented with job enrichment using LLM (Groq) and scheduled workers.
+- Frontend UI is mature with RTL Arabic support.
+- Frontend migration to a modular structure (src/modules) is underway, with core features (auth, jobs, applications) now connected to real backend APIs using React Query.
+- Backend test coverage has expanded to include new modules like analytics.
 
 ## 2) Monorepo and Workspaces
 
@@ -61,11 +62,17 @@ Root scripts:
 3. server/src/router.ts mounts:
    - /health -> health module
    - /v1 -> versioned API routes
-4. server/src/v1/routes.ts mounts current modules:
+4. server/src/v1/routes.ts mounts all active modules:
    - /auth
    - /jobs
    - /track
    - /admin/users
+   - /admin/analytics
+   - /admin/notifications
+   - /notifications (user-specific)
+   - /applications
+   - /cvs
+   - /gmail (OAuth integration)
 
 ### Backend middleware chain
 - helmet
@@ -95,7 +102,7 @@ Key backend env groups from server/.env.example:
 - JWT: access/refresh/verification secrets and expirations
 - Encryption: ENCRYPTION_KEY (hex)
 - SMTP: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM
-- Optional LLM: LLM_API_KEY, LLM_BASE_URL
+- LLM Integration: GROQ_API_KEY (currently migrated to Groq)
 - URLs: APP_URL, API_URL, CORS_ALLOWED_ORIGINS
 
 Main backend config files:
@@ -106,6 +113,7 @@ Main backend config files:
 - server/src/config/mailer.config.ts
 - server/src/config/llm.ts
 - server/src/config/constants.ts
+- server/src/scraper/worker/scraper.scheduler.ts (Scraper logic)
 
 ## 6) Database Schema Documentation (Prisma)
 
@@ -509,6 +517,106 @@ All endpoints require:
 - Validation: UserIdParamDtoSchema
 - Purpose: delete user and related data in transaction
 
+### Applications Endpoints
+Mounted at /api/v1/applications
+
+All endpoints require authentication middleware.
+
+1. GET /api/v1/applications/
+- Validation: GetApplicationsDtoSchema (query)
+- Query: page, limit, status
+- Purpose: Fetch paginated list of user's applications.
+
+2. GET /api/v1/applications/:id
+- Validation: ApplicationIdParamDtoSchema
+- Purpose: Fetch single application details.
+
+3. POST /api/v1/applications/schedule
+- Validation: ScheduleApplicationsDtoSchema
+- Body: jobIds, sendTime, delayBetweenEmails, cvId
+- Purpose: Schedule applications for selected jobs using BullMQ.
+
+4. DELETE /api/v1/applications/:id
+- Validation: ApplicationIdParamDtoSchema
+- Purpose: Cancel a scheduled application.
+
+### CVs Endpoints
+Mounted at /api/v1/cvs
+
+All endpoints require authentication middleware.
+
+1. POST /api/v1/cvs/
+- Body: file (multipart/form-data)
+- Purpose: Upload a new PDF CV.
+
+2. GET /api/v1/cvs/
+- Purpose: List all CVs for the current user.
+
+3. PATCH /api/v1/cvs/:id/default
+- Validation: CvIdParamDtoSchema
+- Purpose: Set a CV as the default for applications.
+
+4. GET /api/v1/cvs/:id/file
+- Validation: CvIdParamDtoSchema
+- Purpose: Download the CV file.
+
+5. DELETE /api/v1/cvs/:id
+- Validation: CvIdParamDtoSchema
+- Purpose: Delete a CV.
+
+### Gmail (OAuth) Endpoints
+Mounted at /api/v1/gmail
+
+All endpoints require authentication middleware (except callback).
+
+1. GET /api/v1/gmail/auth-url
+- Purpose: Generate Google OAuth URL for Gmail integration.
+
+2. GET /api/v1/gmail/callback
+- Purpose: Handle Google OAuth callback and exchange codes for tokens.
+
+3. GET /api/v1/gmail/status
+- Purpose: Check if Gmail is connected and get the account email.
+
+4. DELETE /api/v1/gmail/disconnect
+- Purpose: Revoke tokens and disconnect Gmail.
+
+### Admin Analytics Endpoints
+Mounted at /api/v1/admin/analytics
+
+All endpoints require Admin role.
+
+1. GET /api/v1/admin/analytics/overview
+- Purpose: Get high-level system overview (users, jobs, applications counts).
+
+2. GET /api/v1/admin/analytics/logins-per-day
+- Purpose: Get login frequency stats.
+
+3. GET /api/v1/admin/analytics/applications-per-day
+- Purpose: Get application frequency stats.
+
+4. GET /api/v1/admin/analytics/top-jobs
+- Purpose: Get most applied-to jobs.
+
+### Notifications Endpoints
+#### Admin Endpoints
+Mounted at /api/v1/admin/notifications
+
+1. POST /api/v1/admin/notifications/create
+- Purpose: Create a notification for all users or specific groups.
+
+#### User Endpoints
+Mounted at /api/v1/notifications
+
+1. GET /api/v1/notifications/my
+- Purpose: List user notifications.
+
+2. PATCH /api/v1/notifications/mark-all-read
+- Purpose: Mark all notifications as read.
+
+3. PATCH /api/v1/notifications/:id/mark-read
+- Purpose: Mark single notification as read.
+
 ### Auth and Role Behavior
 
 Authentication:
@@ -621,25 +729,42 @@ Admin dashboard state source:
   - modal and toast states
 - Data is mock-based from adminData.ts and in-memory state.
 
+### Frontend Modular Architecture
+The frontend has migrated to a modular structure under `client/src/modules/`. Each module contains its own:
+- **api/**: React Query hooks and service calls.
+- **components/**: Module-specific UI components.
+- **hooks/**: Custom hooks for logic.
+- **types/**: TypeScript definitions.
+
+Current active modules:
+- **auth/**: Handles login, registration, password reset, and protected routes.
+- **jobs/**: Job search, filtering, and saved jobs.
+- **applications/**: Application scheduling and status tracking.
+- **cvs/**: CV management and uploads.
+
 ### Frontend data layer status
 - axios instance exists in client/src/services/api.ts with baseURL /api.
-- Most current UI flows are not yet wired to backend endpoints.
-- React Query is installed but not yet central in current implemented flow.
+- Core user flows (Auth, Jobs, Applications, CVs) are now fully wired to backend endpoints using @tanstack/react-query.
+- State management uses a combination of Zustand and React Query cache.
+- RTL support is consistently applied across all new modules.
 
 ## 10) Backend and Frontend Gaps (Current State)
 
 Implemented strongly:
-- Backend foundation and current modules listed in API section.
-- Frontend page/component system and RTL UI.
+- Backend foundation and all core modules (Auth, Jobs, Applications, CVs, Gmail, Analytics, Notifications).
+- Scraper system with LLM enrichment.
+- Frontend modular architecture and core API integration.
 
 Still missing or partial for full production feature set:
-- Additional backend domains planned in original roadmap (cvs module routes, applications endpoints, gmail oauth endpoints, analytics modules, scraper workers) are not all mounted/complete in current src route map.
-- Frontend integration with real backend data is partial/minimal and mostly mocked.
-- CI/CD and deployment documentation/workflows are not fully present in root .github folder.
+- Advanced analytics visualizations (more charts and deep-dive reports).
+- Deployment automation (full CI/CD pipelines are not yet fully documented).
+- Comprehensive end-to-end (E2E) testing suite for the integrated frontend-backend flows.
 
 ## 11) Testing Documentation
 
 Current backend tests found:
+- server/tests/analytics.dto.test.ts (New)
+- server/tests/analytics.service.test.ts (New)
 - server/tests/auth.middleware.test.ts
 - server/tests/auth.routes.binding.test.ts
 - server/tests/auth.service.login-status.test.ts
@@ -753,6 +878,12 @@ client/src/components/user/sections/UserSearchSection
 client/src/components/user/sections/UserSettingsSection
 client/src/context
 client/src/lib
+client/src/modules
+client/src/modules/admin
+client/src/modules/applications
+client/src/modules/auth
+client/src/modules/cvs
+client/src/modules/jobs
 client/src/pages
 client/src/pages/admin
 client/src/pages/auth
@@ -803,6 +934,10 @@ server/src/http
 server/src/http/middlewares
 server/src/notifications
 server/src/notifications/templates
+server/src/scraper
+server/src/scraper/ewdifh
+server/src/scraper/llm
+server/src/scraper/worker
 server/src/shared
 server/src/shared/constants
 server/src/shared/errors
@@ -811,13 +946,18 @@ server/src/shared/utils
 server/src/shared/validation
 server/src/v1
 server/src/v1/modules
+server/src/v1/modules/analytics
+server/src/v1/modules/applications
 server/src/v1/modules/auth
 server/src/v1/modules/auth/dto
 server/src/v1/modules/auth/types
+server/src/v1/modules/cvs
+server/src/v1/modules/gmail
 server/src/v1/modules/health
 server/src/v1/modules/jobs
 server/src/v1/modules/jobs/dto
 server/src/v1/modules/jobs/types
+server/src/v1/modules/notifications
 server/src/v1/modules/tracking
 server/src/v1/modules/users
 server/src/v1/modules/users/dto

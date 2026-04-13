@@ -1,3 +1,4 @@
+import { useAuth } from '@/modules/auth/api/hooks';
 import styles from './UserNavbar.module.css';
 
 interface UserNavbarProps {
@@ -6,6 +7,9 @@ interface UserNavbarProps {
 }
 
 export default function UserNavbar({ onToggleSidebar, onLogout }: UserNavbarProps) {
+  const { data: authData } = useAuth();
+  const firstName = authData?.user?.firstName || authData?.user?.fullName?.split(' ')[0] || '';
+
   return (
     <header className={styles['site-header']}>
       <div className={styles['header-left']}>
@@ -36,7 +40,7 @@ export default function UserNavbar({ onToggleSidebar, onLogout }: UserNavbarProp
       </div>
 
       <div className={styles['header-right']}>
-        <span className={styles['admin-user']}>مرحباً بك ◈</span>
+        <span className={styles['admin-user']}>مرحباً، {firstName}</span>
         <div className={styles['header-stamp']}>
           توظيف
           <br />
