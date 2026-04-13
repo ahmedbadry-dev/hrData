@@ -42,6 +42,8 @@ export default function DashboardAnalysisPage() {
     city: app.job?.location || '',
     date: app.scheduledAt || app.sentAt || null,
     status: mapStatusToUserApp(app.status),
+    retryCount: app.retryCount,
+    errorMessage: app.errorMessage,
   }));
 
   const handleCancel = (id: string) => {

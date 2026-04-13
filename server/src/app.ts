@@ -9,6 +9,7 @@ import { errorHandler } from './http/middlewares/error-handler';
 import { requestLogger } from './http/middlewares/request-logger';
 import { apiRateLimitMiddleware } from './http/middlewares/rate-limit.middleware';
 import { csrfProtectionMiddleware } from './http/middlewares/csrf.middleware';
+import { bullBoardRouter } from './config/bull-board';
 
 const buildCorsOriginValidator = (): CorsOptions['origin'] => {
   const allowedOrigins = new Set(corsConfig.allowedOrigins);
@@ -42,6 +43,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(requestLogger);
 app.use(csrfProtectionMiddleware);
+
+app.use('/admin/queues', bullBoardRouter);
 
 app.use('/api', apiRateLimitMiddleware, v1Router);
 

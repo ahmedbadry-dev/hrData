@@ -82,12 +82,12 @@ export default function UserDashboardLayout() {
   startOfWeek.setHours(0, 0, 0, 0);
 
   const weeklySentCounts = Array(7).fill(0);
-  applications.forEach((app: { createdAt?: string }) => {
+  applications.forEach((app: { createdAt?: string; status?: string }) => {
     if (!app.createdAt) return;
     const appDate = new Date(app.createdAt);
     if (appDate >= startOfWeek && appDate <= today) {
       const idx = appDate.getDay();
-      if (['SENT', 'EMAIL_SENT', 'EMAIL_OPENED'].includes(app.status)) {
+      if (app.status && ['SENT', 'EMAIL_SENT', 'EMAIL_OPENED'].includes(app.status)) {
         weeklySentCounts[idx] = (weeklySentCounts[idx] || 0) + 1;
       }
     }
