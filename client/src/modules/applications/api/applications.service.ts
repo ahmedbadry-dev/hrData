@@ -30,21 +30,39 @@ export const fetchApplicationDetail = async (id: string): Promise<ApiResponse<Ap
 export const scheduleApplication = async (
   payload: ScheduleApplicationsRequest
 ): Promise<ApiResponse<ScheduleApplicationsResponse>> => {
+  const cvData = payload.cv ? await fileToBase64(payload.cv) : undefined;
+
+  const body: Record<string, unknown> = {
+    jobIds: payload.jobIds,
+    sendTime: payload.sendTime,
+    delayBetweenEmails: payload.delayBetweenEmails,
+  };
+
+  if (payload.cv && cvData) {
+    body.cv = {
+      name: payload.cv.name,
+      type: payload.cv.type,
+      size: payload.cv.size,
+      data: cvData,
+    };
+  }
+
   const { data } = await axiosClient.post<ApiResponse<ScheduleApplicationsResponse>>(
     '/applications/schedule',
-    payload
+    body
   );
   return data;
 };
 
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export const cancelApplication = async (id: string): Promise<void> => {
   await axiosClient.delete(`/applications/${id}`);
-};
-
-export const fetchApplicationCvFile = async (cvId: string): Promise<Blob> => {
-  const response = await axiosClient.get(`/cvs/${cvId}/file`, {
-    responseType: 'blob',
-  });
-
-  return response.data as Blob;
 };

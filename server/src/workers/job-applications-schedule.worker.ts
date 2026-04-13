@@ -1,5 +1,6 @@
 import { Worker, Job } from 'bullmq';
 import { randomUUID } from 'crypto';
+import { Buffer } from 'buffer';
 
 import { jobApplicationsScheduleQueue } from '@/config/bullmq';
 import redis from '@/config/redis';
@@ -8,7 +9,6 @@ import { jobApplicationTemplate } from '@/notifications/templates/job-applicatio
 import { generateTrackingPixelUrl } from '@/shared/utils/tracking-pixel.util';
 import logger from '@/shared/utils/logger.util';
 import { ApplicationStatus } from 'generated/prisma';
-import { resolveStoredCvPath } from '@/v1/modules/cvs/cv-storage.util';
 import { GmailSender } from '@/v1/modules/gmail/gmail-sender.util';
 
 export interface JobApplicationsScheduleJobData {
@@ -19,18 +19,29 @@ export interface JobApplicationsScheduleJobData {
   hrEmail: string;
   jobTitle: string;
   companyName: string;
-  cvPath: string | null;
+  cvData: string | null;
+  cvFileName: string | null;
 }
 
 export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJobData>(
   jobApplicationsScheduleQueue.name,
   async (job: Job<JobApplicationsScheduleJobData>) => {
-    const { applicationId, userId, userName, userEmail, hrEmail, jobTitle, companyName, cvPath } =
-      job.data;
+    const {
+      applicationId,
+      userId,
+      userName,
+      userEmail,
+      hrEmail,
+      jobTitle,
+      companyName,
+      cvData,
+      cvFileName,
+    } = job.data;
 
-    const attachments: Array<{ filename: string; path: string }> = cvPath
-      ? [{ filename: 'CV.pdf', path: resolveStoredCvPath(cvPath) }]
-      : [];
+    const attachments: Array<{ filename: string; content: Buffer }> =
+      cvData && cvFileName
+        ? [{ filename: cvFileName, content: Buffer.from(cvData, 'base64') }]
+        : [];
 
     logger.info(`📧 Processing email job ${job.id} for application ${applicationId}`);
 

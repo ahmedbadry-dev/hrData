@@ -13,7 +13,6 @@ import { authRoutes } from './modules/auth/auth.routes';
 import { jobsRoutes } from './modules/jobs/jobs.routes';
 import { usersRoutes } from './modules/users/users.routes';
 import { applicationsRoutes } from './modules/applications/applications.routes';
-import { cvsRoutes } from './modules/cvs/cvs.routes';
 import trackingRoutes from './modules/tracking/tracking.routes';
 import { gmailRoutes } from './modules/gmail/gmail.routes';
 import analyticsRouter from './modules/analytics/analytics.routes';
@@ -44,7 +43,6 @@ export const v1Routes = () => {
   router.use('/admin/notifications', adminNotificationsRouter);
   router.use('/notifications', userNotificationsRouter);
   router.use('/applications', applicationsRoutes(applicationsController));
-  router.use('/cvs', cvsRoutes);
   router.use('/gmail', gmailRoutes(prisma));
 
   return router;

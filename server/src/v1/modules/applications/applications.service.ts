@@ -12,6 +12,15 @@ import { BadRequestException } from '@/shared/errors/BadRequestException';
 import { JobApplicationsScheduleJobData } from '@/workers/job-applications-schedule.worker';
 import { resolvePagination, buildPaginationMeta } from '@/shared/utils/paginate.util';
 
+interface MulterFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+}
+
 export class ApplicationsService {
   constructor(private readonly prisma: PrismaClient) {}
 
@@ -90,7 +99,7 @@ export class ApplicationsService {
     jobIds: string[],
     sendTime: string,
     delayBetweenEmails?: number,
-    cvId?: string
+    cvFile?: MulterFile
   ): Promise<ScheduleApplicationResponse> {
     const savedJobs = await this.prisma.savedJob.findMany({
       where: {
@@ -104,20 +113,7 @@ export class ApplicationsService {
       throw new BadRequestException(APPLICATIONS_CONSTANTS.MESSAGES.JOB_NOT_SAVED);
     }
 
-    let cv = null;
-    if (cvId) {
-      cv = await this.prisma.cv.findFirst({
-        where: { id: cvId, userId },
-      });
-    }
-
-    if (!cv) {
-      cv = await this.prisma.cv.findFirst({
-        where: { userId, isDefault: true },
-      });
-    }
-
-    if (!cv) {
+    if (!cvFile) {
       throw new BadRequestException(APPLICATIONS_CONSTANTS.MESSAGES.NO_DEFAULT_CV);
     }
 
@@ -146,10 +142,12 @@ export class ApplicationsService {
       throw new BadRequestException(APPLICATIONS_CONSTANTS.MESSAGES.NO_VALID_HR_EMAILS);
     }
 
+    const cvData = cvFile.buffer.toString('base64');
+    const cvFileName = cvFile.originalname;
+
     const applicationsToCreate = validSavedJobs.map((savedJob) => ({
       userId,
       jobId: savedJob.jobId,
-      cvId: cv.id,
       status: ApplicationStatus.SCHEDULED,
       scheduledAt,
     }));
@@ -180,7 +178,8 @@ export class ApplicationsService {
         hrEmail: savedJob.job.hrEmail!,
         jobTitle: savedJob.job.title,
         companyName: savedJob.job.companyName,
-        cvPath: cv.fileUrl,
+        cvData,
+        cvFileName,
       };
 
       if (isImmediate) {
@@ -241,7 +240,6 @@ export class ApplicationsService {
     return {
       id: application.id,
       jobId: application.jobId,
-      cvId: application.cvId,
       status: application.status,
       scheduledAt: application.scheduledAt,
       sentAt: application.sentAt,

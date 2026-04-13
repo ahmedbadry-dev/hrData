@@ -3,8 +3,6 @@ import type { SavedJob } from '@/components/user/sections/userData';
 import { EmptyState, PageHeader } from '@/components/common';
 import { Button, Input } from '@/components/ui';
 import styles from './UserAutoApplySection.module.css';
-import { useCvsList, useUploadCv } from '@/modules/cvs/api/hooks';
-import type { Cv } from '@/modules/cvs/api/cvs.service';
 
 interface UserAutoApplySectionProps {
   savedJobs: SavedJob[];
@@ -12,12 +10,16 @@ interface UserAutoApplySectionProps {
   gmailEmail: string | null;
   onGoToSettings: () => void;
   onGoSavedJobs: () => void;
-  onStartSending: (payload: {
-    selected: SavedJob[];
-    scheduleTime: string;
-    delay: string;
-    cvId: string | null;
-  }) => void;
+  onStartSending: (
+    payload: {
+      selected: SavedJob[];
+      scheduleTime: string;
+      delay: string;
+      cv: File | null;
+    },
+    onSuccess: () => void,
+    onError: () => void
+  ) => void;
   onGoAnalytics: () => void;
   onGoHome: () => void;
 }
@@ -48,21 +50,16 @@ export default function UserAutoApplySection({
   );
   const [subject] = useState('طلب انضمام — [المسمى الوظيفي]');
   const [body] = useState(professionalEmailBody);
-  const [selectedCvId, setSelectedCvId] = useState<string | null>(null);
+  const [selectedCv, setSelectedCv] = useState<File | null>(null);
   const [scheduleTime, setScheduleTime] = useState('immediately');
   const [delay, setDelay] = useState('30');
-
-  const { data: cvsData } = useCvsList();
-  const uploadCvMutation = useUploadCv();
-
-  const cvs = cvsData?.data || [];
 
   const selectedJobs = useMemo(
     () => savedJobs.filter((_, index) => selectedMap[index]),
     [savedJobs, selectedMap]
   );
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -76,14 +73,7 @@ export default function UserAutoApplySection({
       return;
     }
 
-    try {
-      const result = await uploadCvMutation.mutateAsync({ file, isDefault: cvs.length === 0 });
-      if (result.data) {
-        setSelectedCvId(result.data.id);
-      }
-    } catch {
-      alert('حدث خطأ في رفع الملف');
-    }
+    setSelectedCv(file);
   };
 
   if (!gmailConnected) {
@@ -193,9 +183,7 @@ export default function UserAutoApplySection({
 
         <div className={styles['summary-card']}>
           <div className={styles['company-tag']}>عدد الرسائل: {selectedJobs.length}</div>
-          <div className={styles['meta-chip']}>
-            الملف المرفق: {cvs.find((c: Cv) => c.id === selectedCvId)?.fileName ?? 'لا يوجد'}
-          </div>
+          <div className={styles['meta-chip']}>الملف المرفق: {selectedCv?.name ?? 'لا يوجد'}</div>
         </div>
 
         <div className={styles['control-bar']}>
@@ -204,10 +192,13 @@ export default function UserAutoApplySection({
           </Button>
           <Button
             className={styles['btn-primary']}
-            disabled={!selectedCvId}
+            disabled={!selectedCv}
             onClick={() => {
-              onStartSending({ selected: selectedJobs, scheduleTime, delay, cvId: selectedCvId });
-              setStep(3);
+              onStartSending(
+                { selected: selectedJobs, scheduleTime, delay, cv: selectedCv },
+                () => setStep(3),
+                () => {}
+              );
             }}
           >
             بدء الإرسال 🚀
@@ -251,36 +242,12 @@ export default function UserAutoApplySection({
       <div className={styles['field-wrap']}>
         <span className={styles['search-label']}>السيرة الذاتية</span>
 
-        {cvs.length > 0 && (
-          <div className={styles['cv-list']}>
-            {cvs.map((cv: Cv) => (
-              <label key={cv.id} className={styles['cv-option']}>
-                <input
-                  type="radio"
-                  name="cv"
-                  checked={selectedCvId === cv.id}
-                  onChange={() => setSelectedCvId(cv.id)}
-                />
-                <span>{cv.fileName}</span>
-                {cv.isDefault && <span className={styles['default-badge']}>افتراضي</span>}
-              </label>
-            ))}
-          </div>
-        )}
-
-        <label className={`${styles['upload-box']} ${selectedCvId ? styles.selected : ''}`}>
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={handleFileUpload}
-            disabled={uploadCvMutation.isPending}
-          />
-          {selectedCvId ? (
-            <span style={{ color: 'var(--green)', fontWeight: 600 }}>
-              ✓ {cvs.find((c: Cv) => c.id === selectedCvId)?.fileName}
-            </span>
+        <label className={`${styles['upload-box']} ${selectedCv ? styles.selected : ''}`}>
+          <input type="file" accept=".pdf" onChange={handleFileSelect} />
+          {selectedCv ? (
+            <span style={{ color: 'var(--green)', fontWeight: 600 }}>✓ {selectedCv.name}</span>
           ) : (
-            <span>{uploadCvMutation.isPending ? 'جاري الرفع...' : 'اختر أو ارفع سيرة ذاتية'}</span>
+            <span>اختر ملف PDF</span>
           )}
         </label>
       </div>

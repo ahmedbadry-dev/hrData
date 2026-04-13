@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { authenticationMiddleware } from '../../../http/middlewares/auth.middleware';
 import {
   validateParamsMiddleware,
@@ -9,6 +10,18 @@ import { ScheduleApplicationsDtoSchema } from './dto/schedule-applications.dto';
 import { ApplicationIdParamDtoSchema } from './dto/application-id-param.dto';
 import { GetApplicationsDtoSchema } from './dto/get-applications.dto';
 import { ApplicationsController } from './applications.controller';
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'));
+    }
+  },
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 export const applicationsRoutes = (applicationsController: ApplicationsController): Router => {
   const router = Router();
@@ -30,6 +43,7 @@ export const applicationsRoutes = (applicationsController: ApplicationsControlle
   router.post(
     '/schedule',
     authenticationMiddleware,
+    upload.single('cv'),
     validateBodyMiddleware(ScheduleApplicationsDtoSchema),
     applicationsController.scheduleApplications
   );
