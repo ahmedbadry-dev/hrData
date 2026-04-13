@@ -130,7 +130,10 @@ export const gmailOAuthConfig = {
     'GMAIL_OAUTH_REDIRECT_URI',
     `${emailConfig.serverUrl}/api/v1/gmail/callback`
   ),
-  scope: getEnvVariable('GMAIL_OAUTH_SCOPE', 'openid email profile https://mail.google.com/'),
+  scope: getEnvVariable(
+    'GMAIL_OAUTH_SCOPE',
+    'openid email https://www.googleapis.com/auth/gmail.send'
+  ),
 };
 
 export const encryptionConfig = {
