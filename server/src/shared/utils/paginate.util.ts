@@ -85,3 +85,11 @@ export const buildMeta = (
   const meta = buildPaginationMeta(total, page, limit);
   return { page: meta.page, limit: meta.limit, total: meta.total, totalPages: meta.totalPages };
 };
+
+export const paginateResult = (
+  total: number,
+  page: number,
+  limit: number
+): { page: number; limit: number; total: number; totalPages: number } => {
+  return buildMeta(total, page, limit);
+};

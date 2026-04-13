@@ -6,6 +6,7 @@ import { ApplicationStatus, Prisma, PrismaClient } from 'generated/prisma';
 import { verifyEmailTemplate } from './templates/verify-email.template';
 import { resetPasswordTemplate } from './templates/reset-password.template';
 import { applicationStatusTemplate } from './templates/application-status.template';
+import { announcementTemplate } from './templates/announcement.template';
 import { appConfig, emailConfig } from '@/config/env.config';
 import logger from '@/shared/utils/logger.util';
 import { transporterSingleton } from '@/config/mailer.config';
@@ -124,6 +125,19 @@ export class NotificationsService {
 
       throw new InternalServerError('Failed to send application status email');
     }
+  }
+
+  async sendAnnouncementEmail(
+    recipientName: string,
+    recipientEmail: string,
+    title: string,
+    message: string
+  ): Promise<void> {
+    await this.sendEmail({
+      to: recipientEmail,
+      subject: `إعلان جديد - ${title}`,
+      html: announcementTemplate(recipientName, title, message),
+    });
   }
 }
 

@@ -12,11 +12,33 @@ import {
   AUTH_REQUIRED_EVENT,
   getAccessToken,
   removeAccessToken,
+  SESSION_HINT_COOKIE_NAME,
   setAccessToken as setAccessTokenInMemory,
 } from '@/services/api';
 import type { AuthContextType } from '@/modules/auth/types/auth-context.types';
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+const hasCookie = (cookieName: string): boolean => {
+  if (typeof document === 'undefined') {
+    return false;
+  }
+
+  const escapedName = cookieName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(?:^|; )${escapedName}=`).test(document.cookie);
+};
+
+const clearSessionHintCookie = (): void => {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  document.cookie = `${SESSION_HINT_COOKIE_NAME}=; Max-Age=0; path=/; SameSite=Strict`;
+};
+
+const hasSessionRestoreHint = (): boolean => {
+  return Boolean(getAccessToken()) || hasCookie(SESSION_HINT_COOKIE_NAME);
+};
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -32,7 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [accessToken, setAccessToken] = useState<string | null>(getAccessToken());
   const [gmailConnected, setGmailConnected] = useState(false);
   const [gmailEmail, setGmailEmail] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(hasSessionRestoreHint);
 
   const applyGmailState = useCallback((status: GmailStatusResponse | null) => {
     setGmailConnected(Boolean(status?.connected));
@@ -48,6 +70,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const clearSession = useCallback(() => {
     removeAccessToken();
+    clearSessionHintCookie();
     setAccessToken(null);
     setUser(null);
     applyGmailState(null);
@@ -64,6 +87,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [applyGmailState]);
 
   const restoreSession = useCallback(async () => {
+    if (!hasSessionRestoreHint()) {
+      setIsLoading(false);
+      return;
+    }
+
     // If a restore is already in flight (e.g. from StrictMode double-mount),
     // wait for the existing one instead of starting a second refresh call.
     if (restorePromise) {
