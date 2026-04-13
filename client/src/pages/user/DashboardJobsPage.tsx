@@ -24,27 +24,29 @@ export default function DashboardJobsPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [country, setCountry] = useState('all');
   const [timeFilter, setTimeFilter] = useState('all');
+  const [page, setPage] = useState(1);
 
   const queryParams = {
     limit: ITEMS_PER_PAGE,
+    page,
     search: searchQuery || undefined,
     location: country !== 'all' ? country : undefined,
     dateFilter: timeFilter !== 'all' ? timeFilter : undefined,
   };
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useJobsList(queryParams);
+  const { data, isLoading } = useJobsList(queryParams);
 
-  const jobs: UserJob[] =
-    data?.pages.flatMap((page: any) => page.data.jobs.map(mapJobToUserJob)) || [];
+  const jobs: UserJob[] = data?.data?.jobs.map(mapJobToUserJob) || [];
+  const pagination = data?.data?.pagination;
+  const totalPages = pagination?.totalPages || 1;
 
   const search = () => {
     setHasSearched(true);
+    setPage(1);
   };
 
-  const loadMore = () => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
   };
 
   const handleSaveAllVisible = () => {
@@ -57,12 +59,13 @@ export default function DashboardJobsPage() {
       onSearchQueryChange={setSearchQuery}
       onSearch={search}
       jobs={jobs}
-      hasNextPage={hasNextPage}
-      isLoadingMore={isFetchingNextPage}
+      currentPage={page}
+      totalPages={totalPages}
+      isLoading={isLoading}
       hasSearched={hasSearched}
       selectedCard={null}
       onSelectCard={() => {}}
-      onLoadMore={loadMore}
+      onPageChange={handlePageChange}
       savedJobs={savedJobs}
       onToggleSave={toggleSave}
       onSaveAllVisible={handleSaveAllVisible}

@@ -22,6 +22,8 @@ export interface UserApplication {
   city: string;
   date: string | null;
   status: 'pending' | 'sent' | 'opened' | 'replied' | 'failed';
+  retryCount?: number;
+  errorMessage?: string | null;
 }
 
 export const mockJobs: UserJob[] = Array.from({ length: 20 }, (_, i) => ({

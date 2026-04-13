@@ -2,6 +2,7 @@ import type { AdminUser } from '@/components/admin/sections/adminData';
 import { EmptyState, PageHeader, SearchBox } from '@/components/common';
 import { Avatar, Badge, Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { getPageNumbers } from '@/lib/pagination';
 import styles from './AdminUsersSection.module.css';
 
 interface AdminUsersSectionProps {
@@ -16,6 +17,10 @@ interface AdminUsersSectionProps {
   onToggleActivity: (id: string | number) => void;
   onSearch?: () => void;
   openActivityId: number | null;
+  currentPage?: number;
+  totalPages?: number;
+  isLoading?: boolean;
+  onPageChange?: (page: number) => void;
 }
 
 export default function AdminUsersSection({
@@ -30,6 +35,10 @@ export default function AdminUsersSection({
   onToggleActivity,
   onSearch,
   openActivityId,
+  currentPage = 1,
+  totalPages = 1,
+  isLoading,
+  onPageChange,
 }: AdminUsersSectionProps) {
   const activeUser = users.find((u) => u.id === openActivityId) ?? null;
 
@@ -163,6 +172,41 @@ export default function AdminUsersSection({
               </tbody>
             </table>
           </div>
+
+          {totalPages > 1 && onPageChange && (
+            <div className={styles['pagination']}>
+              <Button
+                className={styles['page-btn']}
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={currentPage === 1 || isLoading}
+              >
+                السابق
+              </Button>
+              {getPageNumbers(currentPage, totalPages).map((page, idx) =>
+                page === '...' ? (
+                  <span key={`ellipsis-${idx}`} className={styles['ellipsis']}>
+                    ...
+                  </span>
+                ) : (
+                  <Button
+                    key={page}
+                    className={cn(styles['page-btn'], page === currentPage && styles['active'])}
+                    onClick={() => onPageChange(page)}
+                    disabled={isLoading}
+                  >
+                    {page}
+                  </Button>
+                )
+              )}
+              <Button
+                className={styles['page-btn']}
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={currentPage === totalPages || isLoading}
+              >
+                التالي
+              </Button>
+            </div>
+          )}
         </>
       )}
 

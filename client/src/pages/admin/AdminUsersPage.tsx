@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AdminUsersSection, AdminModals } from '@/components/admin/sections';
 import {
-  useUsersListInfinite,
+  useUsersList,
   useSuspendUser,
   useActivateUser,
   useDeleteUser,
@@ -15,6 +15,7 @@ export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterValue>('all');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
@@ -25,7 +26,8 @@ export default function AdminUsersPage() {
     status: 'active' as 'active' | 'suspended',
   });
 
-  const { data, refetch } = useUsersListInfinite({
+  const { data, refetch, isLoading } = useUsersList({
+    page,
     keyword: debouncedSearch || undefined,
     status: activeFilter === 'all' ? undefined : activeFilter,
     limit: 20,
@@ -44,32 +46,34 @@ export default function AdminUsersPage() {
   }, [searchQuery]);
 
   useEffect(() => {
+    setPage(1);
     refetch();
-  }, [activeFilter]);
+  }, [activeFilter, debouncedSearch]);
 
   const users: AdminUser[] =
-    data?.pages
-      .flatMap((page) => page.data?.users ?? [])
-      ?.map((u, idx) => ({
-        id: u.id,
-        name: u.fullName,
-        email: u.email,
-        phone: u.phone || '',
-        status:
-          u.accountStatus === 'ACTIVE'
-            ? 'active'
-            : u.accountStatus === 'PENDING_VERIFICATION'
-              ? 'pending_verification'
-              : 'suspended',
-        applied: 0,
-        saved: 0,
-        joined: new Date(u.joinDate).toLocaleDateString('ar-SA', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        }),
-        rowIndex: idx + 1,
-      })) || [];
+    data?.data?.users?.map((u, idx) => ({
+      id: u.id,
+      name: u.fullName,
+      email: u.email,
+      phone: u.phone || '',
+      status:
+        u.accountStatus === 'ACTIVE'
+          ? 'active'
+          : u.accountStatus === 'PENDING_VERIFICATION'
+            ? 'pending_verification'
+            : 'suspended',
+      applied: 0,
+      saved: 0,
+      joined: new Date(u.joinDate).toLocaleDateString('ar-SA', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
+      rowIndex: idx + 1,
+    })) || [];
+
+  const pagination = data?.data?.pagination;
+  const totalPages = pagination?.totalPages || 1;
 
   const handleToggleStatus = (id: string | number) => {
     const user = users.find((u) => String(u.id) === String(id));
@@ -156,6 +160,10 @@ export default function AdminUsersPage() {
         onToggleActivity={handleToggleActivity}
         onSearch={() => refetch()}
         openActivityId={null}
+        currentPage={page}
+        totalPages={totalPages}
+        isLoading={isLoading}
+        onPageChange={setPage}
       />
 
       <AdminModals

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { UserSearchSection } from '@/components/user/sections';
-import { useJobsListQuery } from '@/modules/jobs/api/hooks';
+import { useJobsList } from '@/modules/jobs/api/hooks';
 import type { Job, UserJob } from '@/modules/jobs/types';
 
 const ITEMS_PER_PAGE = 10;
@@ -21,7 +21,7 @@ export default function PublicJobsPage() {
   const [timeFilter, setTimeFilter] = useState('all');
   const [page, setPage] = useState(1);
 
-  const { data } = useJobsListQuery({
+  const { data } = useJobsList({
     page,
     limit: ITEMS_PER_PAGE,
     search: searchQuery || undefined,
@@ -30,14 +30,11 @@ export default function PublicJobsPage() {
   });
 
   const jobs: UserJob[] = (data?.data?.jobs || []).map(mapJobToUserJob);
+  const totalPages = data?.data?.pagination?.totalPages || 1;
 
   const search = () => {
     setHasSearched(true);
     setPage(1);
-  };
-
-  const loadMore = () => {
-    setPage((prev) => prev + 1);
   };
 
   return (
@@ -46,12 +43,13 @@ export default function PublicJobsPage() {
       onSearchQueryChange={setSearchQuery}
       onSearch={search}
       jobs={jobs}
-      hasNextPage={jobs.length === ITEMS_PER_PAGE}
-      isLoadingMore={false}
+      currentPage={page}
+      totalPages={totalPages}
+      isLoading={false}
       hasSearched={hasSearched}
       selectedCard={null}
       onSelectCard={() => {}}
-      onLoadMore={loadMore}
+      onPageChange={setPage}
       savedJobs={[]}
       onToggleSave={() => {}}
       onSaveAllVisible={() => {}}

@@ -2,12 +2,12 @@ import { useState, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { UserLayout, type UserPageKey } from '@/components/user/layout';
 import {
-  useSavedJobs,
+  useSavedJobsList,
   useSaveJob,
   useUnsaveJob,
   useSaveJobs,
   useUnsaveJobs,
-  useJobsListQuery,
+  useJobsList,
 } from '@/modules/jobs/api/hooks';
 import { UseApplicationsList, UseScheduleApplication } from '@/modules/applications/api/hooks';
 import { useLogoutMutation } from '@/modules/auth/api/mutations';
@@ -55,8 +55,8 @@ export default function UserDashboardLayout() {
   const gmailConnected = authData.gmailConnected;
   const gmailEmail = authData.gmailEmail;
 
-  const { data: savedJobsData, isLoading: isLoadingSaved } = useSavedJobs({ limit: 100 });
-  const { data: jobsData } = useJobsListQuery({ limit: 1 });
+  const { data: savedJobsData, isLoading: isLoadingSaved } = useSavedJobsList({ limit: 100 });
+  const { data: jobsData } = useJobsList({ limit: 1 });
   const { data: applicationsData } = UseApplicationsList({ limit: 100 });
   const saveJobMutation = useSaveJob();
   const saveJobsMutation = useSaveJobs();
@@ -82,12 +82,12 @@ export default function UserDashboardLayout() {
   startOfWeek.setHours(0, 0, 0, 0);
 
   const weeklySentCounts = Array(7).fill(0);
-  applications.forEach((app: { createdAt?: string }) => {
+  applications.forEach((app: { createdAt?: string; status?: string }) => {
     if (!app.createdAt) return;
     const appDate = new Date(app.createdAt);
     if (appDate >= startOfWeek && appDate <= today) {
       const idx = appDate.getDay();
-      if (['SENT', 'EMAIL_SENT', 'EMAIL_OPENED'].includes(app.status)) {
+      if (app.status && ['SENT', 'EMAIL_SENT', 'EMAIL_OPENED'].includes(app.status)) {
         weeklySentCounts[idx] = (weeklySentCounts[idx] || 0) + 1;
       }
     }

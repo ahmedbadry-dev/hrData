@@ -1,18 +1,15 @@
 import { Worker, Job } from 'bullmq';
-import nodemailer, { Transporter } from 'nodemailer';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { randomUUID } from 'crypto';
 
 import { jobApplicationsScheduleQueue } from '@/config/bullmq';
 import redis from '@/config/redis';
-import { emailConfig } from '@/config/env.config';
-import { transporterSingleton } from '@/config/mailer.config';
 import prismaClient from '@/config/db.config';
 import { jobApplicationTemplate } from '@/notifications/templates/job-application.template';
 import { generateTrackingPixelUrl } from '@/shared/utils/tracking-pixel.util';
 import logger from '@/shared/utils/logger.util';
 import { ApplicationStatus } from 'generated/prisma';
 import { resolveStoredCvPath } from '@/v1/modules/cvs/cv-storage.util';
+import { GmailSender } from '@/v1/modules/gmail/gmail-sender.util';
 
 export interface JobApplicationsScheduleJobData {
   applicationId: string;
@@ -28,12 +25,12 @@ export interface JobApplicationsScheduleJobData {
 export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJobData>(
   jobApplicationsScheduleQueue.name,
   async (job: Job<JobApplicationsScheduleJobData>) => {
-    const { applicationId, userName, userEmail, hrEmail, jobTitle, companyName, cvPath } = job.data;
+    const { applicationId, userId, userName, userEmail, hrEmail, jobTitle, companyName, cvPath } =
+      job.data;
 
-    let attachmentPath: string | undefined;
-    if (cvPath) {
-      attachmentPath = resolveStoredCvPath(cvPath);
-    }
+    const attachments: Array<{ filename: string; path: string }> = cvPath
+      ? [{ filename: 'CV.pdf', path: resolveStoredCvPath(cvPath) }]
+      : [];
 
     logger.info(`📧 Processing email job ${job.id} for application ${applicationId}`);
 
@@ -53,29 +50,16 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
         trackingPixelUrl,
       });
 
-      const mailOptions: nodemailer.SendMailOptions = {
-        from: emailConfig.from,
-        replyTo: userEmail,
+      const gmailSender = new GmailSender(prismaClient);
+      const { messageId } = await gmailSender.sendEmail(userId, {
         to: hrEmail,
         subject: `طلب انضمام — ${jobTitle}`,
-        html,
-        attachments: attachmentPath
-          ? [
-              {
-                filename: 'CV.pdf',
-                path: attachmentPath,
-              },
-            ]
-          : [],
-      };
+        htmlBody: html,
+        replyTo: userEmail,
+        attachments: attachments.length > 0 ? attachments : undefined,
+      });
 
-      const info = await transporterSingleton.sendMail(mailOptions);
-      logger.info(`✅ Email sent to ${hrEmail} — messageId: ${info.messageId}`);
-
-      const hasSmtpCredentials = emailConfig.user && emailConfig.password;
-      if (!hasSmtpCredentials) {
-        logger.info(`🔍 Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
-      }
+      logger.info(`✅ Email sent to ${hrEmail} — messageId: ${messageId}`);
 
       await prismaClient.application.update({
         where: { id: applicationId },
@@ -91,13 +75,22 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
       const errorMessage = error instanceof Error ? error.message : String(error);
       logger.error(`❌ Failed to send email for application ${applicationId}: ${errorMessage}`);
 
+      const isScopeError = errorMessage.includes('insufficient authentication scopes');
+      if (isScopeError) {
+        logger.error(
+          `⚠️ Gmail scope error - user ${userId} needs to reconnect their Gmail account`
+        );
+      }
+
       const retryCount = job.attemptsMade || 0;
 
       await prismaClient.application.update({
         where: { id: applicationId },
         data: {
           status: retryCount >= 3 ? ApplicationStatus.FAILED : ApplicationStatus.SCHEDULED,
-          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          errorMessage: isScopeError
+            ? 'Gmail not connected or insufficient permissions. Please reconnect from Settings.'
+            : errorMessage,
           retryCount,
         },
       });

@@ -1,13 +1,16 @@
 import type { UserApplication } from '@/components/user/sections/userData';
 import { EmptyState, PageHeader } from '@/components/common';
 import { Button } from '@/components/ui';
+import { cn } from '@/lib/utils';
+import { getPageNumbers } from '@/lib/pagination';
 import styles from './UserAnalyticsSection.module.css';
 
 interface UserAnalyticsSectionProps {
   applications: UserApplication[];
-  hasNextPage?: boolean;
-  isLoadingMore?: boolean;
-  onLoadMore?: () => void;
+  currentPage?: number;
+  totalPages?: number;
+  isLoading?: boolean;
+  onPageChange?: (page: number) => void;
   onCancel?: (id: string) => void;
 }
 
@@ -16,14 +19,15 @@ const statusColors: Record<UserApplication['status'], { color: string; text: str
   sent: { color: '#1a6b4a', text: 'تم الإرسال' },
   opened: { color: '#1a6b4a', text: 'تم الفتح' },
   replied: { color: '#c0392b', text: 'تم الرد' },
-  failed: { color: '#c0392b', text: 'فشل الإرسال' },
+  failed: { color: '#c0392b', text: 'فشل' },
 };
 
 export default function UserAnalyticsSection({
   applications,
-  hasNextPage,
-  isLoadingMore,
-  onLoadMore,
+  currentPage = 1,
+  totalPages = 1,
+  isLoading,
+  onPageChange,
   onCancel,
 }: UserAnalyticsSectionProps) {
   if (applications.length === 0) {
@@ -88,6 +92,24 @@ export default function UserAnalyticsSection({
                   <div style={{ color: status.color }}>{status.text}</div>
                 </div>
 
+                {app.status === 'failed' && (app.retryCount ?? 0) > 0 && (
+                  <div
+                    className={styles['status-box']}
+                    style={{ background: '#c0392b15', borderColor: '#c0392b' }}
+                  >
+                    <div style={{ color: '#c0392b' }}>محاولات: {app.retryCount}</div>
+                  </div>
+                )}
+
+                {app.status === 'failed' && app.errorMessage && (
+                  <div
+                    className={styles['status-box']}
+                    style={{ background: '#c0392b15', borderColor: '#c0392b' }}
+                  >
+                    <div style={{ color: '#c0392b', fontSize: '10px' }}>{app.errorMessage}</div>
+                  </div>
+                )}
+
                 {onCancel && app.id && app.status === 'pending' && (
                   <button
                     type="button"
@@ -108,13 +130,40 @@ export default function UserAnalyticsSection({
         })}
       </div>
 
-      {hasNextPage ? (
-        <div className={styles['load-more-wrap']}>
-          <Button className={styles['btn-load-more']} onClick={onLoadMore} disabled={isLoadingMore}>
-            {isLoadingMore ? 'جاري التحميل...' : 'تحميل المزيد'}
+      {totalPages > 1 && onPageChange && (
+        <div className={styles['pagination']}>
+          <Button
+            className={styles['page-btn']}
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1 || isLoading}
+          >
+            السابق
+          </Button>
+          {getPageNumbers(currentPage, totalPages).map((page, idx) =>
+            page === '...' ? (
+              <span key={`ellipsis-${idx}`} className={styles['ellipsis']}>
+                ...
+              </span>
+            ) : (
+              <Button
+                key={page}
+                className={cn(styles['page-btn'], page === currentPage && styles['active'])}
+                onClick={() => onPageChange(page)}
+                disabled={isLoading}
+              >
+                {page}
+              </Button>
+            )
+          )}
+          <Button
+            className={styles['page-btn']}
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages || isLoading}
+          >
+            التالي
           </Button>
         </div>
-      ) : null}
+      )}
     </section>
   );
 }
