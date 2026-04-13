@@ -8,6 +8,7 @@ import { validateQueryMiddleware } from '../../../http/middlewares/validation.mi
 import { AnalyticsController } from './analytics.controller';
 import { AnalyticsService } from './analytics.service';
 import { GetDailyStatsDtoSchema } from './dto/get-daily-stats.dto';
+import { GetTopJobsDtoSchema } from './dto/get-top-jobs.dto';
 import { ANALYTICS_ROUTES } from './analytics.constants';
 
 const analyticsService = new AnalyticsService();
@@ -18,6 +19,7 @@ router.use(authenticationMiddleware);
 router.use(authorizationMiddleware(UserRole.ADMIN));
 
 router.get(ANALYTICS_ROUTES.GET_OVERVIEW, analyticsController.getOverview);
+router.get(ANALYTICS_ROUTES.GET_ADVANCED_OVERVIEW, analyticsController.getAdvancedOverview);
 router.get(
   ANALYTICS_ROUTES.GET_LOGINS_PER_DAY,
   validateQueryMiddleware(GetDailyStatsDtoSchema),
@@ -32,6 +34,20 @@ router.get(
   ANALYTICS_ROUTES.GET_EMAIL_ERRORS_PER_DAY,
   validateQueryMiddleware(GetDailyStatsDtoSchema),
   analyticsController.getEmailErrorsPerDay
+);
+router.get(
+  ANALYTICS_ROUTES.GET_USER_ACTIVITY_PER_DAY,
+  validateQueryMiddleware(GetDailyStatsDtoSchema),
+  analyticsController.getUserActivityPerDay
+);
+router.get(
+  ANALYTICS_ROUTES.GET_TOP_JOBS,
+  validateQueryMiddleware(GetTopJobsDtoSchema),
+  analyticsController.getTopAppliedJobs
+);
+router.get(
+  ANALYTICS_ROUTES.GET_APPLICATION_STATUS_DISTRIBUTION,
+  analyticsController.getApplicationStatusDistribution
 );
 
 export default router;
