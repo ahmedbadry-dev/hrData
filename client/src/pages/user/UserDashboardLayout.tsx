@@ -181,15 +181,43 @@ export default function UserDashboardLayout() {
       return;
     }
 
-    const sendTime = payload.scheduleTime === 'now' ? 'immediately' : payload.scheduleTime;
+    const scheduleTimeToIso = (scheduleTime: string): string => {
+      if (scheduleTime === 'immediately' || scheduleTime === 'now') return 'immediately';
+
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      const currentDay = now.getDate();
+
+      if (scheduleTime === 'tomorrow8am') {
+        return new Date(currentYear, currentMonth, currentDay + 1, 8, 0, 0).toISOString();
+      }
+      if (scheduleTime === 'test10s') return new Date(now.getTime() + 10 * 1000).toISOString();
+      if (scheduleTime === 'test1m') return new Date(now.getTime() + 60 * 1000).toISOString();
+      if (scheduleTime === 'test5m') return new Date(now.getTime() + 5 * 60 * 1000).toISOString();
+
+      const match = scheduleTime.match(/^(\d{1,2})(am|pm)$/);
+      if (match) {
+        let hours = parseInt(match[1], 10);
+        const period = match[2];
+        if (period === 'pm' && hours !== 12) hours += 12;
+        if (period === 'am' && hours === 12) hours = 0;
+        const scheduled = new Date(currentYear, currentMonth, currentDay, hours, 0, 0);
+        if (scheduled.getTime() <= now.getTime()) scheduled.setDate(scheduled.getDate() + 1);
+        return scheduled.toISOString();
+      }
+
+      return scheduleTime;
+    };
+
+    const sendTime = scheduleTimeToIso(payload.scheduleTime);
     const delayBetweenEmails = parseInt(payload.delay, 10) * 1000;
+
+    console.log(`📤 Client scheduleTime mapping: "${payload.scheduleTime}" → "${sendTime}"`);
 
     scheduleApplicationMutation.mutate(
       { jobIds, sendTime, delayBetweenEmails, cvId: payload.cvId! },
       {
-        onSuccess: () => {
-          navigate('/dashboard/analysis');
-        },
         onError: (error: unknown) => {
           alert('حدث خطأ في جدولة التقديم');
           console.error(error);

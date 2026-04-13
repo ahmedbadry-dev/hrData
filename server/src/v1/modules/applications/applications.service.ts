@@ -137,6 +137,11 @@ export class ApplicationsService {
 
     const validSavedJobs = savedJobs.filter((savedJob) => Boolean(savedJob.job.hrEmail));
 
+    console.log(
+      `📅 Schedule time: sendTime="${sendTime}" → scheduledAt=${scheduledAt?.toISOString()} (isImmediate=${isImmediate})`
+    );
+    console.log(`   delay between emails: ${delay}ms, total jobs: ${validSavedJobs.length}`);
+
     if (validSavedJobs.length === 0) {
       throw new BadRequestException(APPLICATIONS_CONSTANTS.MESSAGES.NO_VALID_HR_EMAILS);
     }

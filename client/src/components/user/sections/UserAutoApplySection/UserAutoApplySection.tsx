@@ -49,7 +49,7 @@ export default function UserAutoApplySection({
   const [subject] = useState('طلب انضمام — [المسمى الوظيفي]');
   const [body] = useState(professionalEmailBody);
   const [selectedCvId, setSelectedCvId] = useState<string | null>(null);
-  const [scheduleTime, setScheduleTime] = useState('now');
+  const [scheduleTime, setScheduleTime] = useState('immediately');
   const [delay, setDelay] = useState('30');
 
   const { data: cvsData } = useCvsList();
@@ -113,7 +113,7 @@ export default function UserAutoApplySection({
           title={`تم جدولة إرسال ${selectedJobs.length} رسائل بنجاح!`}
           description={
             <>
-              الوقت: {scheduleTime === 'now' ? 'فوراً' : scheduleTime}
+              الوقت: {scheduleTime === 'immediately' ? 'فوراً' : scheduleTime}
               <br />
               التأخير: {delay} ثانية بين كل رسالة
             </>
@@ -162,7 +162,14 @@ export default function UserAutoApplySection({
         <div className={styles['field-wrap']}>
           <span className={styles['search-label']}>وقت بدء الإرسال</span>
           <select value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)}>
-            <option value="now">فوراً</option>
+            <option value="immediately">فوراً</option>
+            {import.meta.env.VITE_APP_ENV === 'development' && (
+              <>
+                <option value="test10s">10 ثواني (اختبار)</option>
+                <option value="test1m">1 دقيقة (اختبار)</option>
+                <option value="test5m">5 دقائق (اختبار)</option>
+              </>
+            )}
             <option value="8am">8:00 صباحاً (موصى به)</option>
             <option value="9am">9:00 صباحاً</option>
             <option value="10am">10:00 صباحاً</option>
