@@ -1,7 +1,16 @@
-import prisma from '@/config/db.config';
+import pLimit from 'p-limit';
+import logger from '@/shared/utils/logger.util';
+import { notificationsService as mailNotificationsService } from '@/notifications/notifications.service';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
 import { paginateResult } from '@/shared/utils/paginate.util';
-import { Notification, NotificationTarget, Prisma, UserRole } from 'generated/prisma';
+import {
+  Notification,
+  NotificationTarget,
+  Prisma,
+  PrismaClient,
+  UserRole,
+  UserStatus,
+} from 'generated/prisma';
 import { NOTIFICATIONS_MESSAGES } from './notifications.constants';
 import {
   CreateNotificationInput,
@@ -9,9 +18,13 @@ import {
   NotificationsListResult,
 } from './notifications.types';
 
+const ANNOUNCEMENT_EMAIL_CONCURRENCY = 10;
+
 export class NotificationsService {
+  constructor(private readonly prisma: PrismaClient) {}
+
   async createNotification(data: CreateNotificationInput): Promise<NotificationItem> {
-    const notification = await prisma.notification.create({
+    const notification = await this.prisma.notification.create({
       data: {
         userId: null,
         title: data.title,
@@ -21,6 +34,12 @@ export class NotificationsService {
       },
     });
 
+    void this.sendAnnouncementEmails(notification).catch((error) => {
+      logger.error(`❌ Failed to send announcement emails for notification ${notification.id}`, {
+        error,
+      });
+    });
+
     return this.mapNotificationItem(notification);
   }
 
@@ -28,13 +47,13 @@ export class NotificationsService {
     const skip = (page - 1) * limit;
 
     const [notifications, total] = await Promise.all([
-      prisma.notification.findMany({
+      this.prisma.notification.findMany({
         where: { userId: null },
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.notification.count({ where: { userId: null } }),
+      this.prisma.notification.count({ where: { userId: null } }),
     ]);
 
     return {
@@ -44,13 +63,13 @@ export class NotificationsService {
   }
 
   async deleteNotification(id: string): Promise<void> {
-    const existing = await prisma.notification.findUnique({ where: { id } });
+    const existing = await this.prisma.notification.findUnique({ where: { id } });
 
     if (!existing) {
       throw new NotFoundException(NOTIFICATIONS_MESSAGES.NOT_FOUND);
     }
 
-    await prisma.notification.delete({ where: { id } });
+    await this.prisma.notification.delete({ where: { id } });
   }
 
   async getMyNotifications(
@@ -71,13 +90,13 @@ export class NotificationsService {
     };
 
     const [notifications, total] = await Promise.all([
-      prisma.notification.findMany({
+      this.prisma.notification.findMany({
         where: whereClause,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.notification.count({ where: whereClause }),
+      this.prisma.notification.count({ where: whereClause }),
     ]);
 
     return {
@@ -87,7 +106,7 @@ export class NotificationsService {
   }
 
   async markAsRead(notificationId: string, userId: string): Promise<void> {
-    const notification = await prisma.notification.findFirst({
+    const notification = await this.prisma.notification.findFirst({
       where: {
         id: notificationId,
         OR: [{ userId }, { userId: null }],
@@ -102,14 +121,14 @@ export class NotificationsService {
       return;
     }
 
-    await prisma.notification.updateMany({
+    await this.prisma.notification.updateMany({
       where: { id: notificationId, userId },
       data: { isRead: true },
     });
   }
 
   async markAllAsRead(userId: string): Promise<void> {
-    await prisma.notification.updateMany({
+    await this.prisma.notification.updateMany({
       where: { userId, isRead: false },
       data: { isRead: true },
     });
@@ -125,5 +144,70 @@ export class NotificationsService {
       isRead: notification.isRead,
       createdAt: notification.createdAt,
     };
+  }
+
+  private async sendAnnouncementEmails(
+    notification: Pick<Notification, 'id' | 'title' | 'body' | 'target'>
+  ): Promise<void> {
+    const recipients = await this.getAnnouncementRecipients(notification.target);
+
+    if (recipients.length === 0) {
+      logger.info(`📣 No recipients found for notification ${notification.id}`);
+      return;
+    }
+
+    const limit = pLimit(ANNOUNCEMENT_EMAIL_CONCURRENCY);
+
+    await Promise.all(
+      recipients.map((recipient) =>
+        limit(() =>
+          mailNotificationsService.sendAnnouncementEmail(
+            this.buildRecipientName(recipient.firstName, recipient.lastName, recipient.email),
+            recipient.email,
+            notification.title,
+            notification.body
+          )
+        )
+      )
+    );
+
+    logger.info(
+      `📣 Announcement notification ${notification.id} processed for ${recipients.length} recipients`
+    );
+  }
+
+  private async getAnnouncementRecipients(target: NotificationTarget): Promise<
+    Array<{
+      email: string;
+      firstName: string;
+      lastName: string;
+    }>
+  > {
+    const where: Prisma.UserWhereInput = {
+      status: UserStatus.ACTIVE,
+      emailVerified: true,
+    };
+
+    if (target === NotificationTarget.USER) {
+      where.role = UserRole.USER;
+    }
+
+    if (target === NotificationTarget.ADMIN) {
+      where.role = { in: [UserRole.ADMIN, UserRole.SUPER_ADMIN] };
+    }
+
+    return this.prisma.user.findMany({
+      where,
+      select: {
+        email: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+  }
+
+  private buildRecipientName(firstName: string, lastName: string, email: string): string {
+    const fullName = `${firstName} ${lastName}`.trim();
+    return fullName || email;
   }
 }

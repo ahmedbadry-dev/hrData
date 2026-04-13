@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import prisma from '@/config/db.config';
 import { UserRole } from 'generated/prisma';
 import {
   authenticationMiddleware,
@@ -16,7 +17,7 @@ import { GetNotificationsDtoSchema } from './dto/get-notifications.dto';
 import { NotificationIdParamDtoSchema } from './dto/notification-id-param.dto';
 import { NOTIFICATIONS_ROUTES } from './notifications.constants';
 
-const notificationsService = new NotificationsService();
+const notificationsService = new NotificationsService(prisma);
 const notificationsController = new NotificationsController(notificationsService);
 
 export const adminNotificationsRouter = Router();
