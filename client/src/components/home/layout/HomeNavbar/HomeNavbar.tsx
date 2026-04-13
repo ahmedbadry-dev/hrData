@@ -8,7 +8,7 @@ export default function HomeNavbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { openLogin, openRegister } = useAuthModal();
-  const { data: authData } = useAuth();
+  const { data: authData, isLoading } = useAuth();
   const logoutMutation = useLogoutMutation();
 
   const isAuthenticated = authData?.isAuthenticated ?? false;
@@ -36,7 +36,7 @@ export default function HomeNavbar() {
           </>
         )}
 
-        {isAuthenticated ? (
+        {isLoading ? null : isAuthenticated ? (
           <>
             <span className={styles['nav-welcome']}>مرحباً {greetingName}</span>
             <button

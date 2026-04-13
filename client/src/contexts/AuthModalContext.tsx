@@ -1,4 +1,13 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+import { useAuthContext } from '@/modules/auth/context';
 
 type ModalType = 'login' | 'register' | 'forgotPassword' | null;
 
@@ -18,31 +27,51 @@ interface AuthModalContextType {
 const AuthModalContext = createContext<AuthModalContextType | null>(null);
 
 export function AuthModalProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuthContext();
   const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const canShowAuthModals = !isAuthenticated && !isLoading;
 
-  const isLoginOpen = activeModal === 'login';
-  const isRegisterOpen = activeModal === 'register';
-  const isForgotPasswordOpen = activeModal === 'forgotPassword';
+  const isLoginOpen = canShowAuthModals && activeModal === 'login';
+  const isRegisterOpen = canShowAuthModals && activeModal === 'register';
+  const isForgotPasswordOpen = canShowAuthModals && activeModal === 'forgotPassword';
+
+  useEffect(() => {
+    if (isAuthenticated || isLoading) {
+      setActiveModal(null);
+    }
+  }, [isAuthenticated, isLoading]);
 
   const openLogin = useCallback(() => {
+    if (!canShowAuthModals) {
+      return;
+    }
+
     setActiveModal('login');
-  }, []);
+  }, [canShowAuthModals]);
 
   const closeLogin = useCallback(() => {
     setActiveModal((prev) => (prev === 'login' ? null : prev));
   }, []);
 
   const openRegister = useCallback(() => {
+    if (!canShowAuthModals) {
+      return;
+    }
+
     setActiveModal('register');
-  }, []);
+  }, [canShowAuthModals]);
 
   const closeRegister = useCallback(() => {
     setActiveModal((prev) => (prev === 'register' ? null : prev));
   }, []);
 
   const openForgotPassword = useCallback(() => {
+    if (!canShowAuthModals) {
+      return;
+    }
+
     setActiveModal('forgotPassword');
-  }, []);
+  }, [canShowAuthModals]);
 
   const closeForgotPassword = useCallback(() => {
     setActiveModal((prev) => (prev === 'forgotPassword' ? null : prev));

@@ -3,11 +3,13 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import LoginModal from '@/components/auth/LoginModal/LoginModal';
 import RegisterModal from '@/components/auth/RegisterModal/RegisterModal';
 import { useAuthModal } from '@/contexts/AuthModalContext';
+import { useAuthContext } from '@/modules/auth/context';
 
 export default function AuthModals() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated } = useAuthContext();
   const {
     isLoginOpen,
     isRegisterOpen,
@@ -32,6 +34,11 @@ export default function AuthModals() {
   };
 
   useEffect(() => {
+    if (isAuthenticated) {
+      closeAll();
+      return;
+    }
+
     if (mode === 'login') {
       openLogin();
     } else if (mode === 'register') {
@@ -41,7 +48,22 @@ export default function AuthModals() {
     } else if (!mode) {
       // Only close if there's no mode param — don't interfere with programmatic opens
     }
-  }, [mode, openLogin, openRegister, openForgotPassword]);
+  }, [isAuthenticated, mode, closeAll, openLogin, openRegister, openForgotPassword]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !mode) {
+      return;
+    }
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('mode');
+    nextParams.delete('redirect');
+    navigateWithParams(nextParams);
+  }, [isAuthenticated, mode, searchParams]);
+
+  if (isAuthenticated) {
+    return null;
+  }
 
   const handleLoginClose = () => {
     closeAll();

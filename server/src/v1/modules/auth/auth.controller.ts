@@ -129,6 +129,14 @@ export class AuthController {
 
     res.cookie(AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_NAME, token, cookieOptions);
 
+    res.cookie(AUTH_CONSTANTS.SESSION_HINT_COOKIE_NAME, '1', {
+      httpOnly: false,
+      secure: appConfig.isProduction,
+      sameSite: 'strict',
+      path: '/',
+      ...(rememberMe ? { maxAge: AUTH_CONSTANTS.REMEMBER_ME_MAX_AGE } : {}),
+    });
+
     res.cookie(AUTH_CONSTANTS.CSRF_TOKEN_COOKIE_NAME, csrfToken, {
       httpOnly: false,
       secure: appConfig.isProduction,
@@ -139,6 +147,7 @@ export class AuthController {
 
   private clearRefreshTokenCookie(res: Response) {
     res.clearCookie(AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_NAME);
+    res.clearCookie(AUTH_CONSTANTS.SESSION_HINT_COOKIE_NAME);
     res.clearCookie(AUTH_CONSTANTS.CSRF_TOKEN_COOKIE_NAME);
   }
 }

@@ -26,6 +26,7 @@ export interface PaginatedResponse<T> {
 
 export const API_BASE_URL = '/api/v1';
 export const AUTH_REQUIRED_EVENT = 'auth:required';
+export const SESSION_HINT_COOKIE_NAME = 'sessionHint';
 export const CSRF_COOKIE_NAME = 'csrfToken';
 export const CSRF_HEADER_NAME = 'x-csrf-token';
 
