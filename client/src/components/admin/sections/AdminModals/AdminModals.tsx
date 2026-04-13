@@ -42,8 +42,8 @@ export default function AdminModals({
 }: AdminModalsProps) {
   return (
     <>
-      <div className={cn(styles['modal-overlay'], editOpen && styles.open)}>
-        <div className={styles['modal-box']}>
+      <div className={cn(styles['modal-overlay'], editOpen && styles.open)} onClick={onCloseEdit}>
+        <div className={styles['modal-box']} onClick={(e) => e.stopPropagation()}>
           <button className={styles['modal-close']} onClick={onCloseEdit}>
             ✕
           </button>
@@ -64,7 +64,8 @@ export default function AdminModals({
               type="email"
               dir="ltr"
               value={editForm.email}
-              onChange={(e) => onEditChange({ email: e.target.value })}
+              readOnly
+              className={styles['readonly-field']}
             />
           </div>
 

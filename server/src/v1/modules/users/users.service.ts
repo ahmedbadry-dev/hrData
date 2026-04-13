@@ -61,6 +61,14 @@ export class UsersService {
     if (data.firstName !== undefined) updateData.firstName = data.firstName;
     if (data.lastName !== undefined) updateData.lastName = data.lastName;
     if (data.phone !== undefined) updateData.phone = data.phone;
+    if (data.accountStatus !== undefined) {
+      const statusMap: Record<string, UserStatus> = {
+        ACTIVE: UserStatus.ACTIVE,
+        SUSPENDED: UserStatus.SUSPENDED,
+        PENDING_VERIFICATION: UserStatus.PENDING_VERIFICATION,
+      };
+      updateData.status = statusMap[data.accountStatus];
+    }
 
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },

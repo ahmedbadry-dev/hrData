@@ -106,8 +106,23 @@ export default function AdminUsersPage() {
 
   const handleSaveEdit = () => {
     if (!editingUserId) return;
+    const nameParts = editForm.name.trim().split(/\s+/);
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    const statusMap: Record<string, 'ACTIVE' | 'SUSPENDED'> = {
+      active: 'ACTIVE',
+      suspended: 'SUSPENDED',
+    };
     updateMutation.mutate(
-      { id: editingUserId, data: { fullName: editForm.name } },
+      {
+        id: editingUserId,
+        data: {
+          firstName,
+          lastName,
+          phone: editForm.phone,
+          accountStatus: statusMap[editForm.status],
+        },
+      },
       {
         onSuccess: () => {
           refetch();
