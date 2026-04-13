@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useAuth } from '@/modules/auth/api/hooks/use-auth';
 import { useLogoutMutation } from '@/modules/auth/api/mutations';
@@ -6,6 +6,7 @@ import styles from '@/components/home/layout/HomeLayout/HomeLayout.module.css';
 
 export default function HomeNavbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { openLogin, openRegister } = useAuthModal();
   const { data: authData } = useAuth();
   const logoutMutation = useLogoutMutation();
@@ -13,6 +14,7 @@ export default function HomeNavbar() {
   const isAuthenticated = authData?.isAuthenticated ?? false;
   const firstName = authData?.user?.firstName ?? authData?.user?.fullName?.split(' ')[0] ?? '';
   const greetingName = firstName.trim() || 'بك';
+  const isHomePage = location.pathname === '/';
 
   return (
     <nav className={styles.nav}>
@@ -20,15 +22,19 @@ export default function HomeNavbar() {
         كُفُـؤ<em>.</em>
       </Link>
       <div className={styles['nav-links']}>
-        <Link className={styles['nav-link']} to="/#how">
-          كيف يعمل
-        </Link>
-        <Link className={styles['nav-link']} to="/#features">
-          المميزات
-        </Link>
-        <Link className={styles['nav-link']} to="/#cta">
-          للشركات
-        </Link>
+        {isHomePage && (
+          <>
+            <Link className={styles['nav-link']} to="/#how">
+              كي�� يعمل
+            </Link>
+            <Link className={styles['nav-link']} to="/#features">
+              المميزات
+            </Link>
+            <Link className={styles['nav-link']} to="/#cta">
+              للشركات
+            </Link>
+          </>
+        )}
 
         {isAuthenticated ? (
           <>
