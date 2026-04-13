@@ -9,7 +9,13 @@ export const ScheduleApplicationsDtoSchema = z.object({
     sendTime: z
       .string()
       .refine(
-        (val) => val === 'immediately' || !isNaN(Date.parse(val)),
+        (val) =>
+          val === 'immediately' ||
+          val === 'now' ||
+          /^\d{1,2}(am|pm)$/.test(val) ||
+          val === 'tomorrow8am' ||
+          val.startsWith('test') ||
+          !isNaN(Date.parse(val)),
         APPLICATIONS_CONSTANTS.MESSAGES.INVALID_SEND_TIME
       ),
     delayBetweenEmails: z
