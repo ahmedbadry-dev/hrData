@@ -17,6 +17,7 @@ const mapStatusToUserApp = (status: ApplicationStatusType): UserApplication['sta
     case 'EMAIL_OPENED':
       return 'opened';
     case 'FAILED':
+    case 'EMAIL_FAILED':
       return 'failed';
     default:
       return 'pending';

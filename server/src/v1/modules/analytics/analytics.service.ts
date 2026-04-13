@@ -383,7 +383,9 @@ export class AnalyticsService {
       }),
       this.prisma.application.count({
         where: {
-          status: ApplicationStatus.FAILED,
+          status: {
+            in: [ApplicationStatus.FAILED, ApplicationStatus.EMAIL_FAILED],
+          },
         },
       }),
       this.prisma.application.count({

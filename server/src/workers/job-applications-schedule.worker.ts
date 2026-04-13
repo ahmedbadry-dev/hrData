@@ -87,7 +87,7 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
       await prismaClient.application.update({
         where: { id: applicationId },
         data: {
-          status: retryCount >= 3 ? ApplicationStatus.FAILED : ApplicationStatus.SCHEDULED,
+          status: retryCount >= 2 ? ApplicationStatus.EMAIL_FAILED : ApplicationStatus.SCHEDULED,
           errorMessage: isScopeError
             ? 'Gmail not connected or insufficient permissions. Please reconnect from Settings.'
             : errorMessage,

@@ -165,7 +165,7 @@ export default function AdminAnalyticsSection({
         new Chart(autoSuccessRef.current, {
           type: 'doughnut',
           data: {
-            labels: ['ناجح', 'فشل', 'قيد الإرسال'],
+            labels: ['ناجح', 'فشل الإرسال', 'قيد الإرسال'],
             datasets: [
               {
                 data: [

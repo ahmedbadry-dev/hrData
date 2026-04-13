@@ -4,7 +4,8 @@ export type ApplicationStatusType =
   | 'SENT'
   | 'FAILED'
   | 'EMAIL_SENT'
-  | 'EMAIL_OPENED';
+  | 'EMAIL_OPENED'
+  | 'EMAIL_FAILED';
 
 export interface ApplicationJob {
   id: string;
@@ -56,11 +57,12 @@ export interface ScheduleApplicationsResponse {
 
 export const APPLICATION_STATUS_LABELS: Record<ApplicationStatusType, string> = {
   SCHEDULED: 'مجدولة',
-  SENDING: 'جاري الإرسال',
+  SENDING: 'قيد الارسال',
   SENT: 'تم الإرسال',
   FAILED: 'فشلت',
   EMAIL_SENT: 'تم الإرسال',
   EMAIL_OPENED: 'تم الاطلاع',
+  EMAIL_FAILED: 'فشل الارسال',
 };
 
 export const APPLICATION_STATUS_COLORS: Record<ApplicationStatusType, string> = {
@@ -70,4 +72,5 @@ export const APPLICATION_STATUS_COLORS: Record<ApplicationStatusType, string> = 
   FAILED: 'var(--error)',
   EMAIL_SENT: 'var(--green)',
   EMAIL_OPENED: 'var(--green)',
+  EMAIL_FAILED: 'var(--error)',
 };

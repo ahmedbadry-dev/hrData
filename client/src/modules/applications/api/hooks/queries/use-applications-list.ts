@@ -12,7 +12,7 @@ export const useApplicationsListQueryOptions = (params?: {
     queryKey: [...APPLICATIONS_QUERY_KEY, 'list', params] as const,
     queryFn: () => fetchApplicationsList(params),
     staleTime: 1000 * 60 * 5,
-    refetchInterval: 10 * 1000,
+    refetchInterval: 5 * 1000,
   });
 };
 

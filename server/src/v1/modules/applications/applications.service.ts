@@ -193,7 +193,7 @@ export class ApplicationsService {
             delay: 5000,
           },
           removeOnComplete: true,
-          removeOnFail: false,
+          removeOnFail: true,
         });
       } else {
         await jobApplicationsScheduleQueue.add(jobApplicationsScheduleQueue.name, jobData, {
@@ -204,7 +204,7 @@ export class ApplicationsService {
             delay: 5000,
           },
           removeOnComplete: true,
-          removeOnFail: false,
+          removeOnFail: true,
         });
       }
     }

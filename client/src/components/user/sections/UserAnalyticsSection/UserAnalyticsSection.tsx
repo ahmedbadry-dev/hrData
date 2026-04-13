@@ -92,24 +92,6 @@ export default function UserAnalyticsSection({
                   <div style={{ color: status.color }}>{status.text}</div>
                 </div>
 
-                {app.status === 'failed' && (app.retryCount ?? 0) > 0 && (
-                  <div
-                    className={styles['status-box']}
-                    style={{ background: '#c0392b15', borderColor: '#c0392b' }}
-                  >
-                    <div style={{ color: '#c0392b' }}>محاولات: {app.retryCount}</div>
-                  </div>
-                )}
-
-                {app.status === 'failed' && app.errorMessage && (
-                  <div
-                    className={styles['status-box']}
-                    style={{ background: '#c0392b15', borderColor: '#c0392b' }}
-                  >
-                    <div style={{ color: '#c0392b', fontSize: '10px' }}>{app.errorMessage}</div>
-                  </div>
-                )}
-
                 {onCancel && app.id && app.status === 'pending' && (
                   <button
                     type="button"

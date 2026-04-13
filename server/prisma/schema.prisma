@@ -27,6 +27,7 @@ enum ApplicationStatus {
   FAILED
   EMAIL_SENT
   EMAIL_OPENED
+  EMAIL_FAILED
 }
 
 enum NotificationType {
