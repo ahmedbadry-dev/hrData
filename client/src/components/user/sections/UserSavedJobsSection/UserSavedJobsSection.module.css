@@ -112,11 +112,48 @@
   flex-shrink: 0;
   width: 36px;
   height: 36px;
-  border: 1.5px solid var(--gold);
-  background: var(--gold);
+  border: 1.5px solid var(--warm);
+  background: none;
   border-radius: 50%;
   cursor: pointer;
-  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.save-btn:active {
+  transform: scale(0.95);
+}
+
+.save-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--warm);
+  stroke-width: 2;
+  transition: all 0.2s;
+  pointer-events: none;
+}
+
+.save-btn:hover {
+  border-color: var(--gold);
+}
+
+.save-btn:hover svg {
+  stroke: var(--gold);
+  transform: scale(1.1);
+}
+
+.save-btn.saved {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.save-btn.saved svg {
+  fill: white;
+  stroke: white;
 }
 
 .card-email {
