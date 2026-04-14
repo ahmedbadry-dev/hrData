@@ -22,7 +22,7 @@ export default function DashboardAutoApplyPage() {
       onGoToSettings={() => navigate('/dashboard/settings', { state: { returnToAutoApply: true } })}
       onGoSavedJobs={() => navigate('/dashboard/saved-jobs')}
       onStartSending={startSending}
-      onGoAnalytics={() => navigate('/dashboard/analysis')}
+      onGoAnalytics={() => (window.location.href = '/dashboard/analysis')}
       onGoHome={() => navigate('/dashboard')}
     />
   );

@@ -35,7 +35,9 @@ export default function DashboardSettingsPage() {
     navigate('/dashboard/auto-apply', { replace: true });
   }, [gmailConnected, navigate]);
 
-  const returnToAutoApply = location.state?.returnToAutoApply || false;
+  const queryParams = new URLSearchParams(location.search);
+  const returnToAutoApply =
+    location.state?.returnToAutoApply || queryParams.get('returnToAutoApply') === 'true';
 
   const handleConnect = async () => {
     if (returnToAutoApply) {
@@ -57,7 +59,7 @@ export default function DashboardSettingsPage() {
       returnToAutoApply={returnToAutoApply}
       onConnect={handleConnect}
       onDisconnect={handleDisconnect}
-      onGoAutoApply={() => navigate('/dashboard/auto-apply')}
+      onGoAutoApply={() => (window.location.href = '/dashboard/auto-apply')}
     />
   );
 }
