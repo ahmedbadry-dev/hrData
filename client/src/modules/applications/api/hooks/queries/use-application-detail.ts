@@ -10,6 +10,6 @@ export const useApplicationDetailQueryOptions = (id: string) => {
   });
 };
 
-export const UseApplicationDetail = (id: string) => {
+export const useApplicationDetail = (id: string) => {
   return useQuery(useApplicationDetailQueryOptions(id));
 };

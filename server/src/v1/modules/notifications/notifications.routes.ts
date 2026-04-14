@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import prisma from '@/config/db.config';
 import { UserRole } from 'generated/prisma';
 import {
   authenticationMiddleware,
@@ -11,55 +10,57 @@ import {
   validateQueryMiddleware,
 } from '../../../http/middlewares/validation.middleware';
 import { NotificationsController } from './notifications.controller';
-import { NotificationsService } from './notifications.service';
 import { CreateNotificationDtoSchema } from './dto/create-notification.dto';
 import { GetNotificationsDtoSchema } from './dto/get-notifications.dto';
 import { NotificationIdParamDtoSchema } from './dto/notification-id-param.dto';
 import { NOTIFICATIONS_ROUTES } from './notifications.constants';
 
-const notificationsService = new NotificationsService(prisma);
-const notificationsController = new NotificationsController(notificationsService);
+export const notificationsRoutes = (
+  notificationsController: NotificationsController
+): { adminRouter: Router; userRouter: Router } => {
+  const adminRouter = Router();
 
-export const adminNotificationsRouter = Router();
+  adminRouter.use(authenticationMiddleware);
+  adminRouter.use(authorizationMiddleware(UserRole.ADMIN));
 
-adminNotificationsRouter.use(authenticationMiddleware);
-adminNotificationsRouter.use(authorizationMiddleware(UserRole.ADMIN));
+  adminRouter.post(
+    NOTIFICATIONS_ROUTES.ADMIN_CREATE,
+    validateBodyMiddleware(CreateNotificationDtoSchema),
+    notificationsController.createNotification
+  );
 
-adminNotificationsRouter.post(
-  NOTIFICATIONS_ROUTES.ADMIN_CREATE,
-  validateBodyMiddleware(CreateNotificationDtoSchema),
-  notificationsController.createNotification
-);
+  adminRouter.get(
+    NOTIFICATIONS_ROUTES.ADMIN_LIST,
+    validateQueryMiddleware(GetNotificationsDtoSchema),
+    notificationsController.listAllNotifications
+  );
 
-adminNotificationsRouter.get(
-  NOTIFICATIONS_ROUTES.ADMIN_LIST,
-  validateQueryMiddleware(GetNotificationsDtoSchema),
-  notificationsController.listAllNotifications
-);
+  adminRouter.delete(
+    NOTIFICATIONS_ROUTES.ADMIN_DELETE,
+    validateParamsMiddleware(NotificationIdParamDtoSchema),
+    notificationsController.deleteNotification
+  );
 
-adminNotificationsRouter.delete(
-  NOTIFICATIONS_ROUTES.ADMIN_DELETE,
-  validateParamsMiddleware(NotificationIdParamDtoSchema),
-  notificationsController.deleteNotification
-);
+  const userRouter = Router();
 
-export const userNotificationsRouter = Router();
+  userRouter.use(authenticationMiddleware);
 
-userNotificationsRouter.use(authenticationMiddleware);
+  userRouter.get(
+    NOTIFICATIONS_ROUTES.MY_NOTIFICATIONS,
+    validateQueryMiddleware(GetNotificationsDtoSchema),
+    notificationsController.getMyNotifications
+  );
 
-userNotificationsRouter.get(
-  NOTIFICATIONS_ROUTES.MY_NOTIFICATIONS,
-  validateQueryMiddleware(GetNotificationsDtoSchema),
-  notificationsController.getMyNotifications
-);
+  userRouter.patch(
+    NOTIFICATIONS_ROUTES.MARK_ALL_READ,
+    notificationsController.markAllAsRead
+  );
 
-userNotificationsRouter.patch(
-  NOTIFICATIONS_ROUTES.MARK_ALL_READ,
-  notificationsController.markAllAsRead
-);
+  userRouter.patch(
+    NOTIFICATIONS_ROUTES.MARK_READ,
+    validateParamsMiddleware(NotificationIdParamDtoSchema),
+    notificationsController.markAsRead
+  );
 
-userNotificationsRouter.patch(
-  NOTIFICATIONS_ROUTES.MARK_READ,
-  validateParamsMiddleware(NotificationIdParamDtoSchema),
-  notificationsController.markAsRead
-);
+  return { adminRouter, userRouter };
+};

@@ -76,11 +76,11 @@ export class AuthService {
       },
     });
 
-    try {
-      this.emailService.sendVerificationEmail(firstName + ' ' + lastName, email, emailVerifyToken);
-    } catch (emailError) {
-      logger.error('❌ Failed to send verification email:', { email, error: emailError });
-    }
+    this.emailService
+      .sendVerificationEmail(firstName + ' ' + lastName, email, emailVerifyToken)
+      .catch((emailError) => {
+        logger.error('❌ Failed to send verification email:', { email, error: emailError });
+      });
 
     return { user: excludePassword(user) };
   }
@@ -227,11 +227,18 @@ export class AuthService {
       },
     });
 
-    this.emailService.sendPasswordResetEmail(
-      updatedUser.firstName + ' ' + updatedUser.lastName,
-      updatedUser.email,
-      resetToken
-    );
+    this.emailService
+      .sendPasswordResetEmail(
+        updatedUser.firstName + ' ' + updatedUser.lastName,
+        updatedUser.email,
+        resetToken
+      )
+      .catch((emailError) => {
+        logger.error('❌ Failed to send password reset email:', {
+          email: updatedUser.email,
+          error: emailError,
+        });
+      });
 
     return FORGOT_PASSWORD_RESPONSE;
   }

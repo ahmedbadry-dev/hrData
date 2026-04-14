@@ -4,6 +4,7 @@ import { verifyAccessToken } from '@/shared/utils/jwt.util';
 import prisma from '@/config/db.config';
 import { PrismaClient, UserRole, UserStatus } from 'generated/prisma';
 import { ForbiddenException } from '@/shared/errors/ForbiddenException';
+import { excludePassword } from '@/shared/utils/exclude-password.utils';
 
 type UserLookupClient = Pick<PrismaClient, 'user'>;
 
@@ -39,7 +40,7 @@ export const createAuthenticationMiddleware = (db: UserLookupClient) => {
       throw new UnauthorizedException('User not found or session expired. Please login again.');
     }
 
-    req.user = user;
+    req.user = excludePassword(user);
     next();
   };
 };

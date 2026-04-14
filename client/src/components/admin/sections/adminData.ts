@@ -19,6 +19,13 @@ export interface AdminAnnouncement {
   date: string;
 }
 
+export const NOTIFICATION_TYPE_TO_UI: Record<string, AdminAnnouncement['type']> = {
+  INFO: 'info',
+  SUCCESS: 'success',
+  WARNING: 'warn',
+  ALERT: 'danger',
+};
+
 export interface AdminLog {
   type: 'reg' | 'apply' | 'error' | 'info';
   text: string;

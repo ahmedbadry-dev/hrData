@@ -1,168 +1,90 @@
-import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { Request, Response } from 'express';
 import ResponseHelper from '@/shared/utils/api-response';
-import { HTTP_STATUS } from '@/shared/constants/http-status.constants';
 import { AnalyticsService } from './analytics.service';
 import { ANALYTICS_MESSAGES } from './analytics.constants';
-import { GetDailyStatsDtoSchema } from './dto/get-daily-stats.dto';
-import { GetTopJobsDtoSchema } from './dto/get-top-jobs.dto';
+import { GetDailyStatsDto } from './dto/get-daily-stats.dto';
+import { GetTopJobsDto } from './dto/get-top-jobs.dto';
 
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
-  getOverview: RequestHandler = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    try {
-      const data = await this.analyticsService.getOverviewStats();
-      ResponseHelper.success(
-        res,
-        data,
-        ANALYTICS_MESSAGES.OVERVIEW_FETCHED_SUCCESSFULLY,
-        HTTP_STATUS.OK,
-        req.path
-      );
-    } catch (error) {
-      next(error);
-    }
+  getOverview = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.analyticsService.getOverviewStats();
+    return ResponseHelper.ok(res, data, ANALYTICS_MESSAGES.OVERVIEW_FETCHED_SUCCESSFULLY, req.path);
   };
 
-  getAdvancedOverview: RequestHandler = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    try {
-      const data = await this.analyticsService.getAdvancedOverview();
-      ResponseHelper.success(
-        res,
-        data,
-        ANALYTICS_MESSAGES.ADVANCED_OVERVIEW_FETCHED_SUCCESSFULLY,
-        HTTP_STATUS.OK,
-        req.path
-      );
-    } catch (error) {
-      next(error);
-    }
+  getAdvancedOverview = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.analyticsService.getAdvancedOverview();
+    return ResponseHelper.ok(
+      res,
+      data,
+      ANALYTICS_MESSAGES.ADVANCED_OVERVIEW_FETCHED_SUCCESSFULLY,
+      req.path
+    );
   };
 
-  getLoginsPerDay: RequestHandler = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    try {
-      const { query } = GetDailyStatsDtoSchema.parse({ query: req.query });
-      const data = await this.analyticsService.getLoginsPerDay(query.days);
-      ResponseHelper.success(
-        res,
-        data,
-        ANALYTICS_MESSAGES.LOGINS_PER_DAY_FETCHED_SUCCESSFULLY,
-        HTTP_STATUS.OK,
-        req.path
-      );
-    } catch (error) {
-      next(error);
-    }
+  getLoginsPerDay = async (req: Request, res: Response): Promise<Response> => {
+    const { days } = req.query as unknown as GetDailyStatsDto['query'];
+    const data = await this.analyticsService.getLoginsPerDay(days);
+    return ResponseHelper.ok(
+      res,
+      data,
+      ANALYTICS_MESSAGES.LOGINS_PER_DAY_FETCHED_SUCCESSFULLY,
+      req.path
+    );
   };
 
-  getApplicationsPerDay: RequestHandler = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    try {
-      const { query } = GetDailyStatsDtoSchema.parse({ query: req.query });
-      const data = await this.analyticsService.getApplicationsPerDay(query.days);
-      ResponseHelper.success(
-        res,
-        data,
-        ANALYTICS_MESSAGES.APPLICATIONS_PER_DAY_FETCHED_SUCCESSFULLY,
-        HTTP_STATUS.OK,
-        req.path
-      );
-    } catch (error) {
-      next(error);
-    }
+  getApplicationsPerDay = async (req: Request, res: Response): Promise<Response> => {
+    const { days } = req.query as unknown as GetDailyStatsDto['query'];
+    const data = await this.analyticsService.getApplicationsPerDay(days);
+    return ResponseHelper.ok(
+      res,
+      data,
+      ANALYTICS_MESSAGES.APPLICATIONS_PER_DAY_FETCHED_SUCCESSFULLY,
+      req.path
+    );
   };
 
-  getEmailErrorsPerDay: RequestHandler = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    try {
-      const { query } = GetDailyStatsDtoSchema.parse({ query: req.query });
-      const data = await this.analyticsService.getEmailErrorsPerDay(query.days);
-      ResponseHelper.success(
-        res,
-        data,
-        ANALYTICS_MESSAGES.EMAIL_ERRORS_PER_DAY_FETCHED_SUCCESSFULLY,
-        HTTP_STATUS.OK,
-        req.path
-      );
-    } catch (error) {
-      next(error);
-    }
+  getEmailErrorsPerDay = async (req: Request, res: Response): Promise<Response> => {
+    const { days } = req.query as unknown as GetDailyStatsDto['query'];
+    const data = await this.analyticsService.getEmailErrorsPerDay(days);
+    return ResponseHelper.ok(
+      res,
+      data,
+      ANALYTICS_MESSAGES.EMAIL_ERRORS_PER_DAY_FETCHED_SUCCESSFULLY,
+      req.path
+    );
   };
 
-  getUserActivityPerDay: RequestHandler = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    try {
-      const { query } = GetDailyStatsDtoSchema.parse({ query: req.query });
-      const data = await this.analyticsService.getUserActivityPerDay(query.days);
-      ResponseHelper.success(
-        res,
-        data,
-        ANALYTICS_MESSAGES.USER_ACTIVITY_PER_DAY_FETCHED_SUCCESSFULLY,
-        HTTP_STATUS.OK,
-        req.path
-      );
-    } catch (error) {
-      next(error);
-    }
+  getUserActivityPerDay = async (req: Request, res: Response): Promise<Response> => {
+    const { days } = req.query as unknown as GetDailyStatsDto['query'];
+    const data = await this.analyticsService.getUserActivityPerDay(days);
+    return ResponseHelper.ok(
+      res,
+      data,
+      ANALYTICS_MESSAGES.USER_ACTIVITY_PER_DAY_FETCHED_SUCCESSFULLY,
+      req.path
+    );
   };
 
-  getTopAppliedJobs: RequestHandler = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    try {
-      const { query } = GetTopJobsDtoSchema.parse({ query: req.query });
-      const data = await this.analyticsService.getTopAppliedJobs(query.limit);
-      ResponseHelper.success(
-        res,
-        data,
-        ANALYTICS_MESSAGES.TOP_APPLIED_JOBS_FETCHED_SUCCESSFULLY,
-        HTTP_STATUS.OK,
-        req.path
-      );
-    } catch (error) {
-      next(error);
-    }
+  getTopAppliedJobs = async (req: Request, res: Response): Promise<Response> => {
+    const { limit } = req.query as unknown as GetTopJobsDto['query'];
+    const data = await this.analyticsService.getTopAppliedJobs(limit);
+    return ResponseHelper.ok(
+      res,
+      data,
+      ANALYTICS_MESSAGES.TOP_APPLIED_JOBS_FETCHED_SUCCESSFULLY,
+      req.path
+    );
   };
 
-  getApplicationStatusDistribution: RequestHandler = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    try {
-      const data = await this.analyticsService.getApplicationStatusDistribution();
-      ResponseHelper.success(
-        res,
-        data,
-        ANALYTICS_MESSAGES.APPLICATION_STATUS_DISTRIBUTION_FETCHED_SUCCESSFULLY,
-        HTTP_STATUS.OK,
-        req.path
-      );
-    } catch (error) {
-      next(error);
-    }
+  getApplicationStatusDistribution = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.analyticsService.getApplicationStatusDistribution();
+    return ResponseHelper.ok(
+      res,
+      data,
+      ANALYTICS_MESSAGES.APPLICATION_STATUS_DISTRIBUTION_FETCHED_SUCCESSFULLY,
+      req.path
+    );
   };
 }

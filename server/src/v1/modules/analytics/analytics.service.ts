@@ -1,5 +1,4 @@
-import { ApplicationStatus } from 'generated/prisma';
-import db from '@/config/db.config';
+import { ApplicationStatus, PrismaClient } from 'generated/prisma';
 import {
   AdvancedOverviewStats,
   ApplicationStatusDistribution,
@@ -10,7 +9,7 @@ import {
 } from './analytics.types';
 
 export class AnalyticsService {
-  constructor(private readonly prisma = db) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   private getStartOfDay(daysAgo: number): Date {
     const date = new Date();

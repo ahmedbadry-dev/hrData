@@ -1,4 +1,5 @@
 import { NotificationTarget, NotificationType } from 'generated/prisma';
+import { PaginationMeta } from '@/shared/utils/api-response';
 
 export interface CreateNotificationInput {
   title: string;
@@ -19,8 +20,5 @@ export interface NotificationItem {
 
 export interface NotificationsListResult {
   notifications: NotificationItem[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  pagination: PaginationMeta;
 }

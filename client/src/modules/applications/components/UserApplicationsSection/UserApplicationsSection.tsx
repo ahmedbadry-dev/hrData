@@ -1,9 +1,8 @@
 import { Spinner } from '@/components/ui';
 import { EmptyState } from '@/components/common';
 import { Button } from '@/components/ui';
-import { UseApplicationsList, UseCancelApplication } from '../../api/hooks';
-import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_COLORS } from '../../types';
-import type { ApplicationStatusType } from '../../types';
+import { useApplicationsList, useCancelApplication } from '../../api/hooks';
+import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_COLORS, ApplicationStatus } from '../../types';
 import styles from './UserApplicationsSection.module.css';
 
 interface UserApplicationsSectionProps {
@@ -11,8 +10,8 @@ interface UserApplicationsSectionProps {
 }
 
 export default function UserApplicationsSection({ statusFilter }: UserApplicationsSectionProps) {
-  const { data, isLoading, error } = UseApplicationsList({ status: statusFilter });
-  const cancelMutation = UseCancelApplication();
+  const { data, isLoading, error } = useApplicationsList({ status: statusFilter });
+  const cancelMutation = useCancelApplication();
 
   if (isLoading) {
     return (
@@ -74,15 +73,15 @@ export default function UserApplicationsSection({ statusFilter }: UserApplicatio
                   <span
                     className={styles['status-chip']}
                     style={{
-                      color: APPLICATION_STATUS_COLORS[application.status as ApplicationStatusType],
+                      color: APPLICATION_STATUS_COLORS[application.status],
                     }}
                   >
-                    {APPLICATION_STATUS_LABELS[application.status as ApplicationStatusType]}
+                    {APPLICATION_STATUS_LABELS[application.status]}
                   </span>
                 </div>
               </div>
 
-              {application.status === 'SCHEDULED' && (
+              {application.status === ApplicationStatus.SCHEDULED && (
                 <Button
                   type="button"
                   variant="secondary"

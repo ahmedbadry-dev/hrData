@@ -18,7 +18,7 @@ export const useApplicationsListQueryOptions = (params?: {
 
 export type UseApplicationsListQueryOptions = ReturnType<typeof useApplicationsListQueryOptions>;
 
-export const UseApplicationsList = (params?: {
+export const useApplicationsList = (params?: {
   page?: number;
   limit?: number;
   status?: string;

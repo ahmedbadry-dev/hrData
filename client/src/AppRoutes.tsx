@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 
 import { ProtectedRoute } from '@/modules/auth/components/ProtectedRoute';
+import { UserRole } from '@/constants/enums';
 
 import AdminDashboardLayout from '@/pages/admin/AdminDashboardLayout';
 import AdminHomePage from '@/pages/admin/AdminHomePage';
@@ -35,7 +36,7 @@ export default function AppRoutes() {
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute requiredRole="USER">
+          <ProtectedRoute requiredRole={UserRole.USER}>
             <UserDashboardLayout />
           </ProtectedRoute>
         }
@@ -52,7 +53,7 @@ export default function AppRoutes() {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute requiredRole="ADMIN">
+          <ProtectedRoute requiredRole={UserRole.ADMIN}>
             <AdminDashboardLayout />
           </ProtectedRoute>
         }

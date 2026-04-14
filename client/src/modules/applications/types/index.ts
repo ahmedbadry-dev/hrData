@@ -1,11 +1,6 @@
-export type ApplicationStatusType =
-  | 'SCHEDULED'
-  | 'SENDING'
-  | 'SENT'
-  | 'FAILED'
-  | 'EMAIL_SENT'
-  | 'EMAIL_OPENED'
-  | 'EMAIL_FAILED';
+import { ApplicationStatus } from '@/constants/enums';
+
+export { ApplicationStatus };
 
 export interface ApplicationJob {
   id: string;
@@ -19,7 +14,7 @@ export interface ApplicationJob {
 export interface Application {
   id: string;
   jobId: string;
-  status: ApplicationStatusType;
+  status: ApplicationStatus;
   scheduledAt: string | null;
   sentAt: string | null;
   openedAt: string | null;
@@ -54,22 +49,22 @@ export interface ScheduleApplicationsResponse {
   applicationIds: string[];
 }
 
-export const APPLICATION_STATUS_LABELS: Record<ApplicationStatusType, string> = {
-  SCHEDULED: 'مجدولة',
-  SENDING: 'قيد الارسال',
-  SENT: 'تم الإرسال',
-  FAILED: 'فشلت',
-  EMAIL_SENT: 'تم الإرسال',
-  EMAIL_OPENED: 'تم الاطلاع',
-  EMAIL_FAILED: 'فشل الارسال',
+export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
+  [ApplicationStatus.SCHEDULED]: 'مجدولة',
+  [ApplicationStatus.SENDING]: 'قيد الارسال',
+  [ApplicationStatus.SENT]: 'تم الإرسال',
+  [ApplicationStatus.FAILED]: 'فشلت',
+  [ApplicationStatus.EMAIL_SENT]: 'تم الإرسال',
+  [ApplicationStatus.EMAIL_OPENED]: 'تم الاطلاع',
+  [ApplicationStatus.EMAIL_FAILED]: 'فشل الارسال',
 };
 
-export const APPLICATION_STATUS_COLORS: Record<ApplicationStatusType, string> = {
-  SCHEDULED: 'var(--warm)',
-  SENDING: 'var(--accent)',
-  SENT: 'var(--green)',
-  FAILED: 'var(--error)',
-  EMAIL_SENT: 'var(--green)',
-  EMAIL_OPENED: 'var(--green)',
-  EMAIL_FAILED: 'var(--error)',
+export const APPLICATION_STATUS_COLORS: Record<ApplicationStatus, string> = {
+  [ApplicationStatus.SCHEDULED]: 'var(--warm)',
+  [ApplicationStatus.SENDING]: 'var(--accent)',
+  [ApplicationStatus.SENT]: 'var(--green)',
+  [ApplicationStatus.FAILED]: 'var(--error)',
+  [ApplicationStatus.EMAIL_SENT]: 'var(--green)',
+  [ApplicationStatus.EMAIL_OPENED]: 'var(--green)',
+  [ApplicationStatus.EMAIL_FAILED]: 'var(--error)',
 };

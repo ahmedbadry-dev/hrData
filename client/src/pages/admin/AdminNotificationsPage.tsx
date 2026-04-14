@@ -1,9 +1,10 @@
-import { AdminAnnouncementsSection } from '@/components/admin/sections';
+import { AdminAnnouncementsSection, NOTIFICATION_TYPE_TO_UI } from '@/components/admin/sections';
 import {
   useNotificationsList,
   useCreateNotification,
   useDeleteNotification,
 } from '@/modules/admin/notifications/api/hooks';
+import { NotificationType, NotificationTarget } from '@/constants/enums';
 
 export default function AdminNotificationsPage() {
   const { data, refetch } = useNotificationsList({ limit: 20 });
@@ -15,7 +16,7 @@ export default function AdminNotificationsPage() {
       id: Number(n.id),
       title: n.title,
       body: n.body,
-      type: n.type as 'info' | 'warn' | 'success' | 'danger',
+      type: NOTIFICATION_TYPE_TO_UI[n.type] ?? 'info',
       target: n.target,
       date: new Date(n.createdAt).toLocaleDateString('ar-SA'),
     })) || [];
@@ -30,7 +31,7 @@ export default function AdminNotificationsPage() {
     if (!title) return;
     const body = window.prompt('محتوى الإشعار') || '';
     createMutation.mutate(
-      { title, body, type: 'info', target: 'ALL' },
+      { title, body, type: NotificationType.INFO, target: NotificationTarget.ALL },
       { onSuccess: () => refetch() }
     );
   };

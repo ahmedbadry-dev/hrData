@@ -2,7 +2,7 @@ import pLimit from 'p-limit';
 import logger from '@/shared/utils/logger.util';
 import { notificationsService as mailNotificationsService } from '@/notifications/notifications.service';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
-import { paginateResult } from '@/shared/utils/paginate.util';
+import { buildPaginationMeta } from '@/shared/utils/paginate.util';
 import {
   Notification,
   NotificationTarget,
@@ -58,7 +58,7 @@ export class NotificationsService {
 
     return {
       notifications: notifications.map((notification) => this.mapNotificationItem(notification)),
-      ...paginateResult(total, page, limit),
+      pagination: buildPaginationMeta(total, page, limit),
     };
   }
 
@@ -101,7 +101,7 @@ export class NotificationsService {
 
     return {
       notifications: notifications.map((notification) => this.mapNotificationItem(notification)),
-      ...paginateResult(total, page, limit),
+      pagination: buildPaginationMeta(total, page, limit),
     };
   }
 

@@ -8,7 +8,7 @@ export const useScheduleApplicationMutationOptions = () => {
   });
 };
 
-export const UseScheduleApplication = () => {
+export const useScheduleApplication = () => {
   const queryClient = useQueryClient();
   return useMutation({
     ...useScheduleApplicationMutationOptions(),

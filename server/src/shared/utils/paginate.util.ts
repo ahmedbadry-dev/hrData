@@ -72,24 +72,3 @@ export const buildPaginationMeta = (
   };
 };
 
-export const buildSkipTake = (page?: number, limit?: number): { skip: number; take: number } => {
-  const resolved = resolvePagination({ page, limit });
-  return { skip: resolved.skip, take: resolved.limit };
-};
-
-export const buildMeta = (
-  total: number,
-  page: number,
-  limit: number
-): { page: number; limit: number; total: number; totalPages: number } => {
-  const meta = buildPaginationMeta(total, page, limit);
-  return { page: meta.page, limit: meta.limit, total: meta.total, totalPages: meta.totalPages };
-};
-
-export const paginateResult = (
-  total: number,
-  page: number,
-  limit: number
-): { page: number; limit: number; total: number; totalPages: number } => {
-  return buildMeta(total, page, limit);
-};
