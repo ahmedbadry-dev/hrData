@@ -1,6 +1,5 @@
 import { axiosClient, type ApiResponse } from '@/services/api';
 import type {
-  Application,
   PaginatedApplications,
   ScheduleApplicationsRequest,
   ScheduleApplicationsResponse,
@@ -19,11 +18,6 @@ export const fetchApplicationsList = async (params?: {
   const { data } = await axiosClient.get<ApiResponse<PaginatedApplications>>(
     `/applications?${searchParams.toString()}`
   );
-  return data;
-};
-
-export const fetchApplicationDetail = async (id: string): Promise<ApiResponse<Application>> => {
-  const { data } = await axiosClient.get<ApiResponse<Application>>(`/applications/${id}`);
   return data;
 };
 

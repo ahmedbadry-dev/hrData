@@ -1,26 +1,19 @@
 import nodemailer, { Transporter } from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import { randomUUID } from 'crypto';
-import { ApplicationStatus, Prisma, PrismaClient } from 'generated/prisma';
 
 import { verifyEmailTemplate } from './templates/verify-email.template';
 import { resetPasswordTemplate } from './templates/reset-password.template';
-import { applicationStatusTemplate } from './templates/application-status.template';
 import { announcementTemplate } from './templates/announcement.template';
 import { appConfig, emailConfig } from '@/config/env.config';
 import logger from '@/shared/utils/logger.util';
 import { transporterSingleton } from '@/config/mailer.config';
-import prismaClient from '@/config/db.config';
-import { generateTrackingPixelUrl } from '@/shared/utils/tracking-pixel.util';
-import { NotFoundException } from '@/shared/errors/NotFoundException';
-import { InternalServerError } from '@/shared/errors/InternalServerError';
 
 export class NotificationsService {
   constructor(
     private readonly transporter: Transporter<SMTPTransport.SentMessageInfo> = transporterSingleton,
-    private readonly fromAddress: string = emailConfig.from,
-    private readonly prisma: PrismaClient = prismaClient
+    private readonly fromAddress: string = emailConfig.from
   ) {}
+
   private async sendEmail(options: { to: string; subject: string; html: string }) {
     const MAX_RETRIES = 3;
     let attempts = 0;
@@ -75,56 +68,6 @@ export class NotificationsService {
       subject: 'إعادة تعيين كلمة المرور - كفو',
       html: resetPasswordTemplate(name, url),
     });
-  }
-
-  async sendApplicationStatusEmail(
-    applicationId: string,
-    recipientEmail: string,
-    recipientName: string,
-    message: string
-  ): Promise<void> {
-    const token = randomUUID();
-    const trackingPixelUrl = generateTrackingPixelUrl(token);
-
-    try {
-      await this.prisma.application.update({
-        where: { id: applicationId },
-        data: {
-          trackingToken: token,
-          status: ApplicationStatus.EMAIL_SENT,
-          sentAt: new Date(),
-        },
-      });
-
-      await this.sendEmail({
-        to: recipientEmail,
-        subject: 'تحديث حالة الطلب - كفو',
-        html: applicationStatusTemplate({
-          recipientName,
-          message,
-          trackingPixelUrl,
-        }),
-      });
-
-      logger.info(
-        `✅ Application status email processed for application ${applicationId} and recipient ${recipientEmail}`
-      );
-    } catch (error) {
-      logger.error(
-        `❌ Failed to send application status email for application ${applicationId} and recipient ${recipientEmail}`,
-        { error }
-      );
-
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-        throw new NotFoundException(`Application with id ${applicationId} not found`);
-      }
-
-      if (error instanceof Error) {
-        throw new InternalServerError(error.message);
-      }
-
-      throw new InternalServerError('Failed to send application status email');
-    }
   }
 
   async sendAnnouncementEmail(

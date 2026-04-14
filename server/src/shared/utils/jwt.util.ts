@@ -11,7 +11,7 @@ import {
 import { jwtConfig } from '@/config/env.config';
 import { UserRole } from 'generated/prisma';
 
-export const generateAccessToken = (payload: AccessTokenPayload): string => {
+const generateAccessToken = (payload: AccessTokenPayload): string => {
   const accessToken = jwt.sign(
     {
       userId: payload.userId,
@@ -28,7 +28,7 @@ export const generateAccessToken = (payload: AccessTokenPayload): string => {
   return accessToken;
 };
 
-export const generateRefreshToken = (payload: RefreshTokenPayload): string => {
+const generateRefreshToken = (payload: RefreshTokenPayload): string => {
   const refreshToken = jwt.sign(
     {
       userId: payload.userId,
