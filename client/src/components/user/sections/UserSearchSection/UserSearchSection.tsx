@@ -29,22 +29,24 @@ interface UserSearchSectionProps {
 }
 
 const cityOptions = [
-  { value: 'all', label: 'كل المدن' },
-  { value: 'riyadh', label: 'الرياض' },
-  { value: 'jeddah', label: 'جدة' },
-  { value: 'dammam', label: 'الدمام' },
-  { value: 'khobar', label: 'الخبر' },
-  { value: 'mecca', label: 'مكة المكرمة' },
-  { value: 'medina', label: 'المدينة المنورة' },
-  { value: 'tabuk', label: 'تبوك' },
+  { value: '', label: 'الكل' },
+  { value: 'RIYADH', label: 'الرياض' },
+  { value: 'JEDDAH', label: 'جدة' },
+  { value: 'DAMMAM', label: 'الدمام' },
+  { value: 'KHOBAR', label: 'الخبر' },
+  { value: 'MECCA', label: 'مكة' },
+  { value: 'MEDINA', label: 'المدينة' },
+  { value: 'TABUK', label: 'تبوك' },
 ];
 
 const timeOptions = [
-  { value: 'all', label: 'كل الأوقات' },
-  { value: 'day', label: 'آخر ٢٤ ساعة' },
-  { value: 'week', label: 'آخر أسبوع' },
-  { value: 'month', label: 'آخر شهر' },
+  { value: '', label: 'الكل' },
+  { value: 'DAY', label: 'اليوم' },
+  { value: 'WEEK', label: 'هذا الأسبوع' },
+  { value: 'MONTH', label: 'هذا الشهر' },
 ];
+
+const SKELETON_CARDS_COUNT = 4;
 
 export default function UserSearchSection({
   searchQuery,
@@ -108,6 +110,27 @@ export default function UserSearchSection({
           className={styles['welcome-state']}
           symbolClassName={styles['big-number']}
         />
+      ) : isLoading ? (
+        <>
+          <div className={styles['control-bar']}>
+            <span className={styles['count-label']}>جاري التحميل...</span>
+          </div>
+
+          <div className={styles['results-list']}>
+            {Array.from({ length: SKELETON_CARDS_COUNT }, (_, index) => (
+              <div
+                key={`skeleton-${index}`}
+                className={styles['skeleton-card']}
+                style={{ animationDelay: `${index * 0.08}s` }}
+              >
+                <div className={styles['sk-line']} style={{ width: '22%' }} />
+                <div className={styles['sk-line']} style={{ width: '65%', height: '18px' }} />
+                <div className={styles['sk-line']} style={{ width: '45%' }} />
+                <div className={styles['sk-line']} style={{ marginTop: '18px', height: '36px' }} />
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
         <>
           <div className={styles['control-bar']}>

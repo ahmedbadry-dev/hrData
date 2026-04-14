@@ -107,6 +107,25 @@
   gap: 0;
 }
 
+.skeleton-card {
+  border: 1px solid var(--cream);
+  border-top: none;
+  padding: 24px 28px;
+}
+
+.skeleton-card:first-child {
+  border-top: 1px solid var(--cream);
+}
+
+.sk-line {
+  height: 12px;
+  background: linear-gradient(90deg, var(--cream) 25%, var(--accent-soft) 50%, var(--cream) 75%);
+  background-size: 200% 100%;
+  border-radius: 2px;
+  margin-bottom: 12px;
+  animation: shimmer 1.5s infinite;
+}
+
 .job-card {
   border: 1px solid var(--cream);
   border-top: none;
@@ -340,6 +359,16 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
   }
 }
 
