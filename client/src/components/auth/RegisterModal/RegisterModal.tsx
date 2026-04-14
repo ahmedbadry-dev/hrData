@@ -157,30 +157,6 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
               <form onSubmit={handleSubmit} noValidate>
                 <div className={styles.row2}>
                   <div className={styles.field}>
-                    <label>الاسم الأخير</label>
-                    <input
-                      type="text"
-                      id="register-lastName"
-                      placeholder="العمري"
-                      dir="rtl"
-                      value={lastName}
-                      disabled={registerMutation.isPending}
-                      onChange={(e) => {
-                        setLastName(e.target.value);
-                        if (errors.lastName) setErrors((prev) => ({ ...prev, lastName: '' }));
-                        if (serverError) setServerError(null);
-                      }}
-                      className={errors.lastName ? styles.inputError : ''}
-                      aria-invalid={!!errors.lastName}
-                      aria-describedby={errors.lastName ? 'register-lastName-error' : undefined}
-                    />
-                    {errors.lastName && (
-                      <span id="register-lastName-error" className={styles.fieldError} role="alert">
-                        {errors.lastName}
-                      </span>
-                    )}
-                  </div>
-                  <div className={styles.field}>
                     <label>الاسم الأول</label>
                     <input
                       type="text"
@@ -205,6 +181,30 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
                         role="alert"
                       >
                         {errors.firstName}
+                      </span>
+                    )}
+                  </div>
+                  <div className={styles.field}>
+                    <label>الاسم الأخير</label>
+                    <input
+                      type="text"
+                      id="register-lastName"
+                      placeholder="العمري"
+                      dir="rtl"
+                      value={lastName}
+                      disabled={registerMutation.isPending}
+                      onChange={(e) => {
+                        setLastName(e.target.value);
+                        if (errors.lastName) setErrors((prev) => ({ ...prev, lastName: '' }));
+                        if (serverError) setServerError(null);
+                      }}
+                      className={errors.lastName ? styles.inputError : ''}
+                      aria-invalid={!!errors.lastName}
+                      aria-describedby={errors.lastName ? 'register-lastName-error' : undefined}
+                    />
+                    {errors.lastName && (
+                      <span id="register-lastName-error" className={styles.fieldError} role="alert">
+                        {errors.lastName}
                       </span>
                     )}
                   </div>

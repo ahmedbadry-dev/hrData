@@ -77,11 +77,7 @@ export class AuthService {
     });
 
     try {
-      await this.emailService.sendVerificationEmail(
-        firstName + ' ' + lastName,
-        email,
-        emailVerifyToken
-      );
+      this.emailService.sendVerificationEmail(firstName + ' ' + lastName, email, emailVerifyToken);
     } catch (emailError) {
       logger.error('❌ Failed to send verification email:', { email, error: emailError });
     }

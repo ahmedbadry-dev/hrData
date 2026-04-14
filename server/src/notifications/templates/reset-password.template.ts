@@ -19,15 +19,15 @@ export const resetPasswordTemplate = (name: string, resetUrl: string): string =>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#f5f0e8;border:2px solid #0d0d0d;border-radius:4px;overflow:hidden;">
               <tr>
                 <td style="padding:30px 28px;border-bottom:2px solid #0d0d0d;background:#ede8dc;text-align:center;">
-                  <div style="font-size:34px;font-weight:900;letter-spacing:-0.8px;">كُفُـؤ<span style="color:#c0392b;">.</span></div>
-                  <p style="margin:8px 0 0;font-size:12px;color:#a89880;font-weight:700;">أمان الحساب</p>
+                  <div style="font-size:34px;font-weight:900;letter-spacing:-0.8px;text-align:center;">كُفُـؤ<span style="color:#c0392b;">.</span></div>
+                  <p style="margin:8px 0 0;font-size:12px;color:#a89880;font-weight:700;text-align:center;">أمان الحساب</p>
                 </td>
               </tr>
 
               <tr>
                 <td style="padding:34px 28px;">
-                  <h1 style="margin:0 0 14px;font-size:26px;line-height:1.3;font-weight:900;color:#0d0d0d;">إعادة تعيين كلمة المرور</h1>
-                  <p style="margin:0 0 16px;font-size:15px;line-height:1.9;color:#0d0d0d;">
+                  <h1 style="margin:0 0 14px;font-size:26px;line-height:1.3;font-weight:900;color:#0d0d0d;text-align:right;">إعادة تعيين كلمة المرور</h1>
+                  <p style="margin:0 0 16px;font-size:15px;line-height:1.9;color:#0d0d0d;direction:ltr;text-align:right;">
                     أهلاً ${safeName}، وصلنا طلب لإعادة تعيين كلمة المرور الخاصة بحسابك. اضغط الزر التالي لإكمال العملية.
                   </p>
 
@@ -39,10 +39,10 @@ export const resetPasswordTemplate = (name: string, resetUrl: string): string =>
                     </tr>
                   </table>
 
-                  <p style="margin:0 0 12px;font-size:13px;line-height:1.8;color:#a89880;">
+                  <p style="margin:0 0 12px;font-size:13px;line-height:1.8;color:#a89880;text-align:right;">
                     صلاحية الرابط: ساعة واحدة فقط. إذا لم تطلب هذا الإجراء، تجاهل الرسالة.
                   </p>
-                  <p style="margin:0;padding:12px 14px;background:#ede8dc;border:1px dashed #c8b89a;font-size:12px;line-height:1.8;color:#0d0d0d;word-break:break-all;">
+                  <p style="margin:0;padding:12px 14px;background:#ede8dc;border:1px dashed #c8b89a;font-size:12px;line-height:1.8;color:#0d0d0d;word-break:break-all;direction:ltr;text-align:right;">
                     ${safeResetUrl}
                   </p>
                 </td>
@@ -50,7 +50,7 @@ export const resetPasswordTemplate = (name: string, resetUrl: string): string =>
 
               <tr>
                 <td style="padding:20px 28px;border-top:1px solid #c8b89a;background:#ede8dc;text-align:center;">
-                  <p style="margin:0;font-size:12px;color:#a89880;line-height:1.8;">© 2026 كُفُؤ - جميع الحقوق محفوظة</p>
+                  <p style="margin:0;font-size:12px;color:#a89880;line-height:1.8;text-align:right;">© 2026 كُفُؤ - جميع الحقوق محفوظة</p>
                 </td>
               </tr>
             </table>

@@ -10,6 +10,17 @@ interface ProtectedRouteProps {
   requiredRole?: 'USER' | 'ADMIN';
 }
 
+const ALLOWED_ADMIN_ROLES = ['ADMIN', 'SUPER_ADMIN'];
+
+const hasAccess = (userRole?: string, requiredRole?: string) => {
+  if (!requiredRole) return true;
+  if (!userRole) return false;
+  if (requiredRole === 'ADMIN') {
+    return ALLOWED_ADMIN_ROLES.includes(userRole);
+  }
+  return userRole === requiredRole || ALLOWED_ADMIN_ROLES.includes(userRole);
+};
+
 export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { user, isAuthenticated, isLoading } = useAuthContext();
   const { openLogin } = useAuthModal();
@@ -30,7 +41,7 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
   }
 
   // Authenticated but wrong role
-  if (requiredRole && user?.role !== requiredRole) {
+  if (!hasAccess(user?.role, requiredRole)) {
     if (!hasShownToast.current) {
       hasShownToast.current = true;
       showToast({ type: 'error', message: 'ليس لديك صلاحية للوصول إلى هذه الصفحة' });
