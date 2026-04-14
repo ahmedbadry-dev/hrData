@@ -408,6 +408,7 @@ export class JobsService {
       isSaved: savedSet.has(job.id),
       createdAt: job.createdAt,
       updatedAt: job.updatedAt,
+      hrEmail: job.hrEmail,
     };
   }
 }

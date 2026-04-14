@@ -17,6 +17,7 @@ export interface JobResponse {
   isSaved: boolean;
   createdAt: Date;
   updatedAt: Date;
+  hrEmail: string | null;
 }
 
 export interface PaginatedJobsResponse {

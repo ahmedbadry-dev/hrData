@@ -16,6 +16,7 @@ interface UserAutoApplySectionProps {
       scheduleTime: string;
       delay: string;
       cv: File | null;
+      body: string;
     },
     onSuccess: () => void,
     onError: () => void
@@ -49,7 +50,7 @@ export default function UserAutoApplySection({
     Object.fromEntries(savedJobs.map((_, index) => [index, true]))
   );
   const [subject] = useState('طلب انضمام — [المسمى الوظيفي]');
-  const [body] = useState(professionalEmailBody);
+  const [body, setBody] = useState(professionalEmailBody);
   const [selectedCv, setSelectedCv] = useState<File | null>(null);
   const [scheduleTime, setScheduleTime] = useState('immediately');
   const [delay, setDelay] = useState('30');
@@ -195,7 +196,7 @@ export default function UserAutoApplySection({
             disabled={!selectedCv}
             onClick={() => {
               onStartSending(
-                { selected: selectedJobs, scheduleTime, delay, cv: selectedCv },
+                { selected: selectedJobs, scheduleTime, delay, cv: selectedCv, body },
                 () => setStep(3),
                 () => {}
               );
@@ -236,7 +237,7 @@ export default function UserAutoApplySection({
 
       <div className={styles['field-wrap']}>
         <span className={styles['search-label']}>نص الرسالة</span>
-        <textarea value={body} readOnly />
+        <textarea value={body} onChange={(e) => setBody(e.target.value)} />
       </div>
 
       <div className={styles['field-wrap']}>
@@ -279,7 +280,7 @@ export default function UserAutoApplySection({
                 <div>
                   <div className={styles['company-tag']}>{job.company}</div>
                   <div className={styles['job-title']}>{job.role}</div>
-                  <div className={styles['connected-email']}>{job.email}</div>
+                  <div className={styles['connected-email']}>{job.hrEmail || job.email}</div>
                 </div>
               </label>
             ))}
@@ -291,13 +292,24 @@ export default function UserAutoApplySection({
         <Button className={styles['btn-ghost']} onClick={onGoSavedJobs}>
           ← المحفوظات
         </Button>
-        <Button
-          className={styles['btn-primary']}
-          disabled={selectedJobs.length === 0}
-          onClick={() => setStep(2)}
-        >
-          التالي: جدولة الإرسال ←
-        </Button>
+        <div>
+          <Button
+            className={styles['btn-primary']}
+            disabled={!selectedCv || selectedJobs.length === 0}
+            onClick={() => setStep(2)}
+          >
+            التالي: جدولة الإرسال ←
+          </Button>
+          {(!selectedCv || selectedJobs.length === 0) && (
+            <div className={styles['hint-text']}>
+              {!selectedCv && !selectedJobs.length
+                ? 'يرجى رفع السيرة الذاتية واختيار وظيفة واحدة على الأقل'
+                : !selectedCv
+                  ? 'يرجى رفع السيرة الذاتية للمتابعة'
+                  : 'يرجى اختيار وظيفة واحدة على الأقل'}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

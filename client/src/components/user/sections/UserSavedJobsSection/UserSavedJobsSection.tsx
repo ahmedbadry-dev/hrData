@@ -86,10 +86,10 @@ export default function UserSavedJobsSection({
             </div>
 
             <div className={styles['card-email']}>
-              <span className={styles['email-hint']}>أرسل سيرتك إلى</span>
-              <a className={styles['email-link']} href={`mailto:${job.email}`}>
-                📧 {job.email}
+              <a className={styles['email-link']} href={`mailto:${job.hrEmail || job.email}`}>
+                📧 {job.hrEmail || job.email}
               </a>
+              <span className={styles['email-hint']}>أرسل سيرتك إلى</span>
             </div>
           </div>
         ))}
