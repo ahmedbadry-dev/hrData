@@ -6,7 +6,7 @@ import styles from './AdminAnnouncementsSection.module.css';
 
 interface AdminAnnouncementsSectionProps {
   announcements: AdminAnnouncement[];
-  onDelete: (id: number) => void;
+  onDelete: (id: string | number) => void;
   onOpenCreate: () => void;
 }
 

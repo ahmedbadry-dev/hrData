@@ -7,7 +7,7 @@ import {
   useDeleteUser,
   useUpdateUser,
 } from '@/modules/admin/users/api/hooks';
-import { UserStatus } from '@/constants/enums';
+import { NotificationType, UserStatus } from '@/constants/enums';
 import type { AdminUser } from '@/components/admin/sections';
 
 type FilterValue = 'all' | UserStatus;
@@ -188,7 +188,11 @@ export default function AdminUsersPage() {
         onSaveEdit={handleSaveEdit}
         onCloseEdit={handleCloseEdit}
         announceOpen={false}
-        announceForm={{ title: '', body: '', type: 'info', target: '' }}
+        announceForm={{
+          title: '',
+          body: '',
+          type: NotificationType.INFO,
+        }}
         onAnnounceChange={() => {}}
         onSaveAnnounce={() => {}}
         onCloseAnnounce={() => {}}

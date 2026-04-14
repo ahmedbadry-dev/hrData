@@ -1,5 +1,5 @@
 export const NOTIFICATIONS_ROUTES = {
-  ADMIN_CREATE: '/',
+  ADMIN_CREATE: '/create',
   ADMIN_LIST: '/',
   ADMIN_DELETE: '/:id',
   MY_NOTIFICATIONS: '/me',

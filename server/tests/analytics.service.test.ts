@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { ApplicationStatus } from 'generated/prisma';
+import { ApplicationStatus, UserStatus } from 'generated/prisma';
 import { AnalyticsService } from '../src/v1/modules/analytics/analytics.service';
 
 type CountCall = { where?: unknown };
@@ -25,7 +25,9 @@ test('analytics service overview returns aggregated counts with percentage', asy
     user: {
       count: async (args?: CountCall) => {
         userCountCalls.push(args || {});
-        return userCountCalls.length === 1 ? 100 : 7;
+        if (userCountCalls.length === 1) return 100;
+        if (userCountCalls.length === 2) return 64;
+        return 7;
       },
     },
     job: {
@@ -57,6 +59,7 @@ test('analytics service overview returns aggregated counts with percentage', asy
   const result = await service.getOverviewStats();
 
   assert.equal(result.totalUsers, 100);
+  assert.equal(result.activeUsers, 64);
   assert.equal(result.newUsersToday, 7);
   assert.equal(result.totalJobs, 240);
   assert.equal(result.newJobsToday, 12);
@@ -64,11 +67,14 @@ test('analytics service overview returns aggregated counts with percentage', asy
   assert.equal(result.applicationsThisWeek, 20);
   assert.equal(result.emailOpenedPercentage, 75);
 
-  assert.equal(userCountCalls.length, 2);
+  assert.equal(userCountCalls.length, 3);
   assert.equal(jobCountCalls.length, 2);
   assert.equal(applicationCountCalls.length, 4);
 
-  const newUsersWhere = userCountCalls[1].where as { createdAt: { gte: Date } };
+  const activeUsersWhere = userCountCalls[1].where as { status: UserStatus };
+  assert.equal(activeUsersWhere.status, UserStatus.ACTIVE);
+
+  const newUsersWhere = userCountCalls[2].where as { createdAt: { gte: Date } };
   assert.ok(newUsersWhere.createdAt.gte instanceof Date);
 
   const newJobsWhere = jobCountCalls[1].where as { createdAt: { gte: Date } };
@@ -257,5 +263,70 @@ test('analytics service getEmailErrorsPerDay uses updatedAt and failed status', 
     { date: toDateKey(oldestDay), count: 1 },
     { date: toDateKey(middleDay), count: 0 },
     { date: toDateKey(newestDay), count: 1 },
+  ]);
+});
+
+test('analytics service getTopAppliedJobs maps top jobs with application counts', async () => {
+  const applicationGroupByCalls: Array<Record<string, unknown>> = [];
+  const jobFindManyCalls: FindManyCall[] = [];
+
+  const prismaMock = {
+    user: { count: async () => 0 },
+    job: {
+      count: async () => 0,
+      findMany: async (args: FindManyCall) => {
+        jobFindManyCalls.push(args);
+        return [
+          { id: 'job-1', title: 'Frontend Developer', companyName: 'Acme' },
+          { id: 'job-2', title: 'Backend Engineer', companyName: 'Globex' },
+        ];
+      },
+    },
+    application: {
+      count: async () => 0,
+      findMany: async () => [],
+      groupBy: async (args: Record<string, unknown>) => {
+        applicationGroupByCalls.push(args);
+        return [
+          { jobId: 'job-1', _count: { id: 12 } },
+          { jobId: 'job-2', _count: { id: 8 } },
+        ];
+      },
+    },
+    session: { findMany: async () => [] },
+  };
+
+  const service = new AnalyticsService(prismaMock as never);
+  const result = await service.getTopAppliedJobs(10);
+
+  assert.equal(applicationGroupByCalls.length, 1);
+  assert.equal(jobFindManyCalls.length, 1);
+
+  const groupByArgs = applicationGroupByCalls[0] as {
+    take: number;
+    _count: { id: boolean };
+    orderBy: { _count: { id: 'desc' | 'asc' } };
+  };
+
+  assert.equal(groupByArgs.take, 10);
+  assert.deepEqual(groupByArgs._count, { id: true });
+  assert.deepEqual(groupByArgs.orderBy, { _count: { id: 'desc' } });
+
+  const jobsWhere = jobFindManyCalls[0].where as { id: { in: string[] } };
+  assert.deepEqual(jobsWhere.id.in, ['job-1', 'job-2']);
+
+  assert.deepEqual(result, [
+    {
+      jobId: 'job-1',
+      title: 'Frontend Developer',
+      companyName: 'Acme',
+      applicationCount: 12,
+    },
+    {
+      jobId: 'job-2',
+      title: 'Backend Engineer',
+      companyName: 'Globex',
+      applicationCount: 8,
+    },
   ]);
 });

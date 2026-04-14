@@ -1,6 +1,5 @@
-import pLimit from 'p-limit';
 import logger from '@/shared/utils/logger.util';
-import { notificationsService as mailNotificationsService } from '@/notifications/notifications.service';
+import { notificationsService as notificationEmailService } from '@/notifications/notifications.service';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
 import { buildPaginationMeta } from '@/shared/utils/paginate.util';
 import {
@@ -18,8 +17,6 @@ import {
   NotificationsListResult,
 } from './notifications.types';
 
-const ANNOUNCEMENT_EMAIL_CONCURRENCY = 10;
-
 export class NotificationsService {
   constructor(private readonly prisma: PrismaClient) {}
 
@@ -34,7 +31,7 @@ export class NotificationsService {
       },
     });
 
-    void this.sendAnnouncementEmails(notification).catch((error) => {
+    void this.sendNotificationEmails({ title: data.title, body: data.body }).catch((error) => {
       logger.error(`❌ Failed to send announcement emails for notification ${notification.id}`, {
         error,
       });
@@ -146,68 +143,30 @@ export class NotificationsService {
     };
   }
 
-  private async sendAnnouncementEmails(
-    notification: Pick<Notification, 'id' | 'title' | 'body' | 'target'>
-  ): Promise<void> {
-    const recipients = await this.getAnnouncementRecipients(notification.target);
+  private async sendNotificationEmails(notificationData: {
+    title: string;
+    body: string;
+  }): Promise<void> {
+    const users = await this.prisma.user.findMany({
+      where: { status: UserStatus.ACTIVE },
+      select: { id: true, email: true, fullName: true },
+    });
 
-    if (recipients.length === 0) {
-      logger.info(`📣 No recipients found for notification ${notification.id}`);
+    if (users.length === 0) {
       return;
     }
 
-    const limit = pLimit(ANNOUNCEMENT_EMAIL_CONCURRENCY);
-
-    await Promise.all(
-      recipients.map((recipient) =>
-        limit(() =>
-          mailNotificationsService.sendAnnouncementEmail(
-            this.buildRecipientName(recipient.firstName, recipient.lastName, recipient.email),
-            recipient.email,
-            notification.title,
-            notification.body
-          )
-        )
-      )
-    );
-
-    logger.info(
-      `📣 Announcement notification ${notification.id} processed for ${recipients.length} recipients`
-    );
-  }
-
-  private async getAnnouncementRecipients(target: NotificationTarget): Promise<
-    Array<{
-      email: string;
-      firstName: string;
-      lastName: string;
-    }>
-  > {
-    const where: Prisma.UserWhereInput = {
-      status: UserStatus.ACTIVE,
-      emailVerified: true,
-    };
-
-    if (target === NotificationTarget.USER) {
-      where.role = UserRole.USER;
+    for (const user of users) {
+      await notificationEmailService
+        .sendNotificationEmail({
+          to: user.email,
+          fullName: user.fullName,
+          title: notificationData.title,
+          body: notificationData.body,
+        })
+        .catch((error) => {
+          logger.error(`Failed to send notification email to ${user.email}`, { error });
+        });
     }
-
-    if (target === NotificationTarget.ADMIN) {
-      where.role = { in: [UserRole.ADMIN, UserRole.SUPER_ADMIN] };
-    }
-
-    return this.prisma.user.findMany({
-      where,
-      select: {
-        email: true,
-        firstName: true,
-        lastName: true,
-      },
-    });
-  }
-
-  private buildRecipientName(firstName: string, lastName: string, email: string): string {
-    const fullName = `${firstName} ${lastName}`.trim();
-    return fullName || email;
   }
 }

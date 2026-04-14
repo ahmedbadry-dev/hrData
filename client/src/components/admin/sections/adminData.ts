@@ -11,7 +11,7 @@ export interface AdminUser {
 }
 
 export interface AdminAnnouncement {
-  id: number;
+  id: string | number;
   title: string;
   body: string;
   type: 'info' | 'warn' | 'success' | 'danger';

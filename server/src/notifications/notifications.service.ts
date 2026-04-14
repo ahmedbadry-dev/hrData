@@ -4,6 +4,7 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { verifyEmailTemplate } from './templates/verify-email.template';
 import { resetPasswordTemplate } from './templates/reset-password.template';
 import { announcementTemplate } from './templates/announcement.template';
+import { notificationEmailTemplate } from './templates/notification-email.template';
 import { appConfig, emailConfig } from '@/config/env.config';
 import logger from '@/shared/utils/logger.util';
 import { transporterSingleton } from '@/config/mailer.config';
@@ -80,6 +81,19 @@ export class NotificationsService {
       to: recipientEmail,
       subject: `إعلان جديد - ${title}`,
       html: announcementTemplate(recipientName, title, message),
+    });
+  }
+
+  async sendNotificationEmail(data: {
+    to: string;
+    fullName: string | null;
+    title: string;
+    body: string;
+  }): Promise<void> {
+    await this.sendEmail({
+      to: data.to,
+      subject: data.title,
+      html: notificationEmailTemplate(data.fullName || data.to, data.title, data.body),
     });
   }
 }

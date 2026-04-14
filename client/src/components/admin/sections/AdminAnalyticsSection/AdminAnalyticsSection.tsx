@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
 import { PageHeader, StatCard } from '@/components/common';
+import { Spinner } from '@/components/ui';
+import { useTopAppliedJobs } from '@/modules/admin/analytics/api/hooks';
 import styles from './AdminAnalyticsSection.module.css';
 import type {
   OverviewStats,
   AdvancedOverviewStats,
   DailyDataPoint,
-  TopJobDataPoint,
   ApplicationStatusDistribution,
   UserActivityDataPoint,
 } from '@/modules/admin/analytics/api/types';
@@ -14,10 +15,10 @@ import type {
 interface AdminAnalyticsSectionProps {
   overview?: OverviewStats;
   advanced?: AdvancedOverviewStats;
-  topJobs?: TopJobDataPoint[];
   applicationsPerDay?: DailyDataPoint[];
   statusDistribution?: ApplicationStatusDistribution;
   userActivity?: UserActivityDataPoint[];
+  isOverviewLoading?: boolean;
 }
 
 function useAnimatedCounter(target: number, suffix = '') {
@@ -46,15 +47,22 @@ function useAnimatedCounter(target: number, suffix = '') {
 export default function AdminAnalyticsSection({
   overview,
   advanced,
-  topJobs,
   applicationsPerDay,
   statusDistribution,
   userActivity,
+  isOverviewLoading,
 }: AdminAnalyticsSectionProps) {
+  const {
+    data: topJobsResponse,
+    isLoading: isTopJobsLoading,
+    isError: isTopJobsError,
+  } = useTopAppliedJobs(10);
+  const topJobs = topJobsResponse?.data;
+
   const total = useAnimatedCounter(overview?.totalApplicationsSent ?? 0);
   const openRate = useAnimatedCounter(overview?.emailOpenedPercentage ?? 0, '%');
   const auto = useAnimatedCounter(advanced?.autoSuccessRate ?? 0, '%');
-  const active = useAnimatedCounter(advanced?.activeUsers ?? 0);
+  const active = useAnimatedCounter(overview?.activeUsers ?? 0);
 
   const topJobsRef = useRef<HTMLCanvasElement | null>(null);
   const usersActivityRef = useRef<HTMLCanvasElement | null>(null);
@@ -76,7 +84,7 @@ export default function AdminAnalyticsSection({
             labels: topJobs.map((j) => j.title),
             datasets: [
               {
-                data: topJobs.map((j) => j.count),
+                data: topJobs.map((j) => j.applicationCount),
                 backgroundColor: ['#0d0d0d', '#c0392b', '#1a6b4a', '#b8860b', '#1a4a8a'],
                 borderWidth: 0,
                 barThickness: 26,
@@ -285,7 +293,9 @@ export default function AdminAnalyticsSection({
           className={styles['stat-card']}
           valueClassName={styles['stat-val']}
           titleClassName={styles['stat-tit']}
-          value={active}
+          value={
+            isOverviewLoading ? <Spinner size="sm" className={styles['stat-spinner']} /> : active
+          }
           title="مستخدمون نشطون"
         />
       </div>
@@ -296,7 +306,15 @@ export default function AdminAnalyticsSection({
             <div className={styles['chart-title']}>أكثر الوظائف طلبًا</div>
           </div>
           <div className={styles['chart-wrap']}>
-            <canvas ref={topJobsRef} />
+            {isTopJobsError ? (
+              <div className={styles['chart-error']}>تعذّر تحميل بيانات الوظائف الآن</div>
+            ) : isTopJobsLoading ? (
+              <div className={styles['chart-loading']}>
+                <Spinner size="md" />
+              </div>
+            ) : (
+              <canvas ref={topJobsRef} />
+            )}
           </div>
         </div>
 

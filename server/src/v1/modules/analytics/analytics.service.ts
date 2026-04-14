@@ -1,9 +1,10 @@
-import { ApplicationStatus, PrismaClient } from 'generated/prisma';
+import { ApplicationStatus, PrismaClient, UserStatus } from 'generated/prisma';
 import {
   AdvancedOverviewStats,
   ApplicationStatusDistribution,
   DailyDataPoint,
   OverviewStats,
+  RecentActivityLog,
   TopJobDataPoint,
   UserActivityDataPoint,
 } from './analytics.types';
@@ -37,6 +38,7 @@ export class AnalyticsService {
 
     const [
       totalUsers,
+      activeUsers,
       newUsersToday,
       totalJobs,
       newJobsToday,
@@ -46,6 +48,11 @@ export class AnalyticsService {
       emailSentCount,
     ] = await Promise.all([
       this.prisma.user.count(),
+      this.prisma.user.count({
+        where: {
+          status: UserStatus.ACTIVE,
+        },
+      }),
       this.prisma.user.count({
         where: {
           createdAt: {
@@ -97,6 +104,7 @@ export class AnalyticsService {
 
     return {
       totalUsers,
+      activeUsers,
       newUsersToday,
       totalJobs,
       newJobsToday,
@@ -317,33 +325,24 @@ export class AnalyticsService {
   }
 
   async getTopAppliedJobs(limit: number): Promise<TopJobDataPoint[]> {
-    const groupedApplications = await this.prisma.application.groupBy({
+    const topJobs = await this.prisma.application.groupBy({
       by: ['jobId'],
-      where: {
-        status: {
-          in: [
-            ApplicationStatus.SENT,
-            ApplicationStatus.EMAIL_SENT,
-            ApplicationStatus.EMAIL_OPENED,
-          ],
-        },
-      },
       _count: {
-        jobId: true,
+        id: true,
       },
       orderBy: {
         _count: {
-          jobId: 'desc',
+          id: 'desc',
         },
       },
       take: limit,
     });
 
-    if (groupedApplications.length === 0) {
+    if (topJobs.length === 0) {
       return [];
     }
 
-    const jobIds = groupedApplications.map((application) => application.jobId);
+    const jobIds = topJobs.map((job) => job.jobId);
 
     const jobs = await this.prisma.job.findMany({
       where: {
@@ -354,17 +353,44 @@ export class AnalyticsService {
       select: {
         id: true,
         title: true,
+        companyName: true,
       },
     });
 
-    const jobsMap = new Map(jobs.map((job) => [job.id, job.title]));
+    return topJobs.map((entry) => {
+      const job = jobs.find((item) => item.id === entry.jobId);
 
-    return groupedApplications
-      .map((application) => ({
-        title: jobsMap.get(application.jobId) || 'Unknown',
-        count: application._count.jobId,
-      }))
-      .sort((a, b) => b.count - a.count);
+      return {
+        jobId: entry.jobId,
+        title: job?.title ?? 'Unknown',
+        companyName: job?.companyName ?? '',
+        applicationCount: entry._count.id,
+      };
+    });
+  }
+
+  async getRecentActivityLogs(limit: number = 20): Promise<RecentActivityLog[]> {
+    const logs = await this.prisma.activityLog.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        action: true,
+        entityType: true,
+        metadata: true,
+        ipAddress: true,
+        createdAt: true,
+        user: {
+          select: { firstName: true, lastName: true },
+        },
+      },
+    });
+
+    return logs.map((log) => ({
+      ...log,
+      metadata: log.metadata as Record<string, unknown> | null,
+      createdAt: log.createdAt.toISOString(),
+    }));
   }
 
   async getApplicationStatusDistribution(): Promise<ApplicationStatusDistribution> {
