@@ -14,9 +14,15 @@ import {
 import { NotificationType, NotificationTarget } from '@/constants/enums';
 import type { AdminDashboardContextType } from './AdminDashboardLayout';
 
+const ITEMS_PER_PAGE = 10;
+
 export default function AdminNotificationsPage() {
   const { showToast } = useOutletContext<AdminDashboardContextType>();
-  const { data, refetch } = useNotificationsList({ limit: 20 });
+  const [page, setPage] = useState(1);
+  const { data, refetch, isLoading } = useNotificationsList({
+    limit: ITEMS_PER_PAGE,
+    page,
+  });
   const createMutation = useCreateNotification();
   const deleteMutation = useDeleteNotification();
   const [announceOpen, setAnnounceOpen] = useState(false);
@@ -35,6 +41,9 @@ export default function AdminNotificationsPage() {
       target: n.target,
       date: new Date(n.createdAt).toLocaleDateString('ar-SA'),
     })) || [];
+
+  const pagination = data?.data?.pagination;
+  const totalPages = pagination?.totalPages || 1;
 
   const handleDelete = (id: string | number) => {
     if (!window.confirm('حذف هذا الإشعار؟')) return;
@@ -97,6 +106,10 @@ export default function AdminNotificationsPage() {
         announcements={announcements}
         onDelete={handleDelete}
         onOpenCreate={handleOpenCreate}
+        currentPage={page}
+        totalPages={totalPages}
+        isLoading={isLoading}
+        onPageChange={setPage}
       />
 
       <AdminModals

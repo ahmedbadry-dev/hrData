@@ -2,12 +2,17 @@ import type { AdminAnnouncement } from '@/components/admin/sections/adminData';
 import { PageHeader } from '@/components/common';
 import { Badge, Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { getPageNumbers } from '@/lib/pagination';
 import styles from './AdminAnnouncementsSection.module.css';
 
 interface AdminAnnouncementsSectionProps {
   announcements: AdminAnnouncement[];
   onDelete: (id: string | number) => void;
   onOpenCreate: () => void;
+  currentPage?: number;
+  totalPages?: number;
+  isLoading?: boolean;
+  onPageChange?: (page: number) => void;
 }
 
 const typeLabels: Record<AdminAnnouncement['type'], string> = {
@@ -21,6 +26,10 @@ export default function AdminAnnouncementsSection({
   announcements,
   onDelete,
   onOpenCreate,
+  currentPage = 1,
+  totalPages = 1,
+  isLoading,
+  onPageChange,
 }: AdminAnnouncementsSectionProps) {
   return (
     <section>
@@ -68,6 +77,41 @@ export default function AdminAnnouncementsSection({
           </div>
         ))}
       </div>
+
+      {totalPages > 1 && onPageChange && (
+        <div className={styles['pagination']}>
+          <Button
+            className={styles['page-btn']}
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1 || isLoading}
+          >
+            السابق
+          </Button>
+          {getPageNumbers(currentPage, totalPages).map((page, idx) =>
+            page === '...' ? (
+              <span key={`ellipsis-${idx}`} className={styles['ellipsis']}>
+                ...
+              </span>
+            ) : (
+              <Button
+                key={page}
+                className={cn(styles['page-btn'], page === currentPage && styles['active'])}
+                onClick={() => onPageChange(page)}
+                disabled={isLoading}
+              >
+                {page}
+              </Button>
+            )
+          )}
+          <Button
+            className={styles['page-btn']}
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages || isLoading}
+          >
+            التالي
+          </Button>
+        </div>
+      )}
     </section>
   );
 }

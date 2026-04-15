@@ -41,6 +41,8 @@ export class NotificationsService {
   }
 
   async listAllNotifications(page: number, limit: number): Promise<NotificationsListResult> {
+    page = Number(page || 1);
+    limit = Number(limit || 10);
     const skip = (page - 1) * limit;
 
     const [notifications, total] = await Promise.all([
