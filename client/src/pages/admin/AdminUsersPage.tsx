@@ -87,7 +87,6 @@ export default function AdminUsersPage() {
   };
 
   const handleDeleteUser = (id: string | number) => {
-    if (!window.confirm('هل أنت متأكد من حذف هذا المستخدم؟')) return;
     deleteMutation.mutate(String(id), { onSuccess: () => refetch() });
   };
 
