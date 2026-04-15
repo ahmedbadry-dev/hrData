@@ -46,7 +46,6 @@ export default function AdminNotificationsPage() {
   const totalPages = pagination?.totalPages || 1;
 
   const handleDelete = (id: string | number) => {
-    if (!window.confirm('حذف هذا الإشعار؟')) return;
     deleteMutation.mutate(String(id), {
       onSuccess: () => {
         refetch();
