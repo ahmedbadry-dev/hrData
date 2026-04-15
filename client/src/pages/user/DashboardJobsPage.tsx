@@ -22,19 +22,23 @@ export default function DashboardJobsPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
-  const [country, setCountry] = useState('all');
-  const [timeFilter, setTimeFilter] = useState('all');
+  const [country, setCountry] = useState('');
+  const [timeFilter, setTimeFilter] = useState('');
   const [page, setPage] = useState(1);
 
   const queryParams = {
     limit: ITEMS_PER_PAGE,
     page,
     search: searchQuery || undefined,
-    location: country !== 'all' ? country : undefined,
-    dateFilter: timeFilter !== 'all' ? timeFilter : undefined,
+    location: country || undefined,
+    dateFilter: timeFilter || undefined,
   };
 
-  const { data, isLoading } = useJobsList(queryParams);
+  const { data, isLoading, isFetching } = useJobsList(queryParams, {
+    enabled: hasSearched,
+  });
+
+  const isJobsLoading = isLoading || isFetching;
 
   const jobs: UserJob[] = data?.data?.jobs.map(mapJobToUserJob) || [];
   const pagination = data?.data?.pagination;
@@ -61,7 +65,7 @@ export default function DashboardJobsPage() {
       jobs={jobs}
       currentPage={page}
       totalPages={totalPages}
-      isLoading={isLoading}
+      isLoading={isJobsLoading}
       hasSearched={hasSearched}
       selectedCard={null}
       onSelectCard={() => {}}

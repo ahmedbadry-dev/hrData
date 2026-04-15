@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { NotificationType } from '@/constants/enums';
 import styles from './AdminModals.module.css';
 
 export interface EditUserForm {
@@ -11,8 +12,7 @@ export interface EditUserForm {
 export interface AnnouncementForm {
   title: string;
   body: string;
-  type: 'info' | 'warn' | 'success' | 'danger';
-  target: string;
+  type: NotificationType;
 }
 
 interface AdminModalsProps {
@@ -26,6 +26,7 @@ interface AdminModalsProps {
   onAnnounceChange: (patch: Partial<AnnouncementForm>) => void;
   onSaveAnnounce: () => void;
   onCloseAnnounce: () => void;
+  announceSubmitting?: boolean;
 }
 
 export default function AdminModals({
@@ -39,6 +40,7 @@ export default function AdminModals({
   onAnnounceChange,
   onSaveAnnounce,
   onCloseAnnounce,
+  announceSubmitting,
 }: AdminModalsProps) {
   return (
     <>
@@ -101,63 +103,58 @@ export default function AdminModals({
         </div>
       </div>
 
-      <div className={cn(styles['modal-overlay'], announceOpen && styles.open)}>
-        <div className={styles['modal-box']}>
+      <div
+        className={cn(styles['modal-overlay'], announceOpen && styles.open)}
+        onClick={onCloseAnnounce}
+      >
+        <div className={styles['modal-box']} onClick={(e) => e.stopPropagation()}>
           <button className={styles['modal-close']} onClick={onCloseAnnounce}>
             ✕
           </button>
-          <div className={styles['modal-title']}>إرسال إشعار / إعلان</div>
+          <div className={styles['modal-title']}>إرسال إشعار جديد</div>
 
           <div className={styles['modal-field']}>
-            <label>العنوان</label>
+            <label>عنوان الإشعار</label>
             <input
               type="text"
-              placeholder="عنوان الإشعار"
+              placeholder="اكتب عنوان الإشعار"
               value={announceForm.title}
               onChange={(e) => onAnnounceChange({ title: e.target.value })}
             />
           </div>
 
           <div className={styles['modal-field']}>
-            <label>الرسالة</label>
+            <label>نص الإشعار</label>
             <textarea
               rows={3}
-              placeholder="نص الرسالة..."
+              placeholder="اكتب نص الإشعار"
               value={announceForm.body}
               onChange={(e) => onAnnounceChange({ body: e.target.value })}
             />
           </div>
 
           <div className={styles['modal-field']}>
-            <label>النوع</label>
+            <label>نوع الإشعار</label>
             <select
               value={announceForm.type}
               onChange={(e) =>
                 onAnnounceChange({ type: e.target.value as AnnouncementForm['type'] })
               }
             >
-              <option value="info">معلوماتي</option>
-              <option value="warn">تحذير</option>
-              <option value="success">نجاح</option>
-              <option value="danger">خطأ / تنبيه</option>
-            </select>
-          </div>
-
-          <div className={styles['modal-field']}>
-            <label>المستهدف</label>
-            <select
-              value={announceForm.target}
-              onChange={(e) => onAnnounceChange({ target: e.target.value })}
-            >
-              <option>جميع المستخدمين</option>
-              <option>المستخدمون النشطون فقط</option>
-              <option>إدارة النظام</option>
+              <option value={NotificationType.INFO}>معلومة</option>
+              <option value={NotificationType.SUCCESS}>نجاح</option>
+              <option value={NotificationType.WARNING}>تحذير</option>
+              <option value={NotificationType.ALERT}>تنبيه</option>
             </select>
           </div>
 
           <div className={styles['modal-actions']}>
-            <button className={styles['btn-primary']} onClick={onSaveAnnounce}>
-              إرسال الإشعار
+            <button
+              className={styles['btn-primary']}
+              onClick={onSaveAnnounce}
+              disabled={announceSubmitting}
+            >
+              {announceSubmitting ? 'جارٍ الإرسال...' : 'إرسال'}
             </button>
             <button className={styles['btn-ghost']} onClick={onCloseAnnounce}>
               إلغاء

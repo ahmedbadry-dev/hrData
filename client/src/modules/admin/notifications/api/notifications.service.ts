@@ -12,7 +12,7 @@ export const fetchNotificationsList = async (params?: {
 export const createNotification = async (
   body: CreateNotificationRequest
 ): Promise<{ data: AdminNotification }> => {
-  const { data } = await axiosClient.post('/admin/notifications', body);
+  const { data } = await axiosClient.post('/admin/notifications/create', body);
   return data;
 };
 

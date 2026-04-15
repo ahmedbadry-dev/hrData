@@ -77,16 +77,19 @@ export default function UserSavedJobsSection({
                 variant="icon"
                 className={cn(styles['save-btn'], styles.saved)}
                 onClick={() => onRemoveByIndex(index)}
+                title="إزالة من المحفوظات"
               >
-                ★
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z" />
+                </svg>
               </Button>
             </div>
 
             <div className={styles['card-email']}>
-              <span className={styles['email-hint']}>أرسل سيرتك إلى</span>
-              <a className={styles['email-link']} href={`mailto:${job.email}`}>
-                📧 {job.email}
+              <a className={styles['email-link']} href={`mailto:${job.hrEmail || job.email}`}>
+                📧 {job.hrEmail || job.email}
               </a>
+              <span className={styles['email-hint']}>أرسل سيرتك إلى</span>
             </div>
           </div>
         ))}

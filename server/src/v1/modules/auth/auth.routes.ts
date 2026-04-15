@@ -12,6 +12,7 @@ import { authenticationMiddleware } from '../../../http/middlewares/auth.middlew
 import { ForgotPasswordDtoSchema } from './dto/forgot-password.dto';
 import { ResetPasswordDtoSchema } from './dto/reset-password.dto';
 import { ChangePasswordDtoSchema } from './dto/change-password.dto';
+import { ValidateResetTokenDtoSchema } from './dto/validate-reset-token.dto';
 import { authRateLimitMiddleware } from '@/http/middlewares/rate-limit.middleware';
 
 export const authRoutes = (authController: AuthController) => {
@@ -58,6 +59,7 @@ export const authRoutes = (authController: AuthController) => {
   router.get(
     '/validate-reset-token',
     authRateLimitMiddleware,
+    validateQueryMiddleware(ValidateResetTokenDtoSchema),
     authController.validateResetToken
   );
   router.patch(

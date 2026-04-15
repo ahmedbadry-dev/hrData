@@ -1,5 +1,6 @@
 export interface OverviewStats {
   totalUsers: number;
+  activeUsers: number;
   newUsersToday: number;
   totalJobs: number;
   newJobsToday: number;
@@ -27,12 +28,24 @@ export interface UserActivityDataPoint {
 }
 
 export interface TopJobDataPoint {
+  jobId: string;
   title: string;
-  count: number;
+  companyName: string;
+  applicationCount: number;
 }
 
 export interface ApplicationStatusDistribution {
   success: number;
   failed: number;
   pending: number;
+}
+
+export interface RecentActivityLog {
+  id: string;
+  action: string;
+  entityType: string | null;
+  metadata: Record<string, unknown> | null;
+  ipAddress: string | null;
+  createdAt: string;
+  user: { firstName: string; lastName: string } | null;
 }

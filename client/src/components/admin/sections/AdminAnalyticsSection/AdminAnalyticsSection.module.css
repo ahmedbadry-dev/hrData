@@ -28,6 +28,30 @@
   border: 2px solid var(--ink);
   padding: 20px 16px;
   text-align: center;
+  transition: transform 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  background: var(--cream);
+}
+
+.stat-card:hover::after {
+  transform: scaleX(1);
 }
 
 .stat-val {
@@ -36,6 +60,10 @@
   color: var(--ink);
   line-height: 1;
   margin-bottom: 5px;
+}
+
+.stat-spinner {
+  color: var(--ink);
 }
 
 .stat-tit {
@@ -81,6 +109,24 @@
 
 .chart-wrap {
   height: 220px;
+}
+
+.chart-loading {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+}
+
+.chart-error {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .chart-wrap-small {

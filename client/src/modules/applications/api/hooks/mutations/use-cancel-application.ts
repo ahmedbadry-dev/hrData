@@ -12,7 +12,7 @@ export type UseCancelApplicationMutationOptions = CustomUseMutationOptions<
   typeof useCancelApplicationMutationOptions
 >;
 
-export const UseCancelApplication = (options?: UseCancelApplicationMutationOptions) => {
+export const useCancelApplication = (options?: UseCancelApplicationMutationOptions) => {
   const queryClient = useQueryClient();
   return useMutation({
     ...useCancelApplicationMutationOptions(),

@@ -5,11 +5,6 @@ export type UseQueryOptions<TQueryOptionsFn extends Fn> = Omit<
   'queryKey' | 'queryFn'
 >;
 
-export type UseInfiniteQueryOptions<TInfiniteQueryOptionsFn extends Fn> = Omit<
-  ReturnType<TInfiniteQueryOptionsFn>,
-  'queryKey' | 'queryFn' | 'initialPageParam' | 'getNextPageParam' | 'getPreviousPageParam'
->;
-
 export type UseMutationOptions<TMutationOptionsFn extends Fn> = Omit<
   ReturnType<TMutationOptionsFn>,
   'mutationFn'

@@ -4,6 +4,7 @@ import { authService, type LoginRequest } from '@/modules/auth/api/auth.service'
 import { useAuthContext } from '@/modules/auth/context';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
+import { ALLOWED_ADMIN_ROLES } from '@/constants/enums';
 
 const loginMutationFn = async (credentials: LoginRequest) => authService.login(credentials);
 
@@ -28,8 +29,7 @@ export const useLoginMutation = () => {
         const redirectPath = sessionStorage.getItem('redirectAfterLogin');
         sessionStorage.removeItem('redirectAfterLogin');
 
-        const defaultPath =
-          user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard';
+        const defaultPath = ALLOWED_ADMIN_ROLES.includes(user.role) ? '/admin' : '/dashboard';
 
         navigate(
           redirectPath && redirectPath.startsWith('/') ? redirectPath : defaultPath,

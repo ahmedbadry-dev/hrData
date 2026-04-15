@@ -1,11 +1,11 @@
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-const SALT_ROUNDS = 12;
+import { APP_CONSTANTS } from '@/config/constants';
 
 export const generateHash = async (
   textToHash: string,
 ): Promise<string> => {
-  return await bcrypt.hash(textToHash, SALT_ROUNDS);
+  return await bcrypt.hash(textToHash, APP_CONSTANTS.BCRYPT_SALT_ROUNDS);
 };
 
 export const compareHash = async (

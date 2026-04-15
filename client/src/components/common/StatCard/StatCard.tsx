@@ -4,7 +4,7 @@ import styles from './StatCard.module.css';
 
 interface StatCardProps {
   title: string;
-  value: string | number;
+  value: ReactNode;
   icon?: ReactNode;
   trend?: {
     value: string;

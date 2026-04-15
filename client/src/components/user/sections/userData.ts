@@ -5,6 +5,7 @@ export interface UserJob {
   city: string;
   date: string;
   email: string;
+  hrEmail?: string;
   jobId?: string;
 }
 

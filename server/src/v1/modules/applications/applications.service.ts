@@ -11,6 +11,7 @@ import { NotFoundException } from '@/shared/errors/NotFoundException';
 import { BadRequestException } from '@/shared/errors/BadRequestException';
 import { JobApplicationsScheduleJobData } from '@/workers/job-applications-schedule.worker';
 import { resolvePagination, buildPaginationMeta } from '@/shared/utils/paginate.util';
+import logger from '@/shared/utils/logger.util';
 
 interface MulterFile {
   fieldname: string;
@@ -117,6 +118,21 @@ export class ApplicationsService {
       throw new BadRequestException(APPLICATIONS_CONSTANTS.MESSAGES.NO_DEFAULT_CV);
     }
 
+    const existingActiveApplications = await this.prisma.application.findMany({
+      where: {
+        userId,
+        jobId: { in: jobIds },
+        status: { in: [ApplicationStatus.SCHEDULED, ApplicationStatus.SENDING] },
+      },
+      select: { jobId: true },
+    });
+
+    if (existingActiveApplications.length > 0) {
+      throw new BadRequestException(
+        'Some jobs already have pending applications. Please cancel them first.'
+      );
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { firstName: true, lastName: true, email: true },
@@ -133,10 +149,10 @@ export class ApplicationsService {
 
     const validSavedJobs = savedJobs.filter((savedJob) => Boolean(savedJob.job.hrEmail));
 
-    console.log(
+    logger.info(
       `📅 Schedule time: sendTime="${sendTime}" → scheduledAt=${scheduledAt?.toISOString()} (isImmediate=${isImmediate})`
     );
-    console.log(`   delay between emails: ${delay}ms, total jobs: ${validSavedJobs.length}`);
+    logger.info(`   delay between emails: ${delay}ms, total jobs: ${validSavedJobs.length}`);
 
     if (validSavedJobs.length === 0) {
       throw new BadRequestException(APPLICATIONS_CONSTANTS.MESSAGES.NO_VALID_HR_EMAILS);

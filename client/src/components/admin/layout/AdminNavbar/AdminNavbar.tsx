@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/modules/auth/api/hooks';
 import styles from './AdminNavbar.module.css';
 
@@ -6,6 +7,7 @@ interface AdminNavbarProps {
 }
 
 export default function AdminNavbar({ onToggleSidebar }: AdminNavbarProps) {
+  const navigate = useNavigate();
   const { data: authData } = useAuth();
   const firstName = authData?.user?.firstName || authData?.user?.fullName?.split(' ')[0] || '';
 
@@ -46,7 +48,9 @@ export default function AdminNavbar({ onToggleSidebar }: AdminNavbarProps) {
           <br />
           ٢٠٢٦
         </div>
-        <button className={styles['btn-logout']}>← خروج</button>
+        <button className={styles['btn-logout']} onClick={() => navigate('/')}>
+          ← اذهب للرئيسيه
+        </button>
       </div>
     </header>
   );

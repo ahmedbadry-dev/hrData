@@ -11,13 +11,20 @@ export interface AdminUser {
 }
 
 export interface AdminAnnouncement {
-  id: number;
+  id: string | number;
   title: string;
   body: string;
   type: 'info' | 'warn' | 'success' | 'danger';
   target: string;
   date: string;
 }
+
+export const NOTIFICATION_TYPE_TO_UI: Record<string, AdminAnnouncement['type']> = {
+  INFO: 'info',
+  SUCCESS: 'success',
+  WARNING: 'warn',
+  ALERT: 'danger',
+};
 
 export interface AdminLog {
   type: 'reg' | 'apply' | 'error' | 'info';

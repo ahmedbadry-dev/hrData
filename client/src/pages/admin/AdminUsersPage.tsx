@@ -7,9 +7,10 @@ import {
   useDeleteUser,
   useUpdateUser,
 } from '@/modules/admin/users/api/hooks';
+import { NotificationType, UserStatus } from '@/constants/enums';
 import type { AdminUser } from '@/components/admin/sections';
 
-type FilterValue = 'all' | 'ACTIVE' | 'SUSPENDED' | 'PENDING_VERIFICATION';
+type FilterValue = 'all' | UserStatus;
 
 export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,7 +48,6 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     setPage(1);
-    refetch();
   }, [activeFilter, debouncedSearch]);
 
   const users: AdminUser[] =
@@ -57,9 +57,9 @@ export default function AdminUsersPage() {
       email: u.email,
       phone: u.phone || '',
       status:
-        u.accountStatus === 'ACTIVE'
+        u.accountStatus === UserStatus.ACTIVE
           ? 'active'
-          : u.accountStatus === 'PENDING_VERIFICATION'
+          : u.accountStatus === UserStatus.PENDING_VERIFICATION
             ? 'pending_verification'
             : 'suspended',
       applied: 0,
@@ -87,7 +87,6 @@ export default function AdminUsersPage() {
   };
 
   const handleDeleteUser = (id: string | number) => {
-    if (!window.confirm('هل أنت متأكد من حذف هذا المستخدم؟')) return;
     deleteMutation.mutate(String(id), { onSuccess: () => refetch() });
   };
 
@@ -109,9 +108,9 @@ export default function AdminUsersPage() {
     const nameParts = editForm.name.trim().split(/\s+/);
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
-    const statusMap: Record<string, 'ACTIVE' | 'SUSPENDED'> = {
-      active: 'ACTIVE',
-      suspended: 'SUSPENDED',
+    const statusMap: Record<string, UserStatus.ACTIVE | UserStatus.SUSPENDED> = {
+      active: UserStatus.ACTIVE,
+      suspended: UserStatus.SUSPENDED,
     };
     updateMutation.mutate(
       {
@@ -145,9 +144,9 @@ export default function AdminUsersPage() {
   const displayFilter =
     activeFilter === 'all'
       ? 'all'
-      : activeFilter === 'ACTIVE'
+      : activeFilter === UserStatus.ACTIVE
         ? 'active'
-        : activeFilter === 'PENDING_VERIFICATION'
+        : activeFilter === UserStatus.PENDING_VERIFICATION
           ? 'pending_verification'
           : 'suspended';
 
@@ -163,10 +162,10 @@ export default function AdminUsersPage() {
             val === 'all'
               ? 'all'
               : val === 'active'
-                ? 'ACTIVE'
+                ? UserStatus.ACTIVE
                 : val === 'pending_verification'
-                  ? 'PENDING_VERIFICATION'
-                  : 'SUSPENDED'
+                  ? UserStatus.PENDING_VERIFICATION
+                  : UserStatus.SUSPENDED
           )
         }
         onToggleStatus={handleToggleStatus}
@@ -188,7 +187,11 @@ export default function AdminUsersPage() {
         onSaveEdit={handleSaveEdit}
         onCloseEdit={handleCloseEdit}
         announceOpen={false}
-        announceForm={{ title: '', body: '', type: 'info', target: '' }}
+        announceForm={{
+          title: '',
+          body: '',
+          type: NotificationType.INFO,
+        }}
         onAnnounceChange={() => {}}
         onSaveAnnounce={() => {}}
         onCloseAnnounce={() => {}}

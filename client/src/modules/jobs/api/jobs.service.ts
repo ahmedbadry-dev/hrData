@@ -45,11 +45,6 @@ export const fetchJobs = async (params?: GetJobsParams): Promise<ApiResponse<Pag
   return data;
 };
 
-export const fetchJobById = async (id: string): Promise<ApiResponse<Job>> => {
-  const { data } = await axiosClient.get<ApiResponse<Job>>(`/jobs/${id}`);
-  return data;
-};
-
 export const saveJob = async (jobId: string): Promise<ApiResponse<{ success: boolean }>> => {
   const { data } = await axiosClient.post<ApiResponse<{ success: boolean }>>(`/jobs/${jobId}/save`);
   return data;
@@ -98,7 +93,6 @@ export const fetchSavedJobs = async (
 
 export const jobsService = {
   fetchJobs,
-  fetchJobById,
   saveJob,
   unsaveJob,
   saveJobs,

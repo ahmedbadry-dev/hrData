@@ -204,13 +204,19 @@
 }
 
 .page-btn:hover:not(:disabled) {
-  background: var(--cream);
+  background: var(--ink);
+  color: var(--paper);
 }
 
 .page-btn.active {
   background: var(--ink);
   color: var(--paper);
   border-color: var(--ink);
+}
+
+.page-btn.active:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--paper);
 }
 
 .page-btn:disabled {

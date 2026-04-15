@@ -1,23 +1,24 @@
 import { useState } from 'react';
 import { UserAnalyticsSection } from '@/components/user/sections';
-import { UseApplicationsList, UseCancelApplication } from '@/modules/applications/api/hooks';
-import type { Application, ApplicationStatusType } from '@/modules/applications/types';
+import { useApplicationsList, useCancelApplication } from '@/modules/applications/api/hooks';
+import type { Application } from '@/modules/applications/types';
+import { ApplicationStatus } from '@/constants/enums';
 import type { UserApplication } from '@/components/user/sections/userData';
 
 const ITEMS_PER_PAGE = 10;
 
-const mapStatusToUserApp = (status: ApplicationStatusType): UserApplication['status'] => {
+const mapStatusToUserApp = (status: ApplicationStatus): UserApplication['status'] => {
   switch (status) {
-    case 'SCHEDULED':
-    case 'SENDING':
+    case ApplicationStatus.SCHEDULED:
+    case ApplicationStatus.SENDING:
       return 'pending';
-    case 'SENT':
-    case 'EMAIL_SENT':
+    case ApplicationStatus.SENT:
+    case ApplicationStatus.EMAIL_SENT:
       return 'sent';
-    case 'EMAIL_OPENED':
+    case ApplicationStatus.EMAIL_OPENED:
       return 'opened';
-    case 'FAILED':
-    case 'EMAIL_FAILED':
+    case ApplicationStatus.FAILED:
+    case ApplicationStatus.EMAIL_FAILED:
       return 'failed';
     default:
       return 'pending';
@@ -26,11 +27,11 @@ const mapStatusToUserApp = (status: ApplicationStatusType): UserApplication['sta
 
 export default function DashboardAnalysisPage() {
   const [page, setPage] = useState(1);
-  const { data, isLoading } = UseApplicationsList({
+  const { data, isLoading } = useApplicationsList({
     limit: ITEMS_PER_PAGE,
     page,
   });
-  const cancelMutation = UseCancelApplication();
+  const cancelMutation = useCancelApplication();
 
   const applications: UserApplication[] = (data?.data?.applications || []).map(
     (app: Application) => ({

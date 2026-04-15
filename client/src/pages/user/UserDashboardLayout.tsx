@@ -9,7 +9,8 @@ import {
   useUnsaveJobs,
   useJobsList,
 } from '@/modules/jobs/api/hooks';
-import { UseApplicationsList, UseScheduleApplication } from '@/modules/applications/api/hooks';
+import { useApplicationsList, useScheduleApplication } from '@/modules/applications/api/hooks';
+import { ApplicationStatus } from '@/constants/enums';
 import { useLogoutMutation } from '@/modules/auth/api/mutations';
 import { useAuth } from '@/modules/auth/api/hooks';
 import type { SavedJob } from '@/components/user/sections/userData';
@@ -61,22 +62,19 @@ export default function UserDashboardLayout() {
 
   const { data: savedJobsData, isLoading: isLoadingSaved } = useSavedJobsList({ limit: 100 });
   const { data: jobsData } = useJobsList({ limit: 1 });
-  const { data: applicationsData } = UseApplicationsList({ limit: 100 });
+  const { data: applicationsData } = useApplicationsList({ limit: 100 });
   const saveJobMutation = useSaveJob();
   const saveJobsMutation = useSaveJobs();
   const unsaveJobMutation = useUnsaveJob();
   const unsaveJobsMutation = useUnsaveJobs();
-  const scheduleApplicationMutation = UseScheduleApplication();
+  const scheduleApplicationMutation = useScheduleApplication();
   const logoutMutation = useLogoutMutation();
 
   const applications = applicationsData?.data?.applications || [];
   const applicationsCount = applications.length;
-  const sentCount = applications.filter((a: { status: string }) =>
-    ['SENT', 'EMAIL_SENT', 'EMAIL_OPENED'].includes(a.status)
-  ).length;
-  const repliesCount = applications.filter(
-    (a: { status: string }) => a.status === 'REPLIED'
-  ).length;
+  const SENT_STATUSES = [ApplicationStatus.SENT, ApplicationStatus.EMAIL_SENT, ApplicationStatus.EMAIL_OPENED];
+  const sentCount = applications.filter((a) => SENT_STATUSES.includes(a.status)).length;
+  const repliesCount = 0;
   const totalJobs = jobsData?.data?.pagination?.total ?? 0;
 
   const today = new Date();
@@ -86,12 +84,12 @@ export default function UserDashboardLayout() {
   startOfWeek.setHours(0, 0, 0, 0);
 
   const weeklySentCounts = Array(7).fill(0);
-  applications.forEach((app: { createdAt?: string; status?: string }) => {
+  applications.forEach((app) => {
     if (!app.createdAt) return;
     const appDate = new Date(app.createdAt);
     if (appDate >= startOfWeek && appDate <= today) {
       const idx = appDate.getDay();
-      if (app.status && ['SENT', 'EMAIL_SENT', 'EMAIL_OPENED'].includes(app.status)) {
+      if (app.status && SENT_STATUSES.includes(app.status)) {
         weeklySentCounts[idx] = (weeklySentCounts[idx] || 0) + 1;
       }
     }
@@ -220,8 +218,6 @@ export default function UserDashboardLayout() {
 
     const sendTime = scheduleTimeToIso(payload.scheduleTime);
     const delayBetweenEmails = parseInt(payload.delay, 10) * 1000;
-
-    console.log(`📤 Client scheduleTime mapping: "${payload.scheduleTime}" → "${sendTime}"`);
 
     scheduleApplicationMutation.mutate(
       { jobIds, sendTime, delayBetweenEmails, cv: payload.cv! },

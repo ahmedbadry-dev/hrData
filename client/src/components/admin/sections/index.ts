@@ -6,6 +6,6 @@ export { default as AdminScraperSection } from './AdminScraperSection/AdminScrap
 export { default as AdminSettingsSection } from './AdminSettingsSection/AdminSettingsSection';
 export { default as AdminToast } from './AdminToast/AdminToast';
 export { default as AdminModals } from './AdminModals/AdminModals';
-export { initialScraperLogs } from './adminData';
+export { initialScraperLogs, NOTIFICATION_TYPE_TO_UI } from './adminData';
 export type { AdminUser, AdminAnnouncement } from './adminData';
 export type { AnnouncementForm, EditUserForm } from './AdminModals/AdminModals';

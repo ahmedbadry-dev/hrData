@@ -4,18 +4,17 @@ import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useToast } from '@/contexts/ToastContext';
 import { FullPageSpinner } from '@/components/ui';
 import { useRef } from 'react';
+import { UserRole, ALLOWED_ADMIN_ROLES } from '@/constants/enums';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'USER' | 'ADMIN';
+  requiredRole?: UserRole.USER | UserRole.ADMIN;
 }
-
-const ALLOWED_ADMIN_ROLES = ['ADMIN', 'SUPER_ADMIN'];
 
 const hasAccess = (userRole?: string, requiredRole?: string) => {
   if (!requiredRole) return true;
   if (!userRole) return false;
-  if (requiredRole === 'ADMIN') {
+  if (requiredRole === UserRole.ADMIN) {
     return ALLOWED_ADMIN_ROLES.includes(userRole);
   }
   return userRole === requiredRole || ALLOWED_ADMIN_ROLES.includes(userRole);
@@ -28,19 +27,16 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
   const location = useLocation();
   const hasShownToast = useRef(false);
 
-  // Still rehydrating — never redirect prematurely
   if (isLoading) {
     return <FullPageSpinner message="جاري تحميل البيانات..." />;
   }
 
-  // Not authenticated — save intended path, open login modal
   if (!isAuthenticated) {
     sessionStorage.setItem('redirectAfterLogin', location.pathname + location.search);
     openLogin();
     return <Navigate to="/" replace />;
   }
 
-  // Authenticated but wrong role
   if (!hasAccess(user?.role, requiredRole)) {
     if (!hasShownToast.current) {
       hasShownToast.current = true;

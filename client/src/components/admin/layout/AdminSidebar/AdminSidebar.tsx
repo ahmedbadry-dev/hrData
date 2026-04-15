@@ -175,7 +175,7 @@ export default function AdminSidebar({
           </ul>
         </nav>
 
-        <div className={styles['sidebar-sys']}>
+        {/* <div className={styles['sidebar-sys']}>
           <div className={styles['sys-title']}>حالة النظام</div>
 
           <div className={styles['sys-item']}>
@@ -200,7 +200,7 @@ export default function AdminSidebar({
             <span className={styles['sys-label']}>وقت التشغيل</span>
             <span className={styles['sys-val']}>١٤ يوم</span>
           </div>
-        </div>
+        </div> */}
       </div>
     </aside>
   );

@@ -6,6 +6,7 @@ import type {
   UserActivityDataPoint,
   TopJobDataPoint,
   ApplicationStatusDistribution,
+  RecentActivityLog,
 } from './types';
 
 export const fetchAnalyticsOverview = async (): Promise<{ data: OverviewStats }> => {
@@ -63,5 +64,16 @@ export const fetchApplicationStatusDistribution = async (): Promise<{
   data: ApplicationStatusDistribution;
 }> => {
   const { data } = await axiosClient.get('/admin/analytics/application-status-distribution');
+  return data;
+};
+
+export const fetchRecentActivityLogs = async (
+  limit: number = 20
+): Promise<{
+  data: RecentActivityLog[];
+}> => {
+  const { data } = await axiosClient.get('/admin/analytics/recent-activity-logs', {
+    params: { limit },
+  });
   return data;
 };
