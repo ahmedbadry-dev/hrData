@@ -28,6 +28,30 @@
   border: 2px solid var(--ink);
   padding: 20px 16px;
   text-align: center;
+  transition: transform 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  background: var(--cream);
+}
+
+.stat-card:hover::after {
+  transform: scaleX(1);
 }
 
 .stat-val {
@@ -64,6 +88,12 @@
   margin-top: 0;
   position: relative;
   overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.chart-box:hover {
+  transform: translateY(-3px);
+  background: var(--cream);
 }
 
 .chart-header {
