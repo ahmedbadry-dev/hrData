@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import ResponseHelper from '@/shared/utils/api-response';
 import { AnalyticsService } from './analytics.service';
 import { ANALYTICS_MESSAGES } from './analytics.constants';
-import { GetDailyStatsDto } from './dto/get-daily-stats.dto';
-import { GetTopJobsDto } from './dto/get-top-jobs.dto';
+import { GetDailyStatsDtoSchema } from './dto/get-daily-stats.dto';
+import { GetTopJobsDtoSchema } from './dto/get-top-jobs.dto';
 
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
@@ -24,7 +24,7 @@ export class AnalyticsController {
   };
 
   getLoginsPerDay = async (req: Request, res: Response): Promise<Response> => {
-    const { days } = req.query as unknown as GetDailyStatsDto['query'];
+    const { days } = GetDailyStatsDtoSchema.parse({ query: req.query }).query;
     const data = await this.analyticsService.getLoginsPerDay(days);
     return ResponseHelper.ok(
       res,
@@ -35,7 +35,7 @@ export class AnalyticsController {
   };
 
   getApplicationsPerDay = async (req: Request, res: Response): Promise<Response> => {
-    const { days } = req.query as unknown as GetDailyStatsDto['query'];
+    const { days } = GetDailyStatsDtoSchema.parse({ query: req.query }).query;
     const data = await this.analyticsService.getApplicationsPerDay(days);
     return ResponseHelper.ok(
       res,
@@ -46,7 +46,7 @@ export class AnalyticsController {
   };
 
   getEmailErrorsPerDay = async (req: Request, res: Response): Promise<Response> => {
-    const { days } = req.query as unknown as GetDailyStatsDto['query'];
+    const { days } = GetDailyStatsDtoSchema.parse({ query: req.query }).query;
     const data = await this.analyticsService.getEmailErrorsPerDay(days);
     return ResponseHelper.ok(
       res,
@@ -57,7 +57,7 @@ export class AnalyticsController {
   };
 
   getUserActivityPerDay = async (req: Request, res: Response): Promise<Response> => {
-    const { days } = req.query as unknown as GetDailyStatsDto['query'];
+    const { days } = GetDailyStatsDtoSchema.parse({ query: req.query }).query;
     const data = await this.analyticsService.getUserActivityPerDay(days);
     return ResponseHelper.ok(
       res,
@@ -68,7 +68,7 @@ export class AnalyticsController {
   };
 
   getTopAppliedJobs = async (req: Request, res: Response): Promise<Response> => {
-    const { limit } = req.query as unknown as GetTopJobsDto['query'];
+    const { limit } = GetTopJobsDtoSchema.parse({ query: req.query }).query;
     const data = await this.analyticsService.getTopAppliedJobs(limit);
     return ResponseHelper.ok(
       res,
