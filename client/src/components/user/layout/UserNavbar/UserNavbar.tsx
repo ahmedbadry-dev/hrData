@@ -1,12 +1,13 @@
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/modules/auth/api/hooks';
 import styles from './UserNavbar.module.css';
 
 interface UserNavbarProps {
   onToggleSidebar: () => void;
-  onLogout?: () => void;
 }
 
-export default function UserNavbar({ onToggleSidebar, onLogout }: UserNavbarProps) {
+export default function UserNavbar({ onToggleSidebar }: UserNavbarProps) {
+  const navigate = useNavigate();
   const { data: authData } = useAuth();
   const firstName = authData?.user?.firstName || authData?.user?.fullName?.split(' ')[0] || '';
 
@@ -48,8 +49,8 @@ export default function UserNavbar({ onToggleSidebar, onLogout }: UserNavbarProp
           <br />
           ٢٠٢٦
         </div>
-        <button className={styles['btn-logout']} onClick={onLogout}>
-          ← خروج
+        <button className={styles['btn-logout']} onClick={() => navigate('/')}>
+          ← اذهب للرئيسيه
         </button>
       </div>
     </header>
