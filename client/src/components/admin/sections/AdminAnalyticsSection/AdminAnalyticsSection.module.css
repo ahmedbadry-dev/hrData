@@ -88,12 +88,6 @@
   margin-top: 0;
   position: relative;
   overflow: hidden;
-  transition: transform 0.2s;
-}
-
-.chart-box:hover {
-  transform: translateY(-3px);
-  background: var(--cream);
 }
 
 .chart-header {
