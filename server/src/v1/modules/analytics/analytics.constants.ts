@@ -7,6 +7,7 @@ export const ANALYTICS_ROUTES = {
   GET_USER_ACTIVITY_PER_DAY: '/user-activity-per-day',
   GET_TOP_JOBS: '/top-jobs',
   GET_APPLICATION_STATUS_DISTRIBUTION: '/application-status-distribution',
+  GET_RECENT_ACTIVITY_LOGS: '/recent-activity-logs',
 } as const;
 
 export const ANALYTICS_MESSAGES = {
@@ -19,4 +20,5 @@ export const ANALYTICS_MESSAGES = {
   TOP_APPLIED_JOBS_FETCHED_SUCCESSFULLY: 'Top applied jobs fetched successfully',
   APPLICATION_STATUS_DISTRIBUTION_FETCHED_SUCCESSFULLY:
     'Application status distribution fetched successfully',
+  RECENT_ACTIVITY_LOGS_FETCHED_SUCCESSFULLY: 'Recent activity logs fetched successfully',
 } as const;

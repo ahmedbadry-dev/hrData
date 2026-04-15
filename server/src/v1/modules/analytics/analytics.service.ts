@@ -369,10 +369,10 @@ export class AnalyticsService {
     });
   }
 
-  async getRecentActivityLogs(limit: number = 20): Promise<RecentActivityLog[]> {
+  async getRecentActivityLogs(): Promise<RecentActivityLog[]> {
     const logs = await this.prisma.activityLog.findMany({
       orderBy: { createdAt: 'desc' },
-      take: limit,
+      take: 30,
       select: {
         id: true,
         action: true,

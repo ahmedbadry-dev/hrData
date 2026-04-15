@@ -47,6 +47,7 @@ export const analyticsRoutes = (analyticsController: AnalyticsController): Route
     ANALYTICS_ROUTES.GET_APPLICATION_STATUS_DISTRIBUTION,
     analyticsController.getApplicationStatusDistribution
   );
+  router.get(ANALYTICS_ROUTES.GET_RECENT_ACTIVITY_LOGS, analyticsController.getRecentActivityLogs);
 
   return router;
 };

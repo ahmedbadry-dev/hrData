@@ -8,6 +8,7 @@ import {
   fetchUserActivityPerDay,
   fetchTopAppliedJobs,
   fetchApplicationStatusDistribution,
+  fetchRecentActivityLogs,
 } from '../analytics.service';
 
 export const ADMIN_ANALYTICS_QUERY_KEY = ['admin', 'analytics'] as const;
@@ -108,4 +109,15 @@ export type UseApplicationStatusDistributionQueryOptions = ReturnType<
 
 export const useApplicationStatusDistribution = () => {
   return useQuery(useApplicationStatusDistributionQueryOptions());
+};
+
+export const useRecentActivityLogsQueryOptions = () => {
+  return queryOptions({
+    queryKey: [...ADMIN_ANALYTICS_QUERY_KEY, 'recent-logs'] as const,
+    queryFn: () => fetchRecentActivityLogs(30),
+  });
+};
+
+export const useRecentActivityLogs = () => {
+  return useQuery(useRecentActivityLogsQueryOptions());
 };

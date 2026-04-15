@@ -87,4 +87,14 @@ export class AnalyticsController {
       req.path
     );
   };
+
+  getRecentActivityLogs = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.analyticsService.getRecentActivityLogs();
+    return ResponseHelper.ok(
+      res,
+      data,
+      ANALYTICS_MESSAGES.RECENT_ACTIVITY_LOGS_FETCHED_SUCCESSFULLY,
+      req.path
+    );
+  };
 }
