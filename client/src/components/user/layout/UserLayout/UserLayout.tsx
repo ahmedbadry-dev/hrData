@@ -12,6 +12,7 @@ interface UserLayoutProps {
   onToggleSidebar: () => void;
   onCloseSidebar: () => void;
   savedCount: number;
+  onLogout?: () => void;
 }
 
 export default function UserLayout({

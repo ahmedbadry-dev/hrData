@@ -1,12 +1,48 @@
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// src/main.ts
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 import 'dotenv/config';
 import app from './app';
 import { appConfig, getEnvVarAsNumber } from './config/env.config';
 import logger from '@/shared/utils/logger.util';
 import prisma from './config/db.config';
-import { bootstrapScraper } from './scraper';
-import '@/workers/job-applications-schedule.worker';
+import redis from './config/redis';
+
+
+import '@/workers/job-applications-schedule.worker'; 
+import '@/workers/scraper.worker'; 
+
+import { startScraperSchedule } from './scraper/scraper.scheduler';
 
 const PORT = getEnvVarAsNumber('PORT', 5000);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// bootstrapScraper
+
+
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function bootstrapScraper(): Promise<void> {
+  try {
+    await redis.del('scraper:is-running');
+    const scraperStatus = await redis.get('scraper:status');
+
+    if (scraperStatus === 'running') {
+
+      await startScraperSchedule();
+      logger.info('[Main] ♻️ Scraper scheduled successfully after restart (and queue restored with all new jobs)');
+    } else {
+      logger.info('[Main] ℹ️ Scraper is stopped — skipping schedule restore');
+    }
+  } catch (error) {
+
+    logger.error(`[Main] ⚠️ Scraper bootstrap failed: ${error}`);
+  }
+}
 
 process.on('uncaughtException', (err: Error) => {
   logger.error('💥 UNCAUGHT EXCEPTION — shutting down', {
@@ -18,11 +54,12 @@ process.on('uncaughtException', (err: Error) => {
 
 const startServer = async () => {
   try {
+    await bootstrapScraper();
+
     const server = app.listen(PORT, () => {
       logger.info(`🚀 Server is running on http://localhost:${PORT}`);
       logger.info(`📊 Health check available at http://localhost:${PORT}/api/v1/health`);
       logger.info(`🌍 Environment: ${appConfig.nodeEnv}`);
-      bootstrapScraper();
     });
 
     server.on('error', (error: NodeJS.ErrnoException) => {

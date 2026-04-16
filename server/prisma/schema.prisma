@@ -51,6 +51,7 @@ enum JobLocation {
   MECCA
   MEDINA
   TABUK
+  OTHER
 }
 
 enum DateFilter {
@@ -126,7 +127,7 @@ model Job {
   id          String       @id @default(uuid())
   title       String
   companyName String       @map("company_name")
-  location    JobLocation?
+  location    JobLocation? @default(OTHER)
   category    String?
   description String?
   hrEmail     String?      @map("hr_email")

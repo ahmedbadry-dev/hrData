@@ -1,0 +1,55 @@
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// src/workers/scraper.worker.ts
+
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+import { Worker, Job } from 'bullmq';
+import redis from '@/config/redis';
+import logger from '@/shared/utils/logger.util';
+import { runScraperForAllSites } from '@/scraper/scraper.service';
+
+export const scraperWorker = new Worker(
+
+  'job-scraper',
+
+
+  async (job: Job) => {
+    logger.info(`[ScraperWorker] ⚙️ Processing: ${job.name} (id: ${job.id})`);
+    await runScraperForAllSites();
+  },
+
+  {
+    connection: redis, 
+
+
+    concurrency: 1,
+  }
+);
+
+
+scraperWorker.on('completed', (job: Job) => {
+  logger.info(`[ScraperWorker] ✅ Completed: ${job.name} (id: ${job.id})`);
+});
+
+
+scraperWorker.on('failed', (job: Job | undefined, err: Error) => {
+  logger.error(`[ScraperWorker] ❌ Failed: ${job?.name} (id: ${job?.id}) — ${err.message}`);
+});
+
+
+
+scraperWorker.on('error', (err: Error) => {
+  logger.error(`[ScraperWorker] 🔴 Worker error: ${err.message}`);
+});
+
+
+scraperWorker.on('ready', () => {
+  logger.info('[ScraperWorker] ✅ Ready and connected to Redis');
+});
+
+
+scraperWorker.on('active', (job: Job) => {
+  logger.info(`[ScraperWorker] ▶️ Started: ${job.name} (id: ${job.id})`);
+});

@@ -19,7 +19,6 @@ interface AdminSidebarProps {
 export default function AdminSidebar({
   activePage,
   onNavigate,
-  scraperRunning,
   isMobileOpen,
 }: AdminSidebarProps) {
   return (
@@ -175,32 +174,7 @@ export default function AdminSidebar({
           </ul>
         </nav>
 
-        {/* <div className={styles['sidebar-sys']}>
-          <div className={styles['sys-title']}>حالة النظام</div>
-
-          <div className={styles['sys-item']}>
-            <span className={styles['sys-label']}>السكراب</span>
-            <span className={styles['sys-val']}>
-              <span className={cn(styles['status-dot'], scraperRunning ? styles.on : styles.off)} />
-              {scraperRunning ? ' شغال' : ' متوقف'}
-            </span>
-          </div>
-
-          <div className={styles['sys-item']}>
-            <span className={styles['sys-label']}>الوظائف</span>
-            <span className={styles['sys-val']}>٢٠</span>
-          </div>
-
-          <div className={styles['sys-item']}>
-            <span className={styles['sys-label']}>المستخدمين</span>
-            <span className={styles['sys-val']}>١٢٤٧</span>
-          </div>
-
-          <div className={styles['sys-item']}>
-            <span className={styles['sys-label']}>وقت التشغيل</span>
-            <span className={styles['sys-val']}>١٤ يوم</span>
-          </div>
-        </div> */}
+        
       </div>
     </aside>
   );

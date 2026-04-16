@@ -25,6 +25,9 @@ import { GmailService } from './modules/gmail/gmail.service';
 import { GmailController } from './modules/gmail/gmail.controller';
 import { analyticsRoutes } from './modules/analytics/analytics.routes';
 import { notificationsRoutes } from './modules/notifications/notifications.routes';
+import { scraperRoutes } from './modules/scraper/scraper.routes';
+import { ScraperService } from './modules/scraper/scraper.service';
+import { ScraperController } from './modules/scraper/scraper.controller';
 
 export const v1Routes = () => {
   const router = Router();
@@ -45,6 +48,10 @@ export const v1Routes = () => {
   const trackingController = new TrackingController(trackingService);
   const gmailService = new GmailService(prisma);
   const gmailController = new GmailController(gmailService);
+
+  const scraperService = new ScraperService();
+  const scraperController = new ScraperController(scraperService);
+
   const { adminRouter: adminNotificationsRouter, userRouter: userNotificationsRouter } =
     notificationsRoutes(notificationsController);
 
@@ -57,6 +64,7 @@ export const v1Routes = () => {
   router.use('/notifications', userNotificationsRouter);
   router.use('/applications', applicationsRoutes(applicationsController));
   router.use('/gmail', gmailRoutes(gmailController));
+  router.use('/admin/scraper', scraperRoutes(scraperController));
 
   return router;
 };
