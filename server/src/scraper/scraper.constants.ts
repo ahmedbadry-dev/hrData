@@ -12,6 +12,9 @@ export const SCRAPER_INTERNAL_CONSTANTS = {
   EXPIRY: {
     LOCK_ONE_HOUR: 3600,
   },
+  REDIS_MODES: {
+    EX: 'EX',
+  },
   LIMITS: {
     MAX_SCRAPED_ITEMS_TO_SAVE: 200,
   },
@@ -26,5 +29,6 @@ export const SCRAPER_INTERNAL_CONSTANTS = {
       `[Scraper] ✅ Finished: ${name} and saved ${newLinks} new links and ${newScrapedJobs} new scraped jobs`,
     SITE_FAILURE: (name: string, error: any) => `[Scraper] Site Failure (${name}): ${error}`,
     EXCEPTION: (url: string, error: any) => `[Scraper] Exception processing ${url}: ${error}`,
+    LOCK_ERROR: (error: any) => `[Scraper] Critical Redis error while handling lock: ${error}`,
   },
 } as const;

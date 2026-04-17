@@ -9,6 +9,10 @@ export interface SiteConfig {
   jobLinkSelector: string;
   jobContentSelector: string;
   baseUrl: string;
+  ajaxConfig?: {
+    endpoint: string;
+    params: Record<string, string>;
+  };
 }
 
 export interface ExtractedJob {

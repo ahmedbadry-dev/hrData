@@ -6,42 +6,88 @@ import { SiteConfig } from './scraper.types';
 
 // قائمة المواقع اللي هتسكرب منها
 export const SITES_CONFIG: SiteConfig[] = [
-  // {
-  //   name: 'ewdifh',
-  //   url: 'https://www.ewdifh.com/category/corporate-jobs',
-  //   baseUrl: 'https://www.ewdifh.com',
-  //   jobLinkSelector: 'div.grid a[href*="/jobs/"]',
-  //   jobContentSelector: 'div.card-body',
-  // },
-  // {
-  //   name: 'wadifh',
-  //   url: 'https://www.jobs-1.com/jobs/archive/8', // صفحة الوظائف الشركات
-  //   baseUrl: 'https://www.jobs-1.com',
+  {
+    name: 'ewdifh',
+    url: 'https://www.ewdifh.com/category/corporate-jobs',
+    baseUrl: 'https://www.ewdifh.com',
+    jobLinkSelector: 'div.grid a[href*="/jobs/"]',
+    jobContentSelector: 'div.card-body',
+  },
+  {
+    name: 'wadifh',
+    url: 'https://www.jobs-1.com/jobs/archive/8', // صفحة الوظائف الشركات
+    baseUrl: 'https://www.jobs-1.com',
 
-  //   jobLinkSelector: 'div.bl-news-item a[href*="www.jobs-1.com/1"]',
+    jobLinkSelector: 'div.bl-news-item a[href*="www.jobs-1.com/1"]',
 
-  //   jobContentSelector: 'div.bl-detail-page',
-  // },
-  // {
-  //   name: 'linkedksa',
-  //   url: 'https://linkedksa.com',
-  //   baseUrl: 'https://linkedksa.com',
-  //   jobLinkSelector: 'div.uc_post_list_box a[href*="linkedksa.com/"]',
-  //   jobContentSelector: '.elementor-widget-theme-post-content .elementor-widget-container',
-  // },
-  // {
-  //   name: 'tabiwazifa',
-  //   url: 'https://wazaef.net/jobs/category/%D9%88%D8%B8%D8%A7%D8%A6%D9%81-%D8%B4%D8%B1%D9%83%D8%A7%D8%AA',
-  //   baseUrl: 'https://wazaef.net',
-  //   jobLinkSelector: '.entry-list-item .entry-content-wrap .entry-header .entry-title a[href*="wazaef.net/jobs"]',
-  //   jobContentSelector: '.elementor-widget-container',
-  // },
+    jobContentSelector: 'div.bl-detail-page',
+  },
+  {
+    name: 'linkedksa',
+    url: 'https://linkedksa.com',
+    baseUrl: 'https://linkedksa.com',
+    jobLinkSelector: 'div.uc_post_list_box a[href*="linkedksa.com/"]',
+    jobContentSelector: '.elementor-widget-theme-post-content .elementor-widget-container',
+  },
+  {
+    name: 'tabiwazifa',
+    url: 'https://wazaef.net/jobs/category/%D9%88%D8%B8%D8%A7%D8%A6%D9%81-%D8%B4%D8%B1%D9%83%D8%A7%D8%AA',
+    baseUrl: 'https://wazaef.net',
+    jobLinkSelector:
+      '.entry-list-item .entry-content-wrap .entry-header .entry-title a[href*="wazaef.net/jobs"]',
+    jobContentSelector: '.elementor-widget-container',
+  },
   {
     name: 'jbscv',
     url: 'https://jbscv.com/jobs',
     baseUrl: 'https://jbscv.com',
-    jobLinkSelector: 'ul.job_listings li.job_listing > a',
+    jobLinkSelector: 'li.job_listing a[href*="/jobs/"]',
     jobContentSelector: 'div.job_description',
+    ajaxConfig: {
+      endpoint: 'https://jbscv.com/jm-ajax/get_listings/',
+      params: {
+        action: 'get_listings',
+        lang: '',
+        per_page: '50',
+        orderby: 'desc',
+        order: 'DESC',
+        page: '1',
+        show_pagination: 'false',
+        post_id: '25709',
+        'filter_job_type[]': 'remote',
+        search_keywords: '',
+        search_location: '',
+        search_region: '0',
+      },
+    },
+  },
+  {
+    name: 'fu1sa',
+    url: 'https://fu1sa.com/jobs/category/%D9%88%D8%B8%D8%A7%D8%A6%D9%81-%D8%B4%D8%B1%D9%83%D8%A7%D8%AA/',
+    baseUrl: 'https://fu1sa.com',
+    jobLinkSelector: '.entry-title a',
+    jobContentSelector: '.entry-content .card-body',
+  },
+  {
+    name: 'alwzifa',
+    url: 'https://alwzifa.com',
+    baseUrl: 'https://alwzifa.com',
+    jobLinkSelector: '.post-title',
+    jobContentSelector: '.single-container article .entry-content',
+  },
+  {
+    name: 'jobhuna',
+    url: 'https://jobhuna.com',
+    baseUrl: 'https://jobhuna.com',
+    jobLinkSelector: '.entry-title a',
+    jobContentSelector: '.entry-content',
+  },
+  {
+    name: 'awamirtawzif',
+    url: 'https://www.awamirtawzif.com/jobs',
+    baseUrl: 'https://www.awamirtawzif.com',
+    jobLinkSelector: 'article h3 a',
+    jobContentSelector: '.content-container',
   },
 ];
 

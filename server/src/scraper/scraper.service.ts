@@ -16,6 +16,17 @@ async function processSingleJob(jobUrl: string, site: SiteConfig): Promise<strin
     const content = await ScraperClient.getJobContent(jobUrl, site);
     if (!content) return null;
 
+    // ✅ AI Extraction & DB Storage
+    if (content.includes('@')) {
+      const extracted = await ScraperClient.extractWithAI(content, jobUrl, site.name);
+      if (extracted) {
+        const normalized = ScraperStorage.validateAndNormalize(extracted);
+        if (normalized) {
+          await ScraperStorage.saveJobToDb(normalized);
+        }
+      }
+    }
+
     return content;
   } catch (error) {
     logger.error(SCRAPER_INTERNAL_CONSTANTS.LOGS.EXCEPTION(jobUrl, error));
@@ -30,12 +41,17 @@ export async function runScraperForAllSites(): Promise<void> {
     return;
   }
 
-  await redis.set(
-    SCRAPER_INTERNAL_CONSTANTS.REDIS_KEYS.IS_RUNNING,
-    SCRAPER_INTERNAL_CONSTANTS.REDIS_VALUES.TRUE,
-    'EX',
-    SCRAPER_INTERNAL_CONSTANTS.EXPIRY.LOCK_ONE_HOUR
-  );
+  try {
+    await redis.set(
+      SCRAPER_INTERNAL_CONSTANTS.REDIS_KEYS.IS_RUNNING,
+      SCRAPER_INTERNAL_CONSTANTS.REDIS_VALUES.TRUE,
+      SCRAPER_INTERNAL_CONSTANTS.REDIS_MODES.EX,
+      SCRAPER_INTERNAL_CONSTANTS.EXPIRY.LOCK_ONE_HOUR
+    );
+  } catch (error) {
+    logger.error(SCRAPER_INTERNAL_CONSTANTS.LOGS.LOCK_ERROR(error));
+    return;
+  }
   logger.info(SCRAPER_INTERNAL_CONSTANTS.LOGS.START);
 
   const allLinks: { site: string; url: string }[] = [];
@@ -59,7 +75,8 @@ export async function runScraperForAllSites(): Promise<void> {
 
               if (
                 content &&
-                scrapedJobs.length <= SCRAPER_INTERNAL_CONSTANTS.LIMITS.MAX_SCRAPED_ITEMS_TO_SAVE
+                scrapedJobs.length <= SCRAPER_INTERNAL_CONSTANTS.LIMITS.MAX_SCRAPED_ITEMS_TO_SAVE &&
+                content.includes('@')
               ) {
                 scrapedJobs.push({ site: site.name, url: jobUrl, content });
               }

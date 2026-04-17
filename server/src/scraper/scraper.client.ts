@@ -42,7 +42,32 @@ export class ScraperClient {
   }
 
   static async getJobLinks(site: SiteConfig): Promise<string[]> {
-    const html = await this.fetchHtml(site.url);
+    let html: string | null = null;
+
+    // ✅ لو الموقع عنده ajaxConfig، استخدم AJAX بدل fetchHtml
+    if (site.ajaxConfig) {
+      try {
+        const { data } = await this.httpClient.post(
+          site.ajaxConfig.endpoint,
+          new URLSearchParams(site.ajaxConfig.params),
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-Requested-With': 'XMLHttpRequest',
+              Referer: site.url,
+            },
+          }
+        );
+        // WP Job Manager بيرجع { found_jobs: true, html: '...' }
+        html = data?.html ?? null;
+      } catch (error) {
+        logger.error(`[Scraper] AJAX fetch failed for ${site.name}: ${error}`);
+        return [];
+      }
+    } else {
+      html = await this.fetchHtml(site.url);
+    }
+
     if (!html) return [];
 
     const $ = cheerio.load(html);
@@ -61,8 +86,11 @@ export class ScraperClient {
     if (!html) return null;
 
     const $ = cheerio.load(html);
-    const contentDiv = $(site.jobContentSelector);
+    const contentDiv = $(site.jobContentSelector).clone();
     if (!contentDiv.length) return null;
+
+    // Remove code blocks and advertisements from the extracted content
+    contentDiv.find('script, style, .niymeqpos, .adsbygoogle, .betterads, iframe').remove();
 
     return contentDiv.text().replace(/\s+/g, ' ').trim().slice(0, MAX_CONTENT_CHARS);
   }
@@ -78,7 +106,7 @@ export class ScraperClient {
       const response = await this.aiLimiter.schedule(() =>
         geminiClient.models.generateContent({
           model: 'gemini-3-flash-preview',
-          contents: `استخرج بيانات الوظيفة من النص التالي:\n\n${content}`,
+          contents: `استخرج بيانات الوظيفة من النص التالي في صيغة JSON:\n\n${content}`,
           config: {
             responseMimeType: 'application/json',
             responseJsonSchema: JOB_RESPONSE_SCHEMA,

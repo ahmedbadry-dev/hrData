@@ -26,24 +26,11 @@ export class ScraperStorage {
       if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 
       const filePath = path.join(dirPath, fileName);
-      let combinedData = newData;
 
-      if (fs.existsSync(filePath)) {
-        try {
-          const existingContent = fs.readFileSync(filePath, 'utf8');
-          const existingData = JSON.parse(existingContent);
-          if (Array.isArray(existingData) && Array.isArray(newData)) {
-            combinedData = [...existingData, ...newData];
-          }
-        } catch (parseError) {
-          logger.warn(`[Scraper] Could not parse existing ${fileName}, overwriting instead.`);
-        }
-      }
-
-      fs.writeFileSync(filePath, JSON.stringify(combinedData, null, 2), 'utf8');
+      fs.writeFileSync(filePath, JSON.stringify(newData, null, 2), 'utf8');
       logger.info(
-        `[Scraper] JSON Export: Appended to ${fileName}. (Total items: ${
-          Array.isArray(combinedData) ? combinedData.length : 1
+        `[Scraper] JSON Export: Saved to ${fileName}. (Items: ${
+          Array.isArray(newData) ? newData.length : 1
         })`
       );
     } catch (error: any) {
