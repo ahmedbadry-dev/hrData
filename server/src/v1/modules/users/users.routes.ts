@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { UserRole } from 'generated/prisma';
-import { authenticationMiddleware, authorizationMiddleware } from '../../../http/middlewares/auth.middleware';
+import {
+  authenticationMiddleware,
+  authorizationMiddleware,
+} from '../../../http/middlewares/auth.middleware';
 import {
   validateParamsMiddleware,
   validateQueryMiddleware,

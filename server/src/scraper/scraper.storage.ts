@@ -10,17 +10,16 @@ export class ScraperStorage {
   private static readonly SCRAPED_DATA_DIR = 'scrapedData';
   private static readonly SCRAPED_DIR = 'scraped';
 
-  
   static async saveAllAds(links: { site: string; url: string }[]): Promise<void> {
     await this.saveJson(this.SCRAPED_DATA_DIR, 'allAds.json', links);
   }
 
-  
-  static async saveJobDetail(jobs: { site: string; url: string; content: string }[]): Promise<void> {
+  static async saveJobDetail(
+    jobs: { site: string; url: string; content: string }[]
+  ): Promise<void> {
     await this.saveJson(this.SCRAPED_DIR, 'job.json', jobs);
   }
 
-  
   private static async saveJson(dirName: string, fileName: string, newData: any): Promise<void> {
     try {
       const dirPath = path.join(process.cwd(), dirName);
@@ -28,7 +27,6 @@ export class ScraperStorage {
 
       const filePath = path.join(dirPath, fileName);
       let combinedData = newData;
-
 
       if (fs.existsSync(filePath)) {
         try {
@@ -53,7 +51,6 @@ export class ScraperStorage {
     }
   }
 
-  
   static async saveJobToDb(job: ExtractedJob): Promise<void> {
     try {
       await prisma.job.upsert({
@@ -92,7 +89,6 @@ export class ScraperStorage {
     }
   }
 
-  
   static validateAndNormalize(job: ExtractedJob): ExtractedJob | null {
     if (!job.hrEmail) return null;
 

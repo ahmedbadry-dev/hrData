@@ -19,7 +19,10 @@
     "prisma:seed": "npx prisma db seed",
     "prisma:studio": "npx prisma studio",
     "test": "tsx --test \"tests/**/*.test.ts\"",
-    "test:watch": "tsx --test --watch \"tests/**/*.test.ts\""
+    "test:watch": "tsx --test --watch \"tests/**/*.test.ts\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.ts\""
   },
   "dependencies": {
     "@google/genai": "^1.50.1",
@@ -54,6 +57,7 @@
   "devDependencies": {
     "@bull-board/api": "^6.21.2",
     "@bull-board/express": "^6.21.2",
+    "@eslint/js": "^10.0.1",
     "@faker-js/faker": "^10.4.0",
     "@types/babel__traverse": "^7.28.0",
     "@types/bcrypt": "^6.0.0",
@@ -67,8 +71,16 @@
     "@types/nodemailer": "^8.0.0",
     "@types/pg": "^8.20.0",
     "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.58.2",
+    "@typescript-eslint/parser": "^8.58.2",
+    "eslint": "^10.2.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "globals": "^17.5.0",
+    "prettier": "^3.8.3",
     "prisma": "^6.19.3",
     "tsx": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "typescript-eslint": "^8.58.2"
   }
 }

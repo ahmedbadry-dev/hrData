@@ -14,11 +14,7 @@ import { ScraperController } from './scraper.controller';
 export const scraperRoutes = (scraperController: ScraperController): Router => {
   const router = Router();
 
-
-  const adminOnly = [
-    authenticationMiddleware,
-    authorizationMiddleware(UserRole.ADMIN),
-  ];
+  const adminOnly = [authenticationMiddleware, authorizationMiddleware(UserRole.ADMIN)];
 
   // GET  /api/v1/admin/scraper/status
   router.get('/status', ...adminOnly, scraperController.getStatus);

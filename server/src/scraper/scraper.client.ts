@@ -3,11 +3,7 @@ import * as cheerio from 'cheerio';
 import Bottleneck from 'bottleneck';
 import logger from '@/shared/utils/logger.util';
 import { geminiClient } from '@/config/llm';
-import { 
-  AI_REQUESTS_PER_MINUTE, 
-  JOB_RESPONSE_SCHEMA, 
-  MAX_CONTENT_CHARS 
-} from './scraper.config';
+import { AI_REQUESTS_PER_MINUTE, JOB_RESPONSE_SCHEMA, MAX_CONTENT_CHARS } from './scraper.config';
 import { SiteConfig, ExtractedJob } from './scraper.types';
 
 export class ScraperClient {
@@ -35,17 +31,16 @@ export class ScraperClient {
         const status = error?.response?.status;
         if (status === 404 || status === 403) return null;
         if (status === 429) {
-          await new Promise(r => setTimeout(r, 10000));
+          await new Promise((r) => setTimeout(r, 10000));
           continue;
         }
         if (attempt === retries) return null;
-        await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt - 1)));
+        await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt - 1)));
       }
     }
     return null;
   }
 
-  
   static async getJobLinks(site: SiteConfig): Promise<string[]> {
     const html = await this.fetchHtml(site.url);
     if (!html) return [];
@@ -61,7 +56,6 @@ export class ScraperClient {
     return links;
   }
 
-  
   static async getJobContent(jobUrl: string, site: SiteConfig): Promise<string | null> {
     const html = await this.fetchHtml(jobUrl);
     if (!html) return null;
@@ -73,7 +67,6 @@ export class ScraperClient {
     return contentDiv.text().replace(/\s+/g, ' ').trim().slice(0, MAX_CONTENT_CHARS);
   }
 
-  
   static async extractWithAI(
     content: string,
     sourceUrl: string,

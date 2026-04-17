@@ -1,7 +1,6 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // src/main.ts
 
-
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 import 'dotenv/config';
@@ -11,9 +10,8 @@ import logger from '@/shared/utils/logger.util';
 import prisma from './config/db.config';
 import redis from './config/redis';
 
-
-import '@/workers/job-applications-schedule.worker'; 
-import '@/workers/scraper.worker'; 
+import '@/workers/job-applications-schedule.worker';
+import '@/workers/scraper.worker';
 
 import { startScraperSchedule } from './scraper/scraper.scheduler';
 
@@ -22,9 +20,6 @@ const PORT = getEnvVarAsNumber('PORT', 5000);
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // bootstrapScraper
 
-
-
-
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 async function bootstrapScraper(): Promise<void> {
   try {
@@ -32,14 +27,14 @@ async function bootstrapScraper(): Promise<void> {
     const scraperStatus = await redis.get('scraper:status');
 
     if (scraperStatus === 'running') {
-
       await startScraperSchedule();
-      logger.info('[Main] ♻️ Scraper scheduled successfully after restart (and queue restored with all new jobs)');
+      logger.info(
+        '[Main] ♻️ Scraper scheduled successfully after restart (and queue restored with all new jobs)'
+      );
     } else {
       logger.info('[Main] ℹ️ Scraper is stopped — skipping schedule restore');
     }
   } catch (error) {
-
     logger.error(`[Main] ⚠️ Scraper bootstrap failed: ${error}`);
   }
 }

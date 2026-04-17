@@ -12,7 +12,6 @@ import { scraperQueue } from '@/config/bullmq';
 import { startScraperSchedule, clearScraperSchedule } from '@/scraper/scraper.scheduler';
 import { SCRAPER_CONSTANTS } from './scraper.constants';
 
-
 export interface ScraperStatusResponse {
   status: string;
   isCurrentlyRunning: boolean;
@@ -29,14 +28,13 @@ export class ScraperService {
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   async getStatus(): Promise<ScraperStatusResponse> {
-
     const [status, isRunning, repeatableJobs, waiting, active, failed] = await Promise.all([
-      redis.get('scraper:status'),       // running | paused | stopped
-      redis.get('scraper:is-running'),   
-      scraperQueue.getJobSchedulers(),  
-      scraperQueue.getWaitingCount(),    
-      scraperQueue.getActiveCount(),     
-      scraperQueue.getFailedCount(),     
+      redis.get('scraper:status'), // running | paused | stopped
+      redis.get('scraper:is-running'),
+      scraperQueue.getJobSchedulers(),
+      scraperQueue.getWaitingCount(),
+      scraperQueue.getActiveCount(),
+      scraperQueue.getFailedCount(),
     ]);
 
     return {
@@ -52,12 +50,10 @@ export class ScraperService {
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   async start(): Promise<void> {
     const currentStatus = await redis.get('scraper:status');
- 
 
     if (currentStatus === 'running') {
       throw new ConflictException(SCRAPER_CONSTANTS.MESSAGES.ALREADY_RUNNING);
     }
-
 
     await startScraperSchedule();
 
@@ -65,7 +61,6 @@ export class ScraperService {
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   async stop(): Promise<void> {
@@ -75,20 +70,14 @@ export class ScraperService {
       throw new BadRequestException(SCRAPER_CONSTANTS.MESSAGES.NOT_RUNNING);
     }
 
-
     await clearScraperSchedule();
     await redis.set('scraper:status', 'paused');
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   async runNow(): Promise<void> {
-    await scraperQueue.add(
-      'run-scraper-manual',
-      {},
-      { priority: 1 } 
-    );
+    await scraperQueue.add('run-scraper-manual', {}, { priority: 1 });
   }
 }

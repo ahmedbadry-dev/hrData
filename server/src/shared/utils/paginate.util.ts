@@ -71,4 +71,3 @@ export const buildPaginationMeta = (
     hasPreviousPage: page > minPage,
   };
 };
-

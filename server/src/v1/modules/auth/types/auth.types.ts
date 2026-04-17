@@ -29,9 +29,7 @@ export interface TokenPair {
   refreshToken: string;
 }
 
-export type VerifiedToken<T> =
-  | { valid: true; payload: T }
-  | { valid: false; error: string };
+export type VerifiedToken<T> = { valid: true; payload: T } | { valid: false; error: string };
 
 export interface AuthResponseWithTokens {
   user: SafeUser;
@@ -52,4 +50,3 @@ export interface DeviceInfo {
   userAgent: string;
   deviceName: string;
 }
-

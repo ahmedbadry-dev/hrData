@@ -4,14 +4,12 @@ import { USERS_CONSTANTS } from '../users.constants';
 
 export const GetUsersDtoSchema = z.object({
   query: z.object({
-    page: z
-      .coerce
+    page: z.coerce
       .number()
       .min(USERS_CONSTANTS.PAGINATION.MIN_PAGE)
       .default(USERS_CONSTANTS.PAGINATION.DEFAULT_PAGE)
       .optional(),
-    limit: z
-      .coerce
+    limit: z.coerce
       .number()
       .min(USERS_CONSTANTS.PAGINATION.MIN_LIMIT)
       .max(USERS_CONSTANTS.PAGINATION.MAX_LIMIT)

@@ -1,14 +1,11 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // src/config/llm.ts
 
-
-
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 import { getEnvVariable } from '@/config/env.config';
 import logger from '@/shared/utils/logger.util';
 import { GoogleGenAI } from '@google/genai';
-
 
 const groqApiKey = getEnvVariable('GROQ_API_KEY', '');
 const rawBaseUrl = getEnvVariable('LLM_BASE_URL', '');
@@ -23,9 +20,7 @@ if (!groqApiKey) {
   logger.warn('GROQ API key not configured — LLM features will be unavailable');
 }
 
-
 const geminiApiKey = getEnvVariable('GEMINI_API_KEY', '');
-
 
 export const geminiClient = new GoogleGenAI({ apiKey: geminiApiKey });
 

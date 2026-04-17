@@ -11,12 +11,22 @@ export class UsersController {
 
   getUsers = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.usersService.getUsers(req.query as GetUsersDto['query']);
-    return ResponseHelper.ok(res, data, USERS_CONSTANTS.MESSAGES.USERS_FETCHED_SUCCESSFULLY, req.path);
+    return ResponseHelper.ok(
+      res,
+      data,
+      USERS_CONSTANTS.MESSAGES.USERS_FETCHED_SUCCESSFULLY,
+      req.path
+    );
   };
 
   getUserById = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.usersService.getUserById((req.params as UserIdParamDto['params']).id);
-    return ResponseHelper.ok(res, data, USERS_CONSTANTS.MESSAGES.USER_FETCHED_SUCCESSFULLY, req.path);
+    return ResponseHelper.ok(
+      res,
+      data,
+      USERS_CONSTANTS.MESSAGES.USER_FETCHED_SUCCESSFULLY,
+      req.path
+    );
   };
 
   updateUser = async (req: Request, res: Response): Promise<Response> => {
@@ -24,17 +34,32 @@ export class UsersController {
       (req.params as UserIdParamDto['params']).id,
       req.body as UpdateUserDto['body']
     );
-    return ResponseHelper.ok(res, data, USERS_CONSTANTS.MESSAGES.USER_UPDATED_SUCCESSFULLY, req.path);
+    return ResponseHelper.ok(
+      res,
+      data,
+      USERS_CONSTANTS.MESSAGES.USER_UPDATED_SUCCESSFULLY,
+      req.path
+    );
   };
 
   suspendUser = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.usersService.suspendUser((req.params as UserIdParamDto['params']).id);
-    return ResponseHelper.ok(res, data, USERS_CONSTANTS.MESSAGES.USER_SUSPENDED_SUCCESSFULLY, req.path);
+    return ResponseHelper.ok(
+      res,
+      data,
+      USERS_CONSTANTS.MESSAGES.USER_SUSPENDED_SUCCESSFULLY,
+      req.path
+    );
   };
 
   activateUser = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.usersService.activateUser((req.params as UserIdParamDto['params']).id);
-    return ResponseHelper.ok(res, data, USERS_CONSTANTS.MESSAGES.USER_ACTIVATED_SUCCESSFULLY, req.path);
+    return ResponseHelper.ok(
+      res,
+      data,
+      USERS_CONSTANTS.MESSAGES.USER_ACTIVATED_SUCCESSFULLY,
+      req.path
+    );
   };
 
   deleteUser = async (req: Request, res: Response): Promise<Response> => {

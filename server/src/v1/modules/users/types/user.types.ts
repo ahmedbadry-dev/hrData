@@ -3,10 +3,7 @@ import { PaginationMeta } from '@/shared/utils/api-response';
 
 export type SafeUser = Omit<
   User,
-  | 'passwordHash'
-  | 'verificationToken'
-  | 'resetToken'
-  | 'failedLoginAttempts'
+  'passwordHash' | 'verificationToken' | 'resetToken' | 'failedLoginAttempts'
 >;
 
 export interface UserResponse {

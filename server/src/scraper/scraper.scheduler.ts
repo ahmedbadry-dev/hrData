@@ -1,7 +1,6 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // src/scraper/scraper.scheduler.ts
 
-
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 import { scraperQueue } from '@/config/bullmq';
@@ -10,27 +9,21 @@ import logger from '@/shared/utils/logger.util';
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // startScraperSchedule
 
-
-
-
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export async function startScraperSchedule(): Promise<void> {
-
   await clearScraperSchedule();
 
-
   await scraperQueue.upsertJobScheduler(
-    'run-scraper-morning', 
+    'run-scraper-morning',
     {
       pattern: '0 9 * * *',
       tz: 'Asia/Riyadh',
     },
     {
-      name: 'run-scraper-morning', 
+      name: 'run-scraper-morning',
       data: {},
     }
   );
-
 
   await scraperQueue.upsertJobScheduler(
     'run-scraper-night',
@@ -49,9 +42,6 @@ export async function startScraperSchedule(): Promise<void> {
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // clearScraperSchedule
-
-
-
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export async function clearScraperSchedule(): Promise<void> {

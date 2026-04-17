@@ -2,16 +2,14 @@ import { JobLocation } from 'generated/prisma';
 import { z } from 'zod';
 import { JOBS_CONSTANTS } from '../jobs.constants';
 
-export const  GetJobsDtoSchema = z.object({
+export const GetJobsDtoSchema = z.object({
   query: z.object({
-    page: z
-      .coerce
+    page: z.coerce
       .number()
       .min(JOBS_CONSTANTS.PAGINATION.MIN_PAGE)
       .default(JOBS_CONSTANTS.PAGINATION.DEFAULT_PAGE)
       .optional(),
-    limit: z
-      .coerce
+    limit: z.coerce
       .number()
       .min(JOBS_CONSTANTS.PAGINATION.MIN_LIMIT)
       .max(JOBS_CONSTANTS.PAGINATION.MAX_LIMIT)

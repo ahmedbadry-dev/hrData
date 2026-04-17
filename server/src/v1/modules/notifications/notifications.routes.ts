@@ -51,10 +51,7 @@ export const notificationsRoutes = (
     notificationsController.getMyNotifications
   );
 
-  userRouter.patch(
-    NOTIFICATIONS_ROUTES.MARK_ALL_READ,
-    notificationsController.markAllAsRead
-  );
+  userRouter.patch(NOTIFICATIONS_ROUTES.MARK_ALL_READ, notificationsController.markAllAsRead);
 
   userRouter.patch(
     NOTIFICATIONS_ROUTES.MARK_READ,

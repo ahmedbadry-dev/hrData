@@ -56,7 +56,6 @@ export class ResponseHelper {
   static ok<T>(res: Response, data: T, message: string, path: string): Response {
     return this.success(res, data, message, HTTP_STATUS.OK, path);
   }
-
 }
 
 export default ResponseHelper;
