@@ -16,15 +16,16 @@ async function processSingleJob(jobUrl: string, site: SiteConfig): Promise<strin
     const content = await ScraperClient.getJobContent(jobUrl, site);
     if (!content) return null;
 
-    // ✅ AI Extraction & DB Storage
     if (content.includes('@')) {
-      const extracted = await ScraperClient.extractWithAI(content, jobUrl, site.name);
-      if (extracted) {
-        const normalized = ScraperStorage.validateAndNormalize(extracted);
-        if (normalized) {
-          await ScraperStorage.saveJobToDb(normalized);
-        }
-      }
+      // const extractedList = await ScraperClient.extractWithAI(content, jobUrl, site.name);
+      // if (extractedList && extractedList.length > 0) {
+      //   for (const extracted of extractedList) {
+      //     const normalized = ScraperStorage.validateAndNormalize(extracted);
+      //     if (normalized) {
+      //       await ScraperStorage.saveJobToDb(normalized);
+      //     }
+      //   }
+      // }
     }
 
     return content;

@@ -42,9 +42,8 @@ export class ScraperClient {
   }
 
   static async getJobLinks(site: SiteConfig): Promise<string[]> {
-    let html: string | null = null;
+    let html: string | null;
 
-    // ✅ لو الموقع عنده ajaxConfig، استخدم AJAX بدل fetchHtml
     if (site.ajaxConfig) {
       try {
         const { data } = await this.httpClient.post(
@@ -58,7 +57,6 @@ export class ScraperClient {
             },
           }
         );
-        // WP Job Manager بيرجع { found_jobs: true, html: '...' }
         html = data?.html ?? null;
       } catch (error) {
         logger.error(`[Scraper] AJAX fetch failed for ${site.name}: ${error}`);
@@ -99,14 +97,14 @@ export class ScraperClient {
     content: string,
     sourceUrl: string,
     siteName: string
-  ): Promise<ExtractedJob | null> {
+  ): Promise<ExtractedJob[] | null> {
     if (!geminiClient) return null;
 
     try {
       const response = await this.aiLimiter.schedule(() =>
         geminiClient.models.generateContent({
           model: 'gemini-3-flash-preview',
-          contents: `استخرج بيانات الوظيفة من النص التالي في صيغة JSON:\n\n${content}`,
+          contents: `استخرج جميع بيانات الوظائف من النص التالي في صيغة مصفوفة JSON (Array of Objects). إذا كان النص يحتوي على أكثر من مسمى وظيفي أو وظيفة، قم بتقسيمهم وإرجاع كل وظيفة ككائن منفصل في المصفوفة. وإذا كانت وظيفة واحدة، أرجعها أيضاً داخل المصفوفة:\n\n${content}`,
           config: {
             responseMimeType: 'application/json',
             responseJsonSchema: JOB_RESPONSE_SCHEMA,
@@ -118,10 +116,15 @@ export class ScraperClient {
       const responseText = response.text;
       if (!responseText) return null;
 
-      const parsed: ExtractedJob = JSON.parse(responseText);
-      parsed.source = siteName;
-      parsed.sourceUrl = sourceUrl;
-      return parsed;
+      const parsed: ExtractedJob[] = JSON.parse(responseText);
+
+      const jobsArray = Array.isArray(parsed) ? parsed : [parsed];
+
+      return jobsArray.map((job) => {
+        job.source = siteName;
+        job.sourceUrl = sourceUrl;
+        return job;
+      });
     } catch (error: any) {
       logger.error(`[Scraper] AI Error: ${error?.message}`);
       return null;
