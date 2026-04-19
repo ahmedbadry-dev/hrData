@@ -26,6 +26,13 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['dist/**', 'node_modules/**', 'generated/**', 'scraped/**', 'scrapedData/**'],
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'generated/**',
+      'scraped/**',
+      'scrapedData/**',
+      'scratch/**',
+    ],
   }
 );

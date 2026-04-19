@@ -19,8 +19,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    },
-    "ignoreDeprecations": "6.0"
+    }
   },
   "include": ["src/**/*", "src/shared/types/**/*"],
   "exclude": ["node_modules", "dist"]

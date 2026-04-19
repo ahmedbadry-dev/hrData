@@ -241,34 +241,117 @@ Schema file: server/prisma/schema.prisma
 
 ## 8) Frontend Documentation
 
-### Architecture
-- Modular structure under client/src/modules/ (auth, jobs, applications, admin).
-- State management: React Query (server state) + Zustand (UI state).
-- Design System: Custom Neo-Brutalist components with CSS Modules.
+### 8.1) Architecture & Design System
+- **Framework**: React 18+ with Vite and TypeScript.
+- **Design Style**: **Neo-Brutalist** (High contrast, thick borders, vibrant accents, grainy textures, and bold typography).
+- **RTL Support**: Native Arabic support with `dir="rtl"` and logical CSS properties.
+- **State Management**:
+  - **Server State**: `@tanstack/react-query` for caching and synchronization.
+  - **UI State**: `Zustand` for lightweight client-side state (sidebar toggles, modals).
+  - **Context API**: `AuthModalContext` for global auth modals and `AuthContext` for user session.
+- **Layout Patterns**:
+  - **Home Layout**: Centered marketing content with a sticky glassmorphism navbar and a multi-section footer.
+  - **Dashboard Layouts (User/Admin)**: Persistent Sidebar (desktop) / Drawer (mobile) + Top Navbar + Scrollable Content Area.
 
-### Key Pages
-- Home: Marketing landing with hero, features, and how-it-works.
-- Auth: Login, Register, Verify Email, Reset Password.
-- User Dashboard:
-  - DashboardHomePage: Analytics overview.
-  - DashboardJobsPage: Search and filter marketplace.
-  - DashboardSavedJobsPage: Manage saved jobs and bulk-apply.
-  - DashboardAutoApplyPage: BullMQ-powered scheduling workflow.
-  - DashboardSettingsPage: Account and Gmail management.
-- Admin Dashboard:
-  - AdminHomePage: Admin overview.
-  - AdminUsersPage: User management.
-  - AdminAnalyticsPage: Detailed system analytics.
-  - AdminNotificationsPage: Create broadcast notifications.
-  - AdminScrapPage: Manage and monitor the automated job scraper.
-  - Queue Monitoring: Embedded BullBoard interface (/admin/queues).
+### 8.2) Page Detailed Documentation
 
-### Premium UI Elements
-- SplashLoader: Animated "kafoo" brand loader with grainy textures and pulsing rings.
-- RTL Support: Full Arabic language support across all dashboard and marketing pages.
-- Responsive Design: Optimized for desktop and mobile.
+#### A) Home Page (Marketing)
+- **Layout**: Full-width scrolling page with distinct sections.
+- **Sections**:
+  - **Hero**: Atmospheric intro with a pulsing "Kafoo" brand loader and call-to-action.
+  - **How it Works**: Step-by-step visual guide to the automation workflow.
+  - **Features**: Grid card layout showcasing Scraper, Auto-Apply, and Tracking.
+  - **Quote/Testimonial**: Stylized block for social proof.
+  - **CTA Footer**: Final push for registration.
 
-## 9) Full Folder Structure
+#### B) Authentication Pages
+- **Login/Register**: Implemented as high-fidelity modals accessible from any page, plus dedicated routes for direct access.
+- **Verify Email**: A dedicated landing page that validates the token from the URL and displays success/error states with custom icons.
+- **Reset Password**: Multi-step layout with token validation, password strength feedback, and a "Success" panel upon completion.
+
+#### C) User Dashboard
+- **Home (Overview)**:
+  - **Stats Row**: Cards showing Total Jobs, Saved Jobs, Applications Sent, and Replies.
+  - **Activity Chart**: Weekly bar chart of sent applications.
+  - **Quick Actions**: Navigation shortcuts to jobs and auto-apply.
+- **Jobs Marketplace**:
+  - **Search & Filter Bar**: Keyword search, Location dropdown (Riyadh, Jeddah, etc.), and Date filters (Last 24h, Week, Month).
+  - **Job Cards**: Detailed cards with company logo placeholders, metadata, and a "Save" heart toggle.
+  - **Pagination**: Server-side pagination with smooth transitions.
+- **Saved Jobs**:
+  - **Management**: List of bookmarked jobs with "Unsave" and "Bulk Remove" options.
+  - **Bulk Transfer**: Fast-track selected jobs to the Auto-Apply queue.
+- **Auto-Apply (The Engine)**:
+  - **Selection**: Checklist of saved jobs to apply for.
+  - **Scheduling**: Options for "Immediately", "Specific Time (e.g., 8 AM)", or custom delays.
+  - **CV Upload**: Drag-and-drop zone for PDF/Word documents.
+  - **Gmail Connect**: Status indicator and OAuth link button.
+- **Analysis (Tracking)**:
+  - **Applications Table**: Detailed list of sent/scheduled applications.
+  - **Status Indicators**: Pulse badges for "Scheduled", "Sent", "Opened", "Failed".
+  - **Detailed View**: View retry counts and specific error messages for failed attempts.
+- **Settings**:
+  - **Profile**: Manage name, phone, and account status.
+  - **Integrations**: Connect/Disconnect Google/Gmail account with real-time status sync.
+
+#### D) Admin Dashboard
+- **Admin Home**: High-level system health monitoring (Daily Logins, Total Users, Recent System Logs).
+- **User Management**: Advanced data table for Super Admins to Suspend, Activate, or Delete accounts.
+- **Scraper Control**:
+  - **Terminal View**: Real-time log output from the scraper worker.
+  - **manual Trigger**: "Run Now" button to bypass scheduled cron.
+  - **Settings**: Configure API tokens and target URLs.
+- **Notifications**: Create "Broadcast" notifications (Alert/Info/Success) that appear to all users in real-time.
+
+---
+
+## 9) Detailed Scraper System Documentation
+
+### 9.1) Core Workflow
+1.  **Discovery**: `scraper.service` iterates through configured sites in `scraper.config.ts`.
+2.  **Extraction**: `scraper.client` fetches HTML and uses Cheerio selectors to find job links.
+3.  **Content Analysis**: The system visits each link and extracts the job description body.
+4.  **AI Engine**:
+    - Raw text is sent to **Gemini 3 Flash**.
+    - AI extracts structured JSON: `title`, `company`, `location`, `category`, `hrEmail`.
+    - **Bottleneck** ensures we stay within AI rate limits (e.g., 100 RPM).
+5.  **Storage**: Jobs are normalized and saved to PostgreSQL with a unique constraint check.
+
+### 9.2) Scheduled Tasks (Cron)
+- The scraper runs on a configurable schedule (default: every 6 hours).
+- Managed via `BullMQ` with a dedicated `scraper-worker`.
+- Features "Locking" via Redis to prevent overlapping runs if a previous run is still active.
+
+---
+
+## 10) Email Tracking & Analytics Logic
+
+### 10.1) Tracking Pixel
+- Each email sent via Auto-Apply contains a hidden `1x1 transparent GIF`.
+- The pixel URL contains a unique JWT/Token associated with the `Application` ID.
+- Accessing the pixel triggers the `/api/v1/track/open/:token` endpoint, which increments the "Opened" status in the DB.
+
+### 10.2) Analytics Pipeline
+- **Activity Logs**: Every significant user action (Login, Save, Apply) creates an `ActivityLog` entry.
+- **Aggregations**: Admin analytics perform SQL `COUNT` and `GROUP BY` operations on these logs to generate the charts.
+
+---
+
+## 11) Security Implementation Details
+
+- **CSRF Protection**: Native `csrf-csrf` middleware using double-submit cookies.
+- **Session Security**:
+  - **Access Token**: Short-lived (15m) JWT in memory or secure cookie.
+  - **Refresh Token**: Long-lived (7d) JWT in an **HTTP-only, Secure, SameSite=Strict** cookie.
+  - **Session Rotation**: On each `/refresh` call, a new refresh token is issued and the old one is invalidated.
+- **Encryption**: sensitive data (like Gmail tokens) are encrypted at rest using `AES-256-GCM` before being stored in the database.
+- **Rate Limiting**:
+  - **Global**: 100 requests per 15 minutes per IP.
+  - **Auth**: 10 attempts per 1 hour to prevent brute force.
+
+---
+
+## 12) Full Folder Structure
 
 ```text
 .
@@ -347,16 +430,14 @@ Schema file: server/prisma/schema.prisma
 └── README.md
 ```
 
-## 10) Important Technical Notes
+## 13) Final Technical Notes
 
-1. Auth: Uses HTTP-only cookies for refresh tokens + CSRF tokens.
-2. Gmail Integration: Requires Google OAuth2 "gmail.send" and "userinfo.email" scopes.
-3. BullMQ: 
-   - Application Worker: Handles delayed email sending with exponential backoff.
-   - Scraper Worker: Handles recurring job scraping tasks.
-4. AI Scraper: Uses Gemini 3 Flash to extract structured JSON from raw HTML. Features a fallback mechanism and rate-limiting via Bottleneck.
-5. CV Handling: CVs are uploaded as base64 or multipart and passed directly to the email worker; they are not permanently stored in the primary database.
-6. Search: Supports keyword, location, and date (DAY/WEEK/MONTH) filtering.
-7. Monitoring: BullBoard is available at `/admin/queues` (requires admin privileges in production, though currently open in dev).
-
-
+1. **Auth**: Uses HTTP-only cookies for refresh tokens + CSRF tokens.
+2. **Gmail Integration**: Requires Google OAuth2 "gmail.send" and "userinfo.email" scopes.
+3. **BullMQ**: 
+   - **Application Worker**: Handles delayed email sending with exponential backoff.
+   - **Scraper Worker**: Handles recurring job scraping tasks.
+4. **AI Scraper**: Uses Gemini 3 Flash to extract structured JSON from raw HTML. Features a fallback mechanism and rate-limiting via Bottleneck.
+5. **CV Handling**: CVs are uploaded as base64 and passed directly to the email worker; they are not permanently stored in the primary database.
+6. **Search**: Supports keyword, location, and date (DAY/WEEK/MONTH) filtering.
+7. **Monitoring**: BullBoard is available at `/admin/queues` (requires admin privileges).
