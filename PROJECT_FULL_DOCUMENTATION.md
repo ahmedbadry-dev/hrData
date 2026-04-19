@@ -1,6 +1,6 @@
 # Kafoo Project Full Documentation
 
-Last Updated: 2026-04-16
+Last Updated: 2026-04-19
 
 ## 1) Project Overview
 
@@ -12,11 +12,11 @@ Kafoo is a monorepo web application with:
 Current implementation status summary:
 - Core backend foundation is fully operational (Express, Middleware, Prisma, Redis, BullMQ).
 - Most planned backend functional modules are implemented: auth, jobs, applications, gmail, analytics, notifications, tracking pixel, health checks.
-- Scraper system is being refactored (currently excluded from this documentation).
+- Scraper system is fully operational and integrated with BullMQ and AI extraction logic (Gemini 3 Flash).
+- Backend features account lockout, session management with refresh tokens, rate limiting, and CSRF protection.
 - Frontend UI is mature with RTL Arabic support and a premium Neo-Brutalist design.
 - Frontend migration to a modular structure (src/modules) is complete for core features (auth, jobs, applications).
 - Data fetching is handled via React Query, integrated with backend APIs.
-- Backend features account lockout, session management with refresh tokens, and rate limiting.
 
 ## 2) Monorepo and Workspaces
 
@@ -39,11 +39,14 @@ Root scripts:
 - Runtime and framework: Node.js, Express
 - Language: TypeScript
 - Validation: Zod
-- Auth: JWT + bcrypt + cookie-session rotation
+- Auth: JWT + bcrypt + cookie-session rotation + CSRF protection
 - Database: PostgreSQL + Prisma ORM (v6+)
-- Queue: BullMQ (v5+)
+- Queue: BullMQ (v5+) for scheduled email applications and scraping tasks
+- Monitoring: @bull-board/express for queue management
 - Cache/broker: Redis (ioredis)
 - Email: Nodemailer + Gmail OAuth2 integration
+- LLM Integration: Google Gemini (Gemini 3 Flash), Groq (optional), OpenAI (optional)
+- Web Scraping: Cheerio + Axios + Bottleneck (rate limiting)
 - Logging: Winston + Morgan
 - Security middleware: Helmet + CORS + cookie-parser + express-rate-limit
 
@@ -61,7 +64,7 @@ Root scripts:
 
 ### Backend startup flow
 1. server/src/main.ts loads env and starts HTTP server.
-2. server/src/app.ts builds middleware stack and mounts /api.
+2. server/src/app.ts builds middleware stack, mounts BullBoard for monitoring, and mounts /api.
 3. server/src/router.ts mounts:
    - /health -> health module
    - /v1 -> versioned API routes
@@ -72,18 +75,20 @@ Root scripts:
    - /admin/users
    - /admin/analytics
    - /admin/notifications
+   - /admin/scraper
    - /notifications (user-specific)
    - /applications
    - /gmail (OAuth integration)
 
 ### Backend middleware chain
 - helmet
-- cors (dynamic: open in development, allowlist in production)
+- cors (dynamic: uses allowlist from env)
 - morgan logger
-- express.json / urlencoded
+- express.json / urlencoded (with 10mb limit)
 - cookieParser
 - custom requestLogger
-- rate limiting (auth-specific)
+- CSRF protection (csrf-csrf)
+- rate limiting (auth-specific and global API)
 - global errorHandler
 
 ### Shared API response contract
@@ -99,21 +104,23 @@ All controllers return standardized response shape through ResponseHelper:
 ## 5) Environment and Configuration
 
 Key backend env groups:
-- Server: PORT, NODE_ENV, APP_URL, API_URL, CORS_ALLOWED_ORIGINS
+- Server: PORT, NODE_ENV, APP_URL, SERVER_URL, CORS_ALLOWED_ORIGINS
 - Database: DATABASE_URL
-- Redis: REDIS_HOST, REDIS_PORT, REDIS_PASSWORD
+- Redis: REDIS_HOST, REDIS_PORT
 - JWT: access/refresh/verification secrets and expirations
-- Encryption: ENCRYPTION_KEY (hex)
-- SMTP: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM
-- LLM Integration: GROQ_API_KEY
-- Google OAuth: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI
+- Encryption: ENCRYPTION_KEY (64-char hex)
+- SMTP: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, EMAIL_FROM
+- LLM Integration: GOOGLE_GENAI_API_KEY (Gemini), GROQ_API_KEY, OPENAI_API_KEY
+- Google OAuth: GMAIL_OAUTH_CLIENT_ID, GMAIL_OAUTH_CLIENT_SECRET, GMAIL_OAUTH_REDIRECT_URI
 
 Main backend config files:
 - server/src/config/env.config.ts
 - server/src/config/db.config.ts
 - server/src/config/redis.ts
 - server/src/config/bullmq.ts
+- server/src/config/bull-board.ts
 - server/src/config/mailer.config.ts
+- server/src/config/llm.ts
 - server/src/config/constants.ts
 
 ## 6) Database Schema Documentation (Prisma)
@@ -126,7 +133,7 @@ Schema file: server/prisma/schema.prisma
 - ApplicationStatus: SCHEDULED, SENDING, SENT, FAILED, EMAIL_SENT, EMAIL_OPENED, EMAIL_FAILED
 - NotificationType: INFO, SUCCESS, WARNING, ALERT
 - NotificationTarget: ALL, ADMIN, USER
-- JobLocation: RIYADH, JEDDAH, DAMMAM, KHOBAR, MECCA, MEDINA, TABUK
+- JobLocation: RIYADH, JEDDAH, DAMMAM, KHOBAR, MECCA, MEDINA, TABUK, OTHER
 - DateFilter: DAY, WEEK, MONTH
 
 ### Models
@@ -156,7 +163,6 @@ Schema file: server/prisma/schema.prisma
 - Tracks job applications.
 - Integrated with BullMQ for scheduled sending.
 - Stores tracking tokens for email open events.
-- Note: CV data is passed during scheduling and not persisted in this model.
 
 #### Notification (notifications)
 - In-app notification storage.
@@ -213,6 +219,12 @@ Schema file: server/prisma/schema.prisma
 3. GET /status: Check connection status.
 4. DELETE /disconnect: Revoke tokens.
 
+### Admin Scraper Endpoints (/api/v1/admin/scraper)
+1. GET /status: Get scraper scheduler and queue status.
+2. POST /start: Start the recurring scraper schedule.
+3. POST /stop: Stop/Pause the scraper schedule.
+4. POST /run-now: Trigger a manual scrape job immediately.
+
 ### Admin Users Endpoints (/api/v1/admin/users)
 1. GET /: Paginated users list.
 2. GET /:id: User details.
@@ -244,7 +256,12 @@ Schema file: server/prisma/schema.prisma
   - DashboardAutoApplyPage: BullMQ-powered scheduling workflow.
   - DashboardSettingsPage: Account and Gmail management.
 - Admin Dashboard:
-  - User management, system analytics, and broadcast notifications.
+  - AdminHomePage: Admin overview.
+  - AdminUsersPage: User management.
+  - AdminAnalyticsPage: Detailed system analytics.
+  - AdminNotificationsPage: Create broadcast notifications.
+  - AdminScrapPage: Manage and monitor the automated job scraper.
+  - Queue Monitoring: Embedded BullBoard interface (/admin/queues).
 
 ### Premium UI Elements
 - SplashLoader: Animated "kafoo" brand loader with grainy textures and pulsing rings.
@@ -272,12 +289,8 @@ Schema file: server/prisma/schema.prisma
 │       │   └── user
 │       │       ├── layout (UserLayout, UserNavbar, UserSidebar)
 │       │       └── sections (Analytics, AutoApply, Home, SavedJobs...)
-│       ├── constants
-│       ├── context
-│       ├── hooks
-│       ├── lib
 │       ├── modules (Modular Business Logic)
-│       │   ├── admin
+│       │   ├── admin (analytics, notifications, users)
 │       │   ├── applications (api, components, hooks, types)
 │       │   ├── auth (api, components, hooks, types)
 │       │   └── jobs (api, components, hooks, types)
@@ -287,44 +300,45 @@ Schema file: server/prisma/schema.prisma
 │       │   ├── error (NotFound)
 │       │   ├── home
 │       │   └── user (Dashboard, Jobs, SavedJobs, AutoApply, Analysis...)
-│       ├── services (api.ts)
-│       ├── styles (global.css)
-│       ├── types
 │       ├── App.tsx
 │       ├── AppRoutes.tsx
 │       └── main.tsx
 ├── server
 │   ├── prisma
-│   │   ├── migrations
 │   │   └── schema.prisma
 │   └── src
-│       ├── config (db, redis, bullmq, mailer, env...)
+│       ├── config (db, redis, bullmq, bull-board, mailer, env, llm...)
 │       ├── http
-│       │   ├── middlewares (auth, error-handler, request-logger, validation...)
+│       │   ├── middlewares (auth, error-handler, request-logger, validation, csrf...)
 │       │   └── responses (success, error)
-│       ├── notifications
-│       │   ├── templates (verify-email, reset-password, application-status...)
-│       │   └── notifications.service.ts
+│       ├── scraper (Core Scraper Logic)
+│       │   ├── scraper.client.ts
+│       │   ├── scraper.config.ts
+│       │   ├── scraper.service.ts
+│       │   ├── scraper.scheduler.ts
+│       │   └── scraper.storage.ts
 │       ├── shared
 │       │   ├── constants
-│       │   ├── errors (AppError, BadRequest, NotFound, Unauthorized...)
+│       │   ├── errors
 │       │   ├── types
 │       │   ├── utils (api-response, hash, jwt, logger, paginate, tracking-pixel...)
 │       │   └── validation
 │       ├── v1
 │       │   ├── modules
-│       │   │   ├── analytics (service, controller, routes)
-│       │   │   ├── applications (service, controller, routes, dto, types)
-│       │   │   ├── auth (service, controller, routes, dto, types)
-│       │   │   ├── gmail (service, controller, routes, dto)
-│       │   │   ├── health (service, controller, routes)
-│       │   │   ├── jobs (service, controller, routes, dto, types)
-│       │   │   ├── notifications (service, controller, routes, dto)
-│       │   │   ├── tracking (service, controller, routes)
-│       │   │   └── users (service, controller, routes, dto, types)
+│       │   │   ├── analytics
+│       │   │   ├── applications
+│       │   │   ├── auth
+│       │   │   ├── gmail
+│       │   │   ├── health
+│       │   │   ├── jobs
+│       │   │   ├── notifications
+│       │   │   ├── scraper (API Module)
+│       │   │   ├── tracking
+│       │   │   └── users
 │       │   └── routes.ts (V1 Router)
 │       ├── workers
-│       │   └── job-applications-schedule.worker.ts
+│       │   ├── job-applications-schedule.worker.ts
+│       │   └── scraper.worker.ts
 │       ├── app.ts (Express Application)
 │       ├── main.ts (Server Entry)
 │       └── router.ts (Main Router)
@@ -337,7 +351,12 @@ Schema file: server/prisma/schema.prisma
 
 1. Auth: Uses HTTP-only cookies for refresh tokens + CSRF tokens.
 2. Gmail Integration: Requires Google OAuth2 "gmail.send" and "userinfo.email" scopes.
-3. BullMQ: Workers handle delayed email sending with exponential backoff.
-4. CV Handling: CVs are uploaded as base64 or multipart and passed directly to the email worker; they are not permanently stored in the primary database.
-5. Search: Supports keyword, location, and date (DAY/WEEK/MONTH) filtering.
+3. BullMQ: 
+   - Application Worker: Handles delayed email sending with exponential backoff.
+   - Scraper Worker: Handles recurring job scraping tasks.
+4. AI Scraper: Uses Gemini 3 Flash to extract structured JSON from raw HTML. Features a fallback mechanism and rate-limiting via Bottleneck.
+5. CV Handling: CVs are uploaded as base64 or multipart and passed directly to the email worker; they are not permanently stored in the primary database.
+6. Search: Supports keyword, location, and date (DAY/WEEK/MONTH) filtering.
+7. Monitoring: BullBoard is available at `/admin/queues` (requires admin privileges in production, though currently open in dev).
+
 
