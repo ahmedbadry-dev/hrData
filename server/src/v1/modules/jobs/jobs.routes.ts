@@ -77,6 +77,13 @@ export const jobsRoutes = (jobsController: JobsController): Router => {
     jobsController.saveJobs
   );
 
+  router.post(
+    '/bulk-save',
+    authenticationMiddleware,
+    validateBodyMiddleware(BulkSaveJobsDtoSchema),
+    jobsController.saveJobs
+  );
+
   router.delete(
     '/:id/save',
     authenticationMiddleware,
@@ -86,6 +93,13 @@ export const jobsRoutes = (jobsController: JobsController): Router => {
 
   router.delete(
     '/save/bulk',
+    authenticationMiddleware,
+    validateBodyMiddleware(BulkUnsaveJobsDtoSchema),
+    jobsController.unsaveJobs
+  );
+
+  router.post(
+    '/bulk-unsave',
     authenticationMiddleware,
     validateBodyMiddleware(BulkUnsaveJobsDtoSchema),
     jobsController.unsaveJobs

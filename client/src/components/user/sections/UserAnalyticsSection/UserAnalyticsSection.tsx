@@ -10,6 +10,7 @@ interface UserAnalyticsSectionProps {
   currentPage?: number;
   totalPages?: number;
   isLoading?: boolean;
+  showingLabel?: string;
   onPageChange?: (page: number) => void;
   onCancel?: (id: string) => void;
 }
@@ -27,6 +28,7 @@ export default function UserAnalyticsSection({
   currentPage = 1,
   totalPages = 1,
   isLoading,
+  showingLabel,
   onPageChange,
   onCancel,
 }: UserAnalyticsSectionProps) {
@@ -50,7 +52,9 @@ export default function UserAnalyticsSection({
     <section>
       <PageHeader title="التحليلات والتتبع" titleClassName={styles['section-headline']} />
       <div className={styles['control-bar']}>
-        <span className={styles['count-label']}>{applications.length} طلب مرسل</span>
+        <span className={styles['count-label']}>
+          {showingLabel || `${applications.length} طلب مرسل`}
+        </span>
       </div>
 
       <div className={styles['results-list']}>

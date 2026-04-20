@@ -1,16 +1,32 @@
-import { useOutletContext, useLocation, useNavigate } from 'react-router-dom';
-import { UserSettingsSection } from '@/components/user/sections';
-import type { DashboardContextType } from './UserDashboardLayout';
 import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { UserSettingsSection } from '@/components/user/sections';
 import { useAuth } from '@/modules/auth/api/hooks';
+import { useSavedJobsList } from '@/modules/jobs/api/hooks';
 
 export default function DashboardSettingsPage() {
-  const { gmailConnected, gmailEmail, savedJobs, connectGmail, disconnectGmail } =
-    useOutletContext<DashboardContextType>();
-  const { restoreGmailConnection } = useAuth();
+  const { data: authData, connectGmail, disconnectGmail, restoreGmailConnection } = useAuth();
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  const gmailConnected = authData.gmailConnected;
+  const gmailEmail = authData.gmailEmail;
+
+  const { data: savedJobsCountData } = useSavedJobsList(
+    {
+      page: 1,
+      limit: 1,
+    },
+    {
+      staleTime: 2 * 60 * 1000,
+      gcTime: 5 * 60 * 1000,
+      refetchOnMount: true,
+    }
+  );
+
+  const savedCount =
+    savedJobsCountData?.paginationMeta?.total ?? savedJobsCountData?.data?.pagination?.total ?? 0;
 
   useEffect(() => {
     const search = new URLSearchParams(location.search);
@@ -55,7 +71,7 @@ export default function DashboardSettingsPage() {
     <UserSettingsSection
       gmailConnected={gmailConnected}
       gmailEmail={gmailEmail}
-      savedCount={savedJobs.length}
+      savedCount={savedCount}
       returnToAutoApply={returnToAutoApply}
       onConnect={handleConnect}
       onDisconnect={handleDisconnect}

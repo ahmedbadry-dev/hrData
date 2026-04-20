@@ -25,7 +25,7 @@ export interface PaginatedJobs {
 export interface GetJobsParams {
   page?: number;
   limit?: number;
-  search?: string;
+  keyword?: string;
   location?: string;
   category?: string;
   dateFilter?: string;
@@ -35,7 +35,7 @@ export const fetchJobs = async (params?: GetJobsParams): Promise<ApiResponse<Pag
   const searchParams = new URLSearchParams();
   if (params?.page) searchParams.set('page', String(params.page));
   if (params?.limit) searchParams.set('limit', String(params.limit));
-  if (params?.search) searchParams.set('keyword', params.search);
+  if (params?.keyword) searchParams.set('keyword', params.keyword);
   if (params?.location) searchParams.set('location', params.location.toUpperCase());
   if (params?.dateFilter) searchParams.set('dateFilter', params.dateFilter.toUpperCase());
 
@@ -62,16 +62,17 @@ export const saveJobs = async (
 ): Promise<ApiResponse<{ savedJobIds: string[]; alreadySavedJobIds: string[] }>> => {
   const { data } = await axiosClient.post<
     ApiResponse<{ savedJobIds: string[]; alreadySavedJobIds: string[] }>
-  >('/jobs/save/bulk', { jobIds });
+  >('/jobs/bulk-save', { jobIds });
   return data;
 };
 
 export const unsaveJobs = async (
-  jobIds: string[]
+  jobIds?: string[]
 ): Promise<ApiResponse<{ removedJobIds: string[]; notSavedJobIds: string[] }>> => {
+  const body = Array.isArray(jobIds) && jobIds.length > 0 ? { jobIds } : {};
   const { data } = await axiosClient.delete<
     ApiResponse<{ removedJobIds: string[]; notSavedJobIds: string[] }>
-  >('/jobs/save/bulk', { data: { jobIds } });
+  >('/jobs/save/bulk', { data: body });
   return data;
 };
 
@@ -81,7 +82,7 @@ export const fetchSavedJobs = async (
   const searchParams = new URLSearchParams();
   if (params?.page) searchParams.set('page', String(params.page));
   if (params?.limit) searchParams.set('limit', String(params.limit));
-  if (params?.search) searchParams.set('keyword', params.search);
+  if (params?.keyword) searchParams.set('keyword', params.keyword);
   if (params?.location) searchParams.set('location', params.location.toUpperCase());
   if (params?.dateFilter) searchParams.set('dateFilter', params.dateFilter.toUpperCase());
 

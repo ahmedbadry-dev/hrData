@@ -43,16 +43,19 @@ export default function UserHomeSection({
   weeklyData,
 }: UserHomeSectionProps) {
   const chartRef = useRef<HTMLCanvasElement | null>(null);
+  const chartInstanceRef = useRef<Chart | null>(null);
   const saved = useAnimatedCounter(savedCount);
   const replies = useAnimatedCounter(repliesCount);
 
   useEffect(() => {
     if (!chartRef.current) return;
 
-    const chart = new Chart(chartRef.current, {
+    chartInstanceRef.current?.destroy();
+
+    chartInstanceRef.current = new Chart(chartRef.current, {
       type: 'bar',
       data: {
-        labels: ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
+        labels: ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'],
         datasets: [
           {
             label: 'الإيميلات المرسلة',
@@ -82,8 +85,11 @@ export default function UserHomeSection({
       },
     });
 
-    return () => chart.destroy();
-  }, []);
+    return () => {
+      chartInstanceRef.current?.destroy();
+      chartInstanceRef.current = null;
+    };
+  }, [weeklyData]);
 
   return (
     <section>

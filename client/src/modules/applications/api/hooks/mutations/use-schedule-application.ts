@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient, mutationOptions } from '@tanstack/react-query';
 import { scheduleApplication } from '../../applications.service';
-import { useApplicationsListQueryOptions } from '../queries/use-applications-list';
+import { applicationsQueryKeys } from '../../applications.query-keys';
 
 export const useScheduleApplicationMutationOptions = () => {
   return mutationOptions({
@@ -13,7 +13,7 @@ export const useScheduleApplication = () => {
   return useMutation({
     ...useScheduleApplicationMutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: useApplicationsListQueryOptions().queryKey });
+      queryClient.invalidateQueries({ queryKey: applicationsQueryKeys.all });
     },
   });
 };

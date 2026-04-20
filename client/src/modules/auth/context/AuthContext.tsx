@@ -7,7 +7,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { authService, type User, type GmailStatusResponse } from '@/modules/auth/api/auth.service';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { authService, type User } from '@/modules/auth/api/auth.service';
 import {
   AUTH_REQUIRED_EVENT,
   getAccessToken,
@@ -48,43 +49,51 @@ interface AuthProviderProps {
 // calling /auth/refresh twice (token rotation consumes the old token
 // on the first call, so the second call would fail with 401).
 let restorePromise: Promise<void> | null = null;
+const GMAIL_STATUS_QUERY_KEY = ['gmail', 'status'] as const;
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(getAccessToken());
-  const [gmailConnected, setGmailConnected] = useState(false);
-  const [gmailEmail, setGmailEmail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(hasSessionRestoreHint);
 
-  const applyGmailState = useCallback((status: GmailStatusResponse | null) => {
-    setGmailConnected(Boolean(status?.connected));
-    setGmailEmail(status?.email ?? null);
-  }, []);
+  const { data: gmailStatusResponse } = useQuery({
+    queryKey: GMAIL_STATUS_QUERY_KEY,
+    queryFn: () => authService.getGmailStatus(),
+    enabled: Boolean(user && accessToken),
+    staleTime: Infinity,
+    gcTime: Infinity,
+    retry: false,
+  });
+
+  const gmailConnected = Boolean(gmailStatusResponse?.data?.connected);
+  const gmailEmail = gmailStatusResponse?.data?.email ?? null;
 
   const setSession = useCallback((session: { user: User; accessToken: string }) => {
     setAccessTokenInMemory(session.accessToken);
     setAccessToken(session.accessToken);
     setUser(session.user);
+    queryClient.removeQueries({ queryKey: GMAIL_STATUS_QUERY_KEY });
     setIsLoading(false);
-  }, []);
+  }, [queryClient]);
 
   const clearSession = useCallback(() => {
     removeAccessToken();
     clearSessionHintCookie();
     setAccessToken(null);
     setUser(null);
-    applyGmailState(null);
+    queryClient.removeQueries({ queryKey: GMAIL_STATUS_QUERY_KEY });
     setIsLoading(false);
-  }, [applyGmailState]);
+  }, [queryClient]);
 
   const restoreGmailConnection = useCallback(async () => {
-    try {
-      const response = await authService.getGmailStatus();
-      applyGmailState(response.data ?? null);
-    } catch {
-      applyGmailState(null);
+    if (!user || !accessToken) {
+      queryClient.removeQueries({ queryKey: GMAIL_STATUS_QUERY_KEY });
+      return;
     }
-  }, [applyGmailState]);
+
+    await queryClient.invalidateQueries({ queryKey: GMAIL_STATUS_QUERY_KEY });
+  }, [accessToken, queryClient, user]);
 
   const restoreSession = useCallback(async () => {
     if (!hasSessionRestoreHint()) {
@@ -113,7 +122,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         setSession({ user: sessionUser, accessToken: nextAccessToken });
-        await restoreGmailConnection();
       } catch {
         clearSession();
       } finally {
@@ -122,7 +130,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     })();
 
     await restorePromise;
-  }, [clearSession, restoreGmailConnection, setSession]);
+  }, [clearSession, setSession]);
 
   const connectGmail = useCallback(async () => {
     const authUrlResponse = await authService.getGmailAuthUrl();
@@ -138,8 +146,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const disconnectGmail = useCallback(async () => {
     await authService.disconnectGmail();
-    applyGmailState(null);
-  }, [applyGmailState]);
+    queryClient.setQueryData(GMAIL_STATUS_QUERY_KEY, (previous) => {
+      const previousResponse = (previous ?? {}) as Record<string, unknown>;
+      return {
+        ...previousResponse,
+        data: {
+          connected: false,
+          email: null,
+        },
+      };
+    });
+    await queryClient.invalidateQueries({ queryKey: GMAIL_STATUS_QUERY_KEY });
+  }, [queryClient]);
 
   // Restore session on mount. If StrictMode fires this twice,
   // the module-level restorePromise deduplication ensures only

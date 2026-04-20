@@ -7,6 +7,7 @@ export interface HTTPResponse<T = unknown> {
   statusCode: number;
   message: string;
   data?: T;
+  paginationMeta?: PaginationMeta;
   timestamp: string;
   path: string;
 }
@@ -38,11 +39,19 @@ export class ResponseHelper {
     statusCode: number,
     path: string
   ): Response {
+    const paginationMeta =
+      data &&
+      typeof data === 'object' &&
+      'pagination' in (data as Record<string, unknown>)
+        ? ((data as { pagination?: PaginationMeta }).pagination ?? undefined)
+        : undefined;
+
     const response: HTTPResponse<T> = {
       success: true,
       message,
       statusCode,
       data,
+      ...(paginationMeta ? { paginationMeta } : {}),
       timestamp: new Date().toISOString(),
       path,
     };

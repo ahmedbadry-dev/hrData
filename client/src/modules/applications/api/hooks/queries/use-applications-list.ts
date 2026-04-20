@@ -1,27 +1,25 @@
-import { useQuery, queryOptions } from '@tanstack/react-query';
+import { queryOptions, useQuery } from '@tanstack/react-query';
 import { fetchApplicationsList } from '../../applications.service';
+import type { UseQueryOptions as CustomUseQueryOptions } from '@/lib/react-query/types';
+import {
+  applicationsQueryKeys,
+  type ApplicationsListParams,
+} from '../../applications.query-keys';
 
-export const APPLICATIONS_QUERY_KEY = ['applications'] as const;
-
-export const useApplicationsListQueryOptions = (params?: {
-  page?: number;
-  limit?: number;
-  status?: string;
-}) => {
+export const useApplicationsListQueryOptions = (params?: ApplicationsListParams) => {
   return queryOptions({
-    queryKey: [...APPLICATIONS_QUERY_KEY, 'list', params] as const,
+    queryKey: applicationsQueryKeys.list(params),
     queryFn: () => fetchApplicationsList(params),
-    staleTime: 1000 * 60 * 5,
-    refetchInterval: 5 * 1000,
   });
 };
 
-export type UseApplicationsListQueryOptions = ReturnType<typeof useApplicationsListQueryOptions>;
+export type UseApplicationsListQueryOptions = CustomUseQueryOptions<
+  typeof useApplicationsListQueryOptions
+>;
 
-export const useApplicationsList = (params?: {
-  page?: number;
-  limit?: number;
-  status?: string;
-}) => {
-  return useQuery(useApplicationsListQueryOptions(params));
+export const useApplicationsList = (
+  params?: ApplicationsListParams,
+  options?: UseApplicationsListQueryOptions
+) => {
+  return useQuery({ ...useApplicationsListQueryOptions(params), ...options });
 };

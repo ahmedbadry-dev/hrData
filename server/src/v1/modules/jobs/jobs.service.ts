@@ -31,7 +31,7 @@ export class JobsService {
       defaultLimit: JOBS_CONSTANTS.PAGINATION.DEFAULT_LIMIT,
       maxLimit: JOBS_CONSTANTS.PAGINATION.MAX_LIMIT,
     });
-    const where = this.buildBaseJobsWhere(query);
+    const where = this.buildSearchJobsWhere(query);
 
     return this.getPaginatedJobsWithSavedState(userId, where, pagination);
   }
@@ -151,16 +151,21 @@ export class JobsService {
     };
   }
 
-  async unsaveJobs(userId: string, jobIds: string[]): Promise<BulkUnsaveJobsResponse> {
-    const uniqueJobIds = [...new Set(jobIds)];
+  async unsaveJobs(userId: string, jobIds?: string[]): Promise<BulkUnsaveJobsResponse> {
+    const uniqueJobIds = Array.isArray(jobIds) ? [...new Set(jobIds)] : undefined;
     const existingSavedJobs = await this.prisma.savedJob.findMany({
-      where: { userId, jobId: { in: uniqueJobIds } },
+      where: {
+        userId,
+        ...(uniqueJobIds ? { jobId: { in: uniqueJobIds } } : {}),
+      },
       select: { jobId: true },
     });
 
     const removableJobIds = existingSavedJobs.map((savedJob) => savedJob.jobId);
     const removableSet = new Set(removableJobIds);
-    const notSavedJobIds = uniqueJobIds.filter((jobId) => !removableSet.has(jobId));
+    const notSavedJobIds = uniqueJobIds
+      ? uniqueJobIds.filter((jobId) => !removableSet.has(jobId))
+      : [];
 
     if (removableJobIds.length > 0) {
       await this.prisma.savedJob.deleteMany({
@@ -284,13 +289,17 @@ export class JobsService {
     };
   }
 
-  private buildSearchJobsWhere(query: SearchJobsDto['query']): Prisma.JobWhereInput {
+  private buildSearchJobsWhere(
+    query: Partial<
+      Pick<SearchJobsDto['query'], 'keyword' | 'location' | 'dateFilter' | 'isExpired'>
+    >
+  ): Prisma.JobWhereInput {
     const postedAgo = this.getPostedAgoDate(query.dateFilter);
 
     return {
       ...this.buildBaseJobsWhere(query),
       ...(query.isExpired !== undefined ? { isExpired: query.isExpired } : {}),
-      ...(postedAgo ? { postedAt: { lte: postedAgo } } : {}),
+      ...(postedAgo ? { postedAt: { gte: postedAgo } } : {}),
     };
   }
 

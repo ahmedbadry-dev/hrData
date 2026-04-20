@@ -7,6 +7,7 @@ export interface UserJob {
   email: string;
   hrEmail?: string;
   jobId?: string;
+  isSaved?: boolean;
 }
 
 export interface SavedJob extends UserJob {

@@ -11,4 +11,5 @@ export interface UserJob {
   email: string;
   hrEmail?: string;
   jobId?: string;
+  isSaved?: boolean;
 }

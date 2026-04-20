@@ -13,14 +13,18 @@ interface UserSearchSectionProps {
   jobs: UserJob[];
   currentPage?: number;
   totalPages?: number;
+  totalCount?: number;
   isLoading?: boolean;
   hasSearched: boolean;
+  errorMessage?: string;
   selectedCard: string | null;
   onSelectCard: (key: string) => void;
   onPageChange: (page: number) => void;
   savedJobs: SavedJob[];
   onToggleSave: (job: UserJob) => void;
   onSaveAllVisible: () => void;
+  saveAllLabel?: string;
+  saveAllDisabled?: boolean;
   country: string;
   onCountryChange: (value: string) => void;
   timeFilter: string;
@@ -55,14 +59,18 @@ export default function UserSearchSection({
   jobs,
   currentPage = 1,
   totalPages = 1,
+  totalCount,
   isLoading,
   hasSearched,
+  errorMessage,
   selectedCard,
   onSelectCard,
   onPageChange,
   savedJobs,
   onToggleSave,
   onSaveAllVisible,
+  saveAllLabel = 'حفظ الكل',
+  saveAllDisabled = false,
   country,
   onCountryChange,
   timeFilter,
@@ -110,6 +118,14 @@ export default function UserSearchSection({
           className={styles['welcome-state']}
           symbolClassName={styles['big-number']}
         />
+      ) : errorMessage ? (
+        <EmptyState
+          symbol="!"
+          title={errorMessage}
+          description="تحقق من الاتصال ثم أعد المحاولة"
+          className={styles['welcome-state']}
+          symbolClassName={styles['big-number']}
+        />
       ) : isLoading ? (
         <>
           <div className={styles['control-bar']}>
@@ -134,78 +150,92 @@ export default function UserSearchSection({
       ) : (
         <>
           <div className={styles['control-bar']}>
-            <span className={styles['count-label']}>عُثر على {jobs.length} وظيفة</span>
+            <span className={styles['count-label']}>عُثر على {totalCount ?? jobs.length} وظيفة</span>
             {showSaveButtons && (
-              <Button className={styles['save-all-btn']} onClick={onSaveAllVisible}>
-                حفظ الكل
+              <Button
+                className={styles['save-all-btn']}
+                onClick={onSaveAllVisible}
+                disabled={saveAllDisabled}
+              >
+                {saveAllLabel}
               </Button>
             )}
           </div>
 
-          <div className={styles['results-list']}>
-            {jobs.map((job) => {
-              const key = `${job.company}-${job.role}`;
-              const saved = isSaved(job);
-              const selected = selectedCard === key;
+          {jobs.length === 0 ? (
+            <EmptyState
+              symbol="◌"
+              title="لا توجد نتائج مطابقة للفلاتر الحالية"
+              description="جرّب تعديل الكلمات المفتاحية أو المدينة أو الفترة الزمنية"
+              className={styles['welcome-state']}
+              symbolClassName={styles['big-number']}
+            />
+          ) : (
+            <div className={styles['results-list']}>
+              {jobs.map((job) => {
+                const key = `${job.company}-${job.role}`;
+                const saved = isSaved(job);
+                const selected = selectedCard === key;
 
-              return (
-                <div
-                  className={cn(styles['job-card'], selected && styles.selected)}
-                  key={key}
-                  onClick={() => onSelectCard(key)}
-                >
-                  <div className={styles['card-top']}>
-                    <div className={styles['card-main']}>
-                      <div className={styles['company-tag']}>{job.company}</div>
-                      <h2 className={styles['job-title']}>{job.role}</h2>
-                      <div className={styles['meta-row']}>
-                        <span className={styles['meta-chip']}>📍 {job.city}</span>
-                        <span className={styles['meta-chip']}>🎓 {job.major}</span>
-                        <span className={styles['meta-chip']}>
-                          📅{' '}
-                          {job.date
-                            ? new Date(job.date).toLocaleDateString('ar-SA', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                              })
-                            : ''}
-                        </span>
+                return (
+                  <div
+                    className={cn(styles['job-card'], selected && styles.selected)}
+                    key={key}
+                    onClick={() => onSelectCard(key)}
+                  >
+                    <div className={styles['card-top']}>
+                      <div className={styles['card-main']}>
+                        <div className={styles['company-tag']}>{job.company}</div>
+                        <h2 className={styles['job-title']}>{job.role}</h2>
+                        <div className={styles['meta-row']}>
+                          <span className={styles['meta-chip']}>📍 {job.city}</span>
+                          <span className={styles['meta-chip']}>🎓 {job.major}</span>
+                          <span className={styles['meta-chip']}>
+                            📅{' '}
+                            {job.date
+                              ? new Date(job.date).toLocaleDateString('ar-SA', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                })
+                              : ''}
+                          </span>
+                        </div>
                       </div>
+
+                      {showSaveButtons && (
+                        <Button
+                          type="button"
+                          variant="icon"
+                          className={cn(styles['save-btn'], saved && styles.saved)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleSave(job);
+                          }}
+                          title={saved ? 'إزالة من المحفوظات' : 'حفظ الوظيفة'}
+                        >
+                          <svg viewBox="0 0 24 24">
+                            <path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z" />
+                          </svg>
+                        </Button>
+                      )}
                     </div>
 
-                    {showSaveButtons && (
-                      <Button
-                        type="button"
-                        variant="icon"
-                        className={cn(styles['save-btn'], saved && styles.saved)}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleSave(job);
-                        }}
-                        title={saved ? 'إزالة من المحفوظات' : 'حفظ الوظيفة'}
+                    <div className={styles['card-email']}>
+                      <a
+                        className={styles['email-link']}
+                        href={`mailto:${job.hrEmail || job.email}`}
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <svg viewBox="0 0 24 24">
-                          <path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z" />
-                        </svg>
-                      </Button>
-                    )}
+                        📧 {job.hrEmail || job.email}
+                      </a>
+                      <span className={styles['email-hint']}>أرسل سيرتك إلى</span>
+                    </div>
                   </div>
-
-                  <div className={styles['card-email']}>
-                    <a
-                      className={styles['email-link']}
-                      href={`mailto:${job.hrEmail || job.email}`}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      📧 {job.hrEmail || job.email}
-                    </a>
-                    <span className={styles['email-hint']}>أرسل سيرتك إلى</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
 
           {totalPages > 1 && (
             <div className={styles['pagination']}>

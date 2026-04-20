@@ -1,4 +1,4 @@
-import { JobLocation } from 'generated/prisma';
+import { DateFilter, JobLocation } from 'generated/prisma';
 import { z } from 'zod';
 import { JOBS_CONSTANTS } from '../jobs.constants';
 
@@ -17,6 +17,7 @@ export const GetJobsDtoSchema = z.object({
       .optional(),
     keyword: z.string().trim().optional(),
     location: z.nativeEnum(JobLocation).optional(),
+    dateFilter: z.nativeEnum(DateFilter).optional(),
   }),
 });
 

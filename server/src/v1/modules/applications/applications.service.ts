@@ -57,7 +57,7 @@ export class ApplicationsService {
         },
         skip,
         take: limit,
-        orderBy: APPLICATIONS_CONSTANTS.ORDER_BY.STATUS_PENDING_FIRST,
+        orderBy: APPLICATIONS_CONSTANTS.ORDER_BY.CREATED_AT_DESC,
       }),
       this.prisma.application.count({ where }),
     ]);
