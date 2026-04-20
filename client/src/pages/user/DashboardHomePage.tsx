@@ -118,6 +118,16 @@ export default function DashboardHomePage() {
     [weeklyActivityQuery.data?.data?.applications]
   );
 
+  const isStatsLoading =
+    totalJobsQuery.isLoading ||
+    totalJobsQuery.isFetching ||
+    savedJobsQuery.isLoading ||
+    savedJobsQuery.isFetching ||
+    applicationsCountQuery.isLoading ||
+    applicationsCountQuery.isFetching;
+
+  const isWeeklyLoading = weeklyActivityQuery.isLoading || weeklyActivityQuery.isFetching;
+
   if (hasError) {
     return (
       <section>
@@ -137,6 +147,8 @@ export default function DashboardHomePage() {
       repliesCount={0}
       totalJobs={totalJobs}
       weeklyData={weeklyData}
+      isStatsLoading={isStatsLoading}
+      isWeeklyLoading={isWeeklyLoading}
     />
   );
 }

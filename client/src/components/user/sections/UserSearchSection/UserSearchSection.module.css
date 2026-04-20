@@ -14,16 +14,31 @@
 .search-flex {
   display: flex;
   gap: 12px;
-  align-items: stretch;
+  align-items: flex-end;
+}
+
+.search-main-field {
+  flex: 3;
+  min-width: 0;
+}
+
+.filter-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-main-field .search-label,
+.filter-field .search-label {
+  margin-bottom: 8px;
 }
 
 .city-select,
 .time-select {
-  flex: 1;
+  width: 100%;
 }
 
 .search-box {
-  flex: 3;
+  width: 100%;
   display: flex;
   border: 2px solid var(--ink);
   background: var(--paper);
@@ -401,7 +416,9 @@
   }
 
   .city-select,
-  .time-select {
+  .time-select,
+  .search-main-field,
+  .filter-field {
     width: 100%;
   }
 

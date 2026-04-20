@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserAutoApplySection } from '@/components/user/sections';
 import type { SavedJob } from '@/components/user/sections/userData';
 import { useAuth } from '@/modules/auth/api/hooks';
-import { useSavedJobsList } from '@/modules/jobs/api/hooks';
+import { useEligibleSavedJobsList } from '@/modules/jobs/api/hooks';
 import { useScheduleApplication } from '@/modules/applications/api/hooks';
 
 const AUTO_APPLY_LIMIT = 100;
@@ -16,6 +16,7 @@ const mapSavedJob = (job: {
   location: string | null;
   postedAt: string | null;
   hrEmail: string | null;
+  previousFailedStatus?: 'FAILED';
 }): SavedJob => ({
   page: 'dashboard',
   company: job.companyName,
@@ -27,13 +28,14 @@ const mapSavedJob = (job: {
   timestamp: job.postedAt || new Date().toISOString(),
   jobId: job.id,
   hrEmail: job.hrEmail || undefined,
+  previousFailedStatus: job.previousFailedStatus,
 });
 
 export default function DashboardAutoApplyPage() {
   const navigate = useNavigate();
   const { data: authData } = useAuth();
 
-  const { data: savedJobsData } = useSavedJobsList(
+  const { data: eligibleSavedJobsData } = useEligibleSavedJobsList(
     {
       page: 1,
       limit: AUTO_APPLY_LIMIT,
@@ -49,7 +51,7 @@ export default function DashboardAutoApplyPage() {
 
   const savedJobs = useMemo(
     () =>
-      (savedJobsData?.data?.jobs || []).map((job) =>
+      (eligibleSavedJobsData?.data?.jobs || []).map((job) =>
         mapSavedJob({
           id: job.id,
           companyName: job.companyName,
@@ -58,9 +60,10 @@ export default function DashboardAutoApplyPage() {
           location: job.location,
           postedAt: job.postedAt,
           hrEmail: job.hrEmail,
+          previousFailedStatus: job.previousFailedStatus,
         })
       ),
-    [savedJobsData?.data?.jobs]
+    [eligibleSavedJobsData?.data?.jobs]
   );
 
   const startSending = (

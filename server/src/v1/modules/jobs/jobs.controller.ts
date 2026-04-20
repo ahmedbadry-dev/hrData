@@ -44,6 +44,19 @@ export class JobsController {
     );
   };
 
+  getEligibleSavedJobs = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.jobsService.getEligibleSavedJobs(
+      req.user!.id,
+      req.query as GetJobsDto['query']
+    );
+    return ResponseHelper.ok(
+      res,
+      data,
+      JOBS_CONSTANTS.MESSAGES.ELIGIBLE_SAVED_JOBS_FETCHED_SUCCESSFULLY,
+      req.path
+    );
+  };
+
   searchJobs = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.jobsService.searchJobs(
       req.user!.id,

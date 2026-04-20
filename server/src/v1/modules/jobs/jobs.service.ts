@@ -1,4 +1,11 @@
-import { DateFilter, Job, Prisma, PrismaClient, SavedJob } from 'generated/prisma';
+import {
+  ApplicationStatus,
+  DateFilter,
+  Job,
+  Prisma,
+  PrismaClient,
+  SavedJob,
+} from 'generated/prisma';
 import { ConflictException } from '@/shared/errors/ConflictException';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
 import {
@@ -70,6 +77,92 @@ export class JobsService {
     return {
       jobs: savedJobs.map((savedJob) => this.mapJobWithSaved(savedJob.job, savedSet)),
       pagination: buildPaginationMeta(total, page, limit, JOBS_CONSTANTS.PAGINATION.MIN_PAGE),
+    };
+  }
+
+  async getEligibleSavedJobs(
+    userId: string,
+    query: GetJobsDto['query']
+  ): Promise<PaginatedJobsResponse> {
+    const { page, limit, skip } = resolvePagination(query, {
+      minPage: JOBS_CONSTANTS.PAGINATION.MIN_PAGE,
+      defaultPage: JOBS_CONSTANTS.PAGINATION.DEFAULT_PAGE,
+      minLimit: JOBS_CONSTANTS.PAGINATION.MIN_LIMIT,
+      defaultLimit: JOBS_CONSTANTS.PAGINATION.DEFAULT_LIMIT,
+      maxLimit: JOBS_CONSTANTS.PAGINATION.MAX_LIMIT,
+    });
+
+    const savedJobs = await this.prisma.savedJob.findMany({
+      where: { userId },
+      include: { job: true },
+      orderBy: JOBS_CONSTANTS.ORDER_BY.CREATED_AT_DESC,
+    });
+
+    if (savedJobs.length === 0) {
+      return {
+        jobs: [],
+        pagination: buildPaginationMeta(0, page, limit, JOBS_CONSTANTS.PAGINATION.MIN_PAGE),
+      };
+    }
+
+    const savedJobIds = savedJobs.map((savedJob) => savedJob.jobId);
+    const applications = await this.prisma.application.findMany({
+      where: {
+        userId,
+        jobId: { in: savedJobIds },
+      },
+      select: {
+        jobId: true,
+        status: true,
+      },
+      orderBy: JOBS_CONSTANTS.ORDER_BY.CREATED_AT_DESC,
+    });
+
+    const statusesByJobId = new Map<string, ApplicationStatus[]>();
+    for (const application of applications) {
+      const statuses = statusesByJobId.get(application.jobId) ?? [];
+      statuses.push(application.status);
+      statusesByJobId.set(application.jobId, statuses);
+    }
+
+    const failedStatuses = new Set<ApplicationStatus>([
+      ApplicationStatus.FAILED,
+      ApplicationStatus.EMAIL_FAILED,
+    ]);
+
+    const eligibleSavedJobs = savedJobs.filter((savedJob) => {
+      if (!savedJob.job.hrEmail) {
+        return false;
+      }
+
+      const statuses = statusesByJobId.get(savedJob.jobId);
+      if (!statuses || statuses.length === 0) {
+        return true;
+      }
+
+      return statuses.every((status) => failedStatuses.has(status));
+    });
+
+    const paginatedEligibleSavedJobs = eligibleSavedJobs.slice(skip, skip + limit);
+    const paginatedSavedSet = new Set(paginatedEligibleSavedJobs.map((savedJob) => savedJob.jobId));
+
+    return {
+      jobs: paginatedEligibleSavedJobs.map((savedJob) => {
+        const statuses = statusesByJobId.get(savedJob.jobId) ?? [];
+        const hasPreviousFailure =
+          statuses.length > 0 && statuses.every((status) => failedStatuses.has(status));
+
+        return {
+          ...this.mapJobWithSaved(savedJob.job, paginatedSavedSet),
+          ...(hasPreviousFailure ? { previousFailedStatus: 'FAILED' as const } : {}),
+        };
+      }),
+      pagination: buildPaginationMeta(
+        eligibleSavedJobs.length,
+        page,
+        limit,
+        JOBS_CONSTANTS.PAGINATION.MIN_PAGE
+      ),
     };
   }
 

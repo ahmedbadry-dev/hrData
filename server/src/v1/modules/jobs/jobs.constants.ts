@@ -18,6 +18,7 @@ export const JOBS_CONSTANTS = {
   MESSAGES: {
     JOBS_FETCHED_SUCCESSFULLY: 'Jobs fetched successfully',
     SAVED_JOBS_FETCHED_SUCCESSFULLY: 'Saved jobs fetched successfully',
+    ELIGIBLE_SAVED_JOBS_FETCHED_SUCCESSFULLY: 'Eligible saved jobs fetched successfully',
     JOB_FETCHED_SUCCESSFULLY: 'Job fetched successfully',
     JOB_SAVED_SUCCESSFULLY: 'Job saved successfully',
     JOBS_SAVED_SUCCESSFULLY: 'Jobs saved successfully',

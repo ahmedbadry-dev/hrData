@@ -20,6 +20,11 @@ export const normalizeSavedJobsQueryParams = (params?: GetJobsParams) => ({
   limit: params?.limit ?? DEFAULT_LIMIT,
 });
 
+export const normalizeEligibleSavedJobsQueryParams = (params?: GetJobsParams) => ({
+  page: params?.page ?? DEFAULT_PAGE,
+  limit: params?.limit ?? DEFAULT_LIMIT,
+});
+
 export const jobsQueryKeys = {
   all: ['jobs'] as const,
   list: (params?: GetJobsParams) =>
@@ -27,4 +32,7 @@ export const jobsQueryKeys = {
   savedAll: ['jobs', 'saved'] as const,
   saved: (params?: GetJobsParams) =>
     ['jobs', 'saved', normalizeSavedJobsQueryParams(params)] as const,
+  savedEligibleAll: ['jobs', 'saved', 'eligible'] as const,
+  savedEligible: (params?: GetJobsParams) =>
+    ['jobs', 'saved', 'eligible', normalizeEligibleSavedJobsQueryParams(params)] as const,
 };

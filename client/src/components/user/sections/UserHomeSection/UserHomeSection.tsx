@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
 import { PageHeader, StatCard } from '@/components/common';
 import styles from './UserHomeSection.module.css';
@@ -9,30 +9,8 @@ interface UserHomeSectionProps {
   repliesCount?: number;
   totalJobs?: number;
   weeklyData?: number[];
-}
-
-function useAnimatedCounter(target: number, suffix = '') {
-  const [value, setValue] = useState(`0${suffix}`);
-
-  useEffect(() => {
-    const startTime = performance.now();
-    const duration = 1500;
-    let frame = 0;
-
-    const tick = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-      const current = Math.floor(target * easeOutQuart);
-      setValue(`${current}${suffix}`);
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [target, suffix]);
-
-  return value;
+  isStatsLoading?: boolean;
+  isWeeklyLoading?: boolean;
 }
 
 export default function UserHomeSection({
@@ -41,11 +19,38 @@ export default function UserHomeSection({
   repliesCount = 0,
   totalJobs = 0,
   weeklyData,
+  isStatsLoading = false,
+  isWeeklyLoading = false,
 }: UserHomeSectionProps) {
   const chartRef = useRef<HTMLCanvasElement | null>(null);
   const chartInstanceRef = useRef<Chart | null>(null);
-  const saved = useAnimatedCounter(savedCount);
-  const replies = useAnimatedCounter(repliesCount);
+  const [chartLoaded, setChartLoaded] = useState(false);
+
+  const chartValues = useMemo(
+    () => weeklyData ?? [0, 0, 0, 0, 0, 0, 0],
+    [weeklyData]
+  );
+  const chartDataKey = useMemo(() => chartValues.join('-'), [chartValues]);
+
+  useEffect(() => {
+    if (isWeeklyLoading) {
+      setChartLoaded(false);
+      return;
+    }
+
+    if (!weeklyData || weeklyData.length === 0 || !weeklyData.some((value) => value > 0)) {
+      setChartLoaded(true);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setChartLoaded(true);
+    }, 200);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [isWeeklyLoading, weeklyData]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -59,7 +64,7 @@ export default function UserHomeSection({
         datasets: [
           {
             label: 'الإيميلات المرسلة',
-            data: weeklyData || [0, 0, 0, 0, 0, 0, 0],
+            data: chartValues,
             backgroundColor: '#0d0d0d',
             borderColor: '#0d0d0d',
             borderWidth: 1,
@@ -70,6 +75,19 @@ export default function UserHomeSection({
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: {
+          duration: 1000,
+          easing: 'easeOutQuart',
+        },
+        animations: {
+          y: {
+            from: 0,
+            duration: 1000,
+            easing: 'easeOutQuart',
+            delay: (context: { type: string; dataIndex: number }) =>
+              context.type === 'data' ? context.dataIndex * 100 : 0,
+          },
+        },
         plugins: { legend: { display: false } },
         scales: {
           y: {
@@ -89,7 +107,7 @@ export default function UserHomeSection({
       chartInstanceRef.current?.destroy();
       chartInstanceRef.current = null;
     };
-  }, [weeklyData]);
+  }, [chartDataKey, chartValues]);
 
   return (
     <section>
@@ -110,7 +128,8 @@ export default function UserHomeSection({
           className={styles['stat-card']}
           valueClassName={styles['stat-val']}
           titleClassName={styles['stat-tit']}
-          value={saved}
+          value={savedCount}
+          isLoading={isStatsLoading}
           title="الوظائف المحفوظة"
         />
         <StatCard
@@ -118,13 +137,15 @@ export default function UserHomeSection({
           valueClassName={styles['stat-val']}
           titleClassName={styles['stat-tit']}
           value={applicationsCount}
+          isLoading={isStatsLoading}
           title="إجمالي التقديمات"
         />
         <StatCard
           className={styles['stat-card']}
           valueClassName={styles['stat-val']}
           titleClassName={styles['stat-tit']}
-          value={replies}
+          value={repliesCount}
+          isLoading={isStatsLoading}
           title="الردود"
         />
         <StatCard
@@ -132,16 +153,19 @@ export default function UserHomeSection({
           valueClassName={styles['stat-val']}
           titleClassName={styles['stat-tit']}
           value={totalJobs}
+          isLoading={isStatsLoading}
           title="إجمالي الوظائف"
         />
       </div>
 
-      <div className={styles['chart-container']}>
+      <div
+        className={`${styles['chart-container']} ${chartLoaded ? styles.loaded : ''}`.trim()}
+      >
         <div className={styles['chart-header']}>
           <div className={styles['chart-title']}>نشاط الإرسال خلال الأسبوع</div>
         </div>
         <div className={styles['chart-wrap']}>
-          <canvas ref={chartRef} />
+          <canvas key={chartDataKey} ref={chartRef} />
         </div>
       </div>
     </section>

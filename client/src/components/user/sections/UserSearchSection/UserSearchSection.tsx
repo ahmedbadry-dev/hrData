@@ -86,28 +86,36 @@ export default function UserSearchSection({
   return (
     <section>
       <div className={styles['search-wrapper']}>
-        <span className={styles['search-label']}>البحث عن وظيفة</span>
         <div className={styles['search-flex']}>
-          <SearchBox
-            value={searchQuery}
-            placeholder="مسمى وظيفي، تخصص، مدينة..."
-            onChange={onSearchQueryChange}
-            onSubmit={onSearch}
-            buttonLabel="بحث"
-            className={styles['search-box']}
-          />
-          <Select
-            options={cityOptions}
-            value={country}
-            onValueChange={onCountryChange}
-            containerClassName={styles['city-select']}
-          />
-          <Select
-            options={timeOptions}
-            value={timeFilter}
-            onValueChange={onTimeFilterChange}
-            containerClassName={styles['time-select']}
-          />
+          <div className={styles['search-main-field']}>
+            <span className={styles['search-label']}>البحث عن وظيفة</span>
+            <SearchBox
+              value={searchQuery}
+              placeholder="محاسب، مهندس، مسوق"
+              onChange={onSearchQueryChange}
+              onSubmit={onSearch}
+              buttonLabel="بحث"
+              className={styles['search-box']}
+            />
+          </div>
+          <div className={styles['filter-field']}>
+            <span className={styles['search-label']}>المدينة</span>
+            <Select
+              options={cityOptions}
+              value={country}
+              onValueChange={onCountryChange}
+              containerClassName={styles['city-select']}
+            />
+          </div>
+          <div className={styles['filter-field']}>
+            <span className={styles['search-label']}>منذ</span>
+            <Select
+              options={timeOptions}
+              value={timeFilter}
+              onValueChange={onTimeFilterChange}
+              containerClassName={styles['time-select']}
+            />
+          </div>
         </div>
       </div>
 

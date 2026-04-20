@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { SavedJob } from '@/components/user/sections/userData';
 import { EmptyState, PageHeader } from '@/components/common';
 import { Button, Input } from '@/components/ui';
 import styles from './UserAutoApplySection.module.css';
+
+const MAX_SELECTED_JOBS = 20;
 
 interface UserAutoApplySectionProps {
   savedJobs: SavedJob[];
@@ -35,6 +37,9 @@ const professionalEmailBody = `السلام عليكم ورحمة الله وب�
 
 وتفضلوا بقبول فائق الاحترام والتقدير،`;
 
+const getSavedJobSelectionKey = (job: SavedJob, index: number): string =>
+  job.jobId ?? `${job.company}-${job.role}-${index}`;
+
 export default function UserAutoApplySection({
   savedJobs,
   gmailConnected,
@@ -46,19 +51,60 @@ export default function UserAutoApplySection({
   onGoHome,
 }: UserAutoApplySectionProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [selectedMap, setSelectedMap] = useState<Record<number, boolean>>(() =>
-    Object.fromEntries(savedJobs.map((_, index) => [index, true]))
-  );
+  const [selectedMap, setSelectedMap] = useState<Record<string, boolean>>({});
+  const [selectionError, setSelectionError] = useState<string | null>(null);
   const [subject] = useState('طلب انضمام — [المسمى الوظيفي]');
   const [body, setBody] = useState(professionalEmailBody);
   const [selectedCv, setSelectedCv] = useState<File | null>(null);
   const [scheduleTime, setScheduleTime] = useState('immediately');
   const [delay, setDelay] = useState('30');
 
-  const selectedJobs = useMemo(
-    () => savedJobs.filter((_, index) => selectedMap[index]),
-    [savedJobs, selectedMap]
+  const savedJobKeys = useMemo(
+    () => savedJobs.map((job, index) => getSavedJobSelectionKey(job, index)),
+    [savedJobs]
   );
+
+  useEffect(() => {
+    setSelectedMap((previous) => {
+      const validKeys = new Set(savedJobKeys);
+      let hasChanges = false;
+      const nextSelection: Record<string, boolean> = {};
+
+      for (const [key, selected] of Object.entries(previous)) {
+        if (selected && validKeys.has(key)) {
+          nextSelection[key] = true;
+          continue;
+        }
+
+        if (selected) {
+          hasChanges = true;
+        }
+      }
+
+      return hasChanges ? nextSelection : previous;
+    });
+  }, [savedJobKeys]);
+
+  const selectedJobs = useMemo(
+    () => savedJobs.filter((_, index) => Boolean(selectedMap[savedJobKeys[index]])),
+    [savedJobKeys, savedJobs, selectedMap]
+  );
+
+  const handleSelectionChange = (jobKey: string, checked: boolean) => {
+    const selectedCount = Object.values(selectedMap).filter(Boolean).length;
+    const isCurrentlySelected = Boolean(selectedMap[jobKey]);
+
+    if (checked && !isCurrentlySelected && selectedCount >= MAX_SELECTED_JOBS) {
+      setSelectionError(`يمكن اختيار ${MAX_SELECTED_JOBS} وظيفة كحد أقصى في كل دفعة.`);
+      return;
+    }
+
+    setSelectionError(null);
+    setSelectedMap((previous) => ({
+      ...previous,
+      [jobKey]: checked,
+    }));
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -193,7 +239,7 @@ export default function UserAutoApplySection({
           </Button>
           <Button
             className={styles['btn-primary']}
-            disabled={!selectedCv}
+            disabled={!selectedCv || selectedJobs.length === 0}
             onClick={() => {
               onStartSending(
                 { selected: selectedJobs, scheduleTime, delay, cv: selectedCv, body },
@@ -263,22 +309,19 @@ export default function UserAutoApplySection({
           <span className={styles['search-label']}>الوظائف المختارة</span>
           <div className={styles['results-list']}>
             {savedJobs.map((job, index) => (
-              <label
-                className={styles['recipient-row']}
-                key={`${job.company}-${job.role}-${index}`}
-              >
+              <label className={styles['recipient-row']} key={savedJobKeys[index]}>
                 <input
                   type="checkbox"
-                  checked={!!selectedMap[index]}
-                  onChange={(e) =>
-                    setSelectedMap((prev) => ({
-                      ...prev,
-                      [index]: e.target.checked,
-                    }))
-                  }
+                  checked={Boolean(selectedMap[savedJobKeys[index]])}
+                  onChange={(e) => handleSelectionChange(savedJobKeys[index], e.target.checked)}
                 />
                 <div>
-                  <div className={styles['company-tag']}>{job.company}</div>
+                  <div className={styles['job-header']}>
+                    <div className={styles['company-tag']}>{job.company}</div>
+                    {job.previousFailedStatus === 'FAILED' ? (
+                      <span className={styles['retry-badge']}>إعادة محاولة</span>
+                    ) : null}
+                  </div>
                   <div className={styles['job-title']}>{job.role}</div>
                   <div className={styles['connected-email']}>{job.hrEmail || job.email}</div>
                 </div>
@@ -287,6 +330,8 @@ export default function UserAutoApplySection({
           </div>
         </div>
       )}
+
+      {selectionError ? <div className={styles['selection-error']}>{selectionError}</div> : null}
 
       <div className={styles['control-bar']}>
         <Button className={styles['btn-ghost']} onClick={onGoSavedJobs}>

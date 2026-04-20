@@ -43,6 +43,13 @@ export const jobsRoutes = (jobsController: JobsController): Router => {
   );
 
   router.get(
+    '/saved/eligible',
+    authenticationMiddleware,
+    validateQueryMiddleware(GetJobsDtoSchema),
+    jobsController.getEligibleSavedJobs
+  );
+
+  router.get(
     '/search',
     authenticationMiddleware,
     validateQueryMiddleware(SearchJobsDtoSchema),

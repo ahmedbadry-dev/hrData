@@ -99,6 +99,16 @@
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+
+.chart-container.loaded {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .chart-header {

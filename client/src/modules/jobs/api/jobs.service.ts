@@ -15,6 +15,7 @@ export interface Job {
   expiresAt: string | null;
   isExpired: boolean;
   isSaved?: boolean;
+  previousFailedStatus?: 'FAILED';
 }
 
 export interface PaginatedJobs {
@@ -70,9 +71,9 @@ export const unsaveJobs = async (
   jobIds?: string[]
 ): Promise<ApiResponse<{ removedJobIds: string[]; notSavedJobIds: string[] }>> => {
   const body = Array.isArray(jobIds) && jobIds.length > 0 ? { jobIds } : {};
-  const { data } = await axiosClient.delete<
+  const { data } = await axiosClient.post<
     ApiResponse<{ removedJobIds: string[]; notSavedJobIds: string[] }>
-  >('/jobs/save/bulk', { data: body });
+  >('/jobs/bulk-unsave', body);
   return data;
 };
 
@@ -92,6 +93,19 @@ export const fetchSavedJobs = async (
   return data;
 };
 
+export const fetchEligibleSavedJobs = async (
+  params?: GetJobsParams
+): Promise<ApiResponse<PaginatedJobs>> => {
+  const searchParams = new URLSearchParams();
+  if (params?.page) searchParams.set('page', String(params.page));
+  if (params?.limit) searchParams.set('limit', String(params.limit));
+
+  const { data } = await axiosClient.get<ApiResponse<PaginatedJobs>>(
+    `/jobs/saved/eligible?${searchParams.toString()}`
+  );
+  return data;
+};
+
 export const jobsService = {
   fetchJobs,
   saveJob,
@@ -99,4 +113,5 @@ export const jobsService = {
   saveJobs,
   unsaveJobs,
   fetchSavedJobs,
+  fetchEligibleSavedJobs,
 };

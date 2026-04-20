@@ -18,6 +18,7 @@ export interface JobResponse {
   createdAt: Date;
   updatedAt: Date;
   hrEmail: string | null;
+  previousFailedStatus?: 'FAILED';
 }
 
 export interface PaginatedJobsResponse {
