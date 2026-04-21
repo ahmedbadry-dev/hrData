@@ -13,7 +13,7 @@
     "prisma:generate": "npx prisma generate",
     "prisma:migrate:deploy": "npx prisma migrate deploy",
     "prisma:push": "npx prisma db push",
-    "prisma:seed": "npx prisma db seed",
+    "prisma:seed": "npx tsx prisma/seed.ts",
     "prisma:studio": "npx prisma studio",
     "test": "tsx --test \"tests/**/*.test.ts\"",
     "test:watch": "tsx --test --watch \"tests/**/*.test.ts\"",

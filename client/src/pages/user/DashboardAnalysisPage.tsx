@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useToast } from '@/contexts/ToastContext';
 import { EmptyState } from '@/components/common';
 import { UserAnalyticsSection } from '@/components/user/sections';
 import { useApplicationsList, useCancelApplication } from '@/modules/applications/api/hooks';
@@ -28,6 +29,7 @@ const mapStatusToUserApp = (status: ApplicationStatus): UserApplication['status'
 
 export default function DashboardAnalysisPage() {
   const [page, setPage] = useState(1);
+  const { showToast } = useToast();
 
   const { data, isLoading, isFetching, isError } = useApplicationsList(
     {
@@ -44,7 +46,7 @@ export default function DashboardAnalysisPage() {
 
   const cancelMutation = useCancelApplication({
     onError: () => {
-      alert('تعذر إلغاء الطلب حالياً. حاول مرة أخرى.');
+      showToast({ message: 'تعذر إلغاء الطلب حالياً. حاول مرة أخرى.', type: 'error' });
     },
   });
 
