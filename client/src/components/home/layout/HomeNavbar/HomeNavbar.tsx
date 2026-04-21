@@ -30,9 +30,6 @@ export default function HomeNavbar() {
             <a className={styles['nav-link']} href="#features">
               المميزات
             </a>
-            <a className={styles['nav-link']} href="#cta">
-              للشركات
-            </a>
           </>
         )}
 
