@@ -4,9 +4,6 @@
   "private": true,
   "type": "module",
   "main": "dist/index.js",
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "build": "tsc --project tsconfig.json",

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/modules/auth/api/hooks';
 import styles from './AdminNavbar.module.css';
 
@@ -31,9 +31,9 @@ export default function AdminNavbar({ onToggleSidebar }: AdminNavbarProps) {
         </button>
 
         <div className={styles['logo-sub']}>
-          <a className={styles.logo} href="#">
+          <Link className={styles.logo} to="/">
             كُـفُـؤ<span>.</span>
-          </a>
+          </Link>
           <span className={styles['logo-tagline']}>لوحة الإدارة</span>
         </div>
         <span className={styles['admin-badge']}>ADMIN</span>
