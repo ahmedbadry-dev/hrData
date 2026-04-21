@@ -1,26 +1,25 @@
 import { AdminAnalyticsSection } from '@/components/admin/sections';
-import {
-  useAnalyticsOverview,
-  useAnalyticsAdvancedOverview,
-  useApplicationsPerDay,
-  useApplicationStatusDistribution,
-  useUserActivityPerDay,
-} from '@/modules/admin/analytics/api/hooks';
+import { useAdminAnalytics } from '@/modules/admin/analytics/api/hooks';
 
 export default function AdminAnalyticsPage() {
-  const { data: overview, isLoading: isOverviewLoading } = useAnalyticsOverview();
-  const { data: advanced } = useAnalyticsAdvancedOverview();
-  const { data: applicationsPerDay } = useApplicationsPerDay(30);
-  const { data: statusDist } = useApplicationStatusDistribution();
-  const { data: userActivity } = useUserActivityPerDay(7);
+  const [overviewRes, advancedRes, appsPerDayRes, statusDistRes, userActivityRes] =
+    useAdminAnalytics();
+
+  const overview = overviewRes.data?.data;
+  const advanced = advancedRes.data?.data;
+  const applicationsPerDay = appsPerDayRes.data?.data;
+  const statusDist = statusDistRes.data?.data;
+  const userActivity = userActivityRes.data?.data;
+
+  const isOverviewLoading = overviewRes.isLoading;
 
   return (
     <AdminAnalyticsSection
-      overview={overview?.data}
-      advanced={advanced?.data}
-      applicationsPerDay={applicationsPerDay?.data}
-      statusDistribution={statusDist?.data}
-      userActivity={userActivity?.data}
+      overview={overview}
+      advanced={advanced}
+      applicationsPerDay={applicationsPerDay}
+      statusDistribution={statusDist}
+      userActivity={userActivity}
       isOverviewLoading={isOverviewLoading}
     />
   );

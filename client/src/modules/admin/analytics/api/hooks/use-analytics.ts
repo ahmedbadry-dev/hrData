@@ -149,3 +149,45 @@ export const useAdminDashboard = () => {
     ],
   });
 };
+
+export const useAdminAnalytics = () => {
+  return useQueries({
+    queries: [
+      {
+        ...useAnalyticsOverviewQueryOptions(),
+        staleTime: 0,
+        gcTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: false,
+      },
+      {
+        ...useAnalyticsAdvancedOverviewQueryOptions(),
+        staleTime: 0,
+        gcTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: false,
+      },
+      {
+        ...useApplicationsPerDayQueryOptions(30),
+        staleTime: 0,
+        gcTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: false,
+      },
+      {
+        ...useApplicationStatusDistributionQueryOptions(),
+        staleTime: 0,
+        gcTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: false,
+      },
+      {
+        ...useUserActivityPerDayQueryOptions(7),
+        staleTime: 0,
+        gcTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: false,
+      },
+    ],
+  });
+};
