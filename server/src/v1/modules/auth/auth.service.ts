@@ -48,14 +48,14 @@ export class AuthService {
       where: { phone },
     });
     if (phoneExists) {
-      throw new BadRequestException('Unable to register with provided credentials');
+      throw new BadRequestException('phone already in use');
     }
 
     const emailExists = await this.prisma.user.findUnique({
       where: { email },
     });
     if (emailExists) {
-      throw new BadRequestException('Unable to register with provided credentials');
+      throw new BadRequestException('email already in use');
     }
 
     const hashedPassword = await generateHash(password);
