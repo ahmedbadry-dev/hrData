@@ -10,6 +10,7 @@ export interface OverviewStats {
   totalJobs: number;
   newJobsToday: number;
   totalApplicationsSent: number;
+  totalApplications: number;
   applicationsThisWeek: number;
   emailOpenedPercentage: number;
 }

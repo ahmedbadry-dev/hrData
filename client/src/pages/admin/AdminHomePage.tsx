@@ -1,21 +1,15 @@
 import { AdminHomeSection } from '@/components/admin/sections';
 import {
-  useAnalyticsOverview,
-  useLoginsPerDay,
-  useApplicationsPerDay,
-  useEmailErrorsPerDay,
-  useRecentActivityLogs,
+  useAdminDashboard,
 } from '@/modules/admin/analytics/api/hooks';
 import type { AdminLog } from '@/components/admin/sections/adminData';
 
 const ACTION_COLORS: Record<string, { color: string; typeLabel: string; type: AdminLog['type'] }> =
   {
-    USER_REGISTERED: { color: '#1a4a8a', typeLabel: 'تسجيل', type: 'reg' },
-    USER_LOGIN: { color: '#1a4a8a', typeLabel: 'دخول', type: 'reg' },
-    JOB_APPLICATION_SENT: { color: '#1a6b4a', typeLabel: 'تقديم', type: 'apply' },
-    JOB_SAVED: { color: '#b8860b', typeLabel: 'حفظ', type: 'info' },
-    EMAIL_SENT: { color: '#1a6b4a', typeLabel: 'إرسال', type: 'apply' },
-    EMAIL_FAILED: { color: '#c0392b', typeLabel: 'خطأ', type: 'error' },
+    LOGIN: { color: '#1a4a8a', typeLabel: 'دخول', type: 'reg' },
+    VERIFY_EMAIL: { color: '#1a6b4a', typeLabel: 'تأكيد', type: 'apply' },
+    CHANGE_PASSWORD: { color: '#b8860b', typeLabel: 'تغيير', type: 'info' },
+    RESET_PASSWORD: { color: '#c0392b', typeLabel: 'استعادة', type: 'error' },
   };
 
 function toAdminLog(log: {
@@ -28,20 +22,16 @@ function toAdminLog(log: {
     typeLabel: 'نظام',
     type: 'info' as const,
   };
-  const userName = log.user ? `${log.user.firstName} ${log.user.lastName}` : 'النظام';
-  const time = new Date(log.createdAt).toLocaleTimeString('ar-SA', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  });
+  const userName = log.user
+    ? log.user.fullName || `${log.user.firstName} ${log.user.lastName}`
+    : 'النظام';
+  const time = new Date(log.createdAt).toLocaleString('ar-SA');
 
   const actionText: Record<string, string> = {
-    USER_REGISTERED: `تسجيل مستخدم جديد — ${userName}`,
-    USER_LOGIN: `دخول مستخدم — ${userName}`,
-    JOB_APPLICATION_SENT: `تقديم آلي — ${userName}`,
-    JOB_SAVED: `حفظ وظيفة — ${userName}`,
-    EMAIL_SENT: `إرسال بريد — ${userName}`,
-    EMAIL_FAILED: `فشل إرسال بريد — ${userName}`,
+    LOGIN: `تسجيل دخول — ${userName}`,
+    VERIFY_EMAIL: `تأكيد حساب — ${userName}`,
+    CHANGE_PASSWORD: `تغيير كلمة المرور — ${userName}`,
+    RESET_PASSWORD: `استعادة كلمة المرور — ${userName}`,
   };
 
   return {
@@ -50,24 +40,23 @@ function toAdminLog(log: {
     time,
     typeLabel: meta.typeLabel,
     color: meta.color,
+    action: log.action,
   };
 }
 
 export default function AdminHomePage() {
-  const { data: overview } = useAnalyticsOverview();
-  const { data: logins } = useLoginsPerDay(7);
-  const { data: applications } = useApplicationsPerDay(7);
-  const { data: errors } = useEmailErrorsPerDay(7);
-  const { data: activityLogs } = useRecentActivityLogs();
+  const [overviewRes, loginsRes, logsRes] = useAdminDashboard();
 
-  const logs: AdminLog[] = (activityLogs?.data ?? []).map(toAdminLog);
+  const overview = overviewRes.data?.data;
+  const logins = loginsRes.data?.data;
+  const activityLogs = logsRes.data?.data;
+
+  const logs: AdminLog[] = (activityLogs ?? []).map(toAdminLog);
 
   return (
     <AdminHomeSection
-      stats={overview?.data}
-      loginsData={logins?.data}
-      applicationsData={applications?.data}
-      errorsData={errors?.data}
+      stats={overview}
+      loginsData={logins}
       logs={logs}
     />
   );

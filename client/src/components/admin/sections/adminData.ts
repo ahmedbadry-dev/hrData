@@ -32,6 +32,7 @@ export interface AdminLog {
   time: string;
   typeLabel: string;
   color: string;
+  action: string;
 }
 
 export interface ScraperLog {
@@ -176,6 +177,7 @@ export const recentAdminLogs: AdminLog[] = [
     time: '١٠:٤٢ ص',
     typeLabel: 'تسجيل',
     color: '#1a4a8a',
+    action: 'LOGIN',
   },
   {
     type: 'apply',
@@ -183,6 +185,7 @@ export const recentAdminLogs: AdminLog[] = [
     time: '١٠:٣٨ ص',
     typeLabel: 'تقديم',
     color: '#1a6b4a',
+    action: 'LOGIN',
   },
   {
     type: 'apply',
@@ -190,6 +193,7 @@ export const recentAdminLogs: AdminLog[] = [
     time: '١٠:١٥ ص',
     typeLabel: 'تقديم',
     color: '#1a6b4a',
+    action: 'LOGIN',
   },
   {
     type: 'error',
@@ -197,6 +201,7 @@ export const recentAdminLogs: AdminLog[] = [
     time: '٠٩:٥٥ ص',
     typeLabel: 'خطأ',
     color: '#c0392b',
+    action: 'LOGIN',
   },
   {
     type: 'reg',
@@ -204,6 +209,7 @@ export const recentAdminLogs: AdminLog[] = [
     time: '٠٩:٤٠ ص',
     typeLabel: 'تسجيل',
     color: '#1a4a8a',
+    action: 'LOGIN',
   },
   {
     type: 'apply',
@@ -211,6 +217,7 @@ export const recentAdminLogs: AdminLog[] = [
     time: '٠٩:٢٢ ص',
     typeLabel: 'تقديم',
     color: '#1a6b4a',
+    action: 'LOGIN',
   },
   {
     type: 'info',
@@ -218,6 +225,7 @@ export const recentAdminLogs: AdminLog[] = [
     time: '٠٩:٠٠ ص',
     typeLabel: 'نظام',
     color: '#b8860b',
+    action: 'LOGIN',
   },
 ];
 

@@ -1,4 +1,4 @@
-import { useQuery, queryOptions } from '@tanstack/react-query';
+import { useQuery, useQueries, queryOptions } from '@tanstack/react-query';
 import {
   fetchAnalyticsOverview,
   fetchAnalyticsAdvancedOverview,
@@ -120,4 +120,32 @@ export const useRecentActivityLogsQueryOptions = () => {
 
 export const useRecentActivityLogs = () => {
   return useQuery(useRecentActivityLogsQueryOptions());
+};
+
+export const useAdminDashboard = () => {
+  return useQueries({
+    queries: [
+      {
+        ...useAnalyticsOverviewQueryOptions(),
+        staleTime: 0,
+        gcTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: false,
+      },
+      {
+        ...useLoginsPerDayQueryOptions(7),
+        staleTime: 0,
+        gcTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: false,
+      },
+      {
+        ...useRecentActivityLogsQueryOptions(),
+        staleTime: 0,
+        gcTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: false,
+      },
+    ],
+  });
 };

@@ -58,7 +58,7 @@ export default function AdminHomeSection({
 }: AdminHomeSectionProps) {
   const users = useAnimatedCounter(stats?.totalUsers ?? 0);
   const jobs = useAnimatedCounter(stats?.totalJobs ?? 0);
-  const apply = useAnimatedCounter(stats?.totalApplicationsSent ?? 0);
+  const apply = useAnimatedCounter(stats?.totalApplications ?? 0);
   const success = useAnimatedCounter(stats?.emailOpenedPercentage ?? 0, '%');
   const chartRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -161,9 +161,9 @@ export default function AdminHomeSection({
           titleClassName={styles['stat-tit']}
           trendClassName={styles['stat-change']}
           value={users}
-          title="المستخدمون"
+          title="إجمالي المستخدمين"
           trend={{
-            value: stats?.newUsersToday ? `↑ +${stats.newUsersToday} اليوم` : '',
+            value: stats?.newUsersToday ? `+${stats.newUsersToday} مستخدم جديد اليوم` : '',
             direction: 'up',
           }}
         />
@@ -174,9 +174,9 @@ export default function AdminHomeSection({
           titleClassName={styles['stat-tit']}
           trendClassName={styles['stat-change']}
           value={jobs}
-          title="الوظائف"
+          title="إجمالي الوظائف"
           trend={{
-            value: stats?.newJobsToday ? `↑ +${stats.newJobsToday} جديدة` : '',
+            value: stats?.newJobsToday ? `+${stats.newJobsToday} وظيفة أضيفت اليوم` : '',
             direction: 'up',
           }}
         />
@@ -187,10 +187,10 @@ export default function AdminHomeSection({
           titleClassName={styles['stat-tit']}
           trendClassName={styles['stat-change']}
           value={apply}
-          title="تقديمات"
+          title="إجمالي التقديمات"
           trend={{
             value: stats?.applicationsThisWeek
-              ? `↑ +${stats.applicationsThisWeek} هذا الأسبوع`
+              ? `+${stats.applicationsThisWeek} تقديم هذا الأسبوع`
               : '',
             direction: 'up',
           }}
@@ -234,7 +234,11 @@ export default function AdminHomeSection({
               style={{ animationDelay: `${i * 0.06}s` }}
               key={log.text}
             >
-              <div className={cn(styles['log-dot'], styles[log.type])} />
+              <span className={styles['log-icon']}>
+                {log.action === 'LOGIN' ? '🔑' : 
+                 log.action === 'VERIFY_EMAIL' ? '✅' : 
+                 log.action === 'RESET_PASSWORD' ? '🔄' : '🔒'}
+              </span>
               <span className={styles['log-text']}>{log.text}</span>
               <span
                 className={styles['log-type-badge']}

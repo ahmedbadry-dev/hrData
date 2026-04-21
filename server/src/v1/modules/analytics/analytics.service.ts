@@ -43,6 +43,7 @@ export class AnalyticsService {
       totalJobs,
       newJobsToday,
       totalApplicationsSent,
+      totalApplications,
       applicationsThisWeek,
       emailOpenedCount,
       emailSentCount,
@@ -75,11 +76,9 @@ export class AnalyticsService {
           },
         },
       }),
+      this.prisma.application.count(),
       this.prisma.application.count({
         where: {
-          status: {
-            in: applicationSentStatuses,
-          },
           createdAt: {
             gte: this.getStartOfDay(6),
           },
@@ -109,6 +108,7 @@ export class AnalyticsService {
       totalJobs,
       newJobsToday,
       totalApplicationsSent,
+      totalApplications,
       applicationsThisWeek,
       emailOpenedPercentage,
     };
@@ -371,8 +371,11 @@ export class AnalyticsService {
 
   async getRecentActivityLogs(): Promise<RecentActivityLog[]> {
     const logs = await this.prisma.activityLog.findMany({
+      where: {
+        action: { in: ['LOGIN', 'CHANGE_PASSWORD', 'VERIFY_EMAIL', 'RESET_PASSWORD'] },
+      },
       orderBy: { createdAt: 'desc' },
-      take: 30,
+      take: 50,
       select: {
         id: true,
         action: true,
@@ -381,7 +384,7 @@ export class AnalyticsService {
         ipAddress: true,
         createdAt: true,
         user: {
-          select: { firstName: true, lastName: true },
+          select: { firstName: true, lastName: true, fullName: true },
         },
       },
     });

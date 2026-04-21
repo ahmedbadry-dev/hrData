@@ -5,6 +5,7 @@ export interface OverviewStats {
   totalJobs: number;
   newJobsToday: number;
   totalApplicationsSent: number;
+  totalApplications: number;
   applicationsThisWeek: number;
   emailOpenedPercentage: number;
 }
@@ -47,5 +48,5 @@ export interface RecentActivityLog {
   metadata: Record<string, unknown> | null;
   ipAddress: string | null;
   createdAt: string;
-  user: { firstName: string; lastName: string } | null;
+  user: { firstName: string; lastName: string; fullName?: string | null } | null;
 }

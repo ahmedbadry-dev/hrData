@@ -143,6 +143,28 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-top: 1px solid var(--cream);
+  border-bottom: 1px solid var(--cream);
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--paper);
+}
+
+.log-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.log-list::-webkit-scrollbar-track {
+  background: var(--paper);
+  border-left: 1px solid var(--cream);
+}
+
+.log-list::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border: 2px solid var(--paper);
+  border-radius: 0;
 }
 
 .log-item {
@@ -155,15 +177,15 @@
   animation: fadeUp 0.3s ease both;
 }
 
-.log-item:first-child {
-  border-top: 1px solid var(--cream);
-}
 
-.log-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
+.log-icon {
+  font-size: 14px;
   flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .log-dot.reg,

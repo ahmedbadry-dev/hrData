@@ -116,6 +116,12 @@ export class AuthService {
       data: { emailVerified: true, verificationToken: null, status: UserStatus.ACTIVE },
     });
 
+    void this.prisma.activityLog
+      .create({
+        data: { userId: updatedUser.id, action: 'VERIFY_EMAIL' },
+      })
+      .catch((err) => logger.error('Failed to log VERIFY_EMAIL activity', err));
+
     return excludePassword(updatedUser);
   }
 
@@ -144,7 +150,20 @@ export class AuthService {
 
     this.validateUserStatus(userExists);
 
-    return this.createTokenPairAndSession(userExists, deviceInfo);
+    const result = await this.createTokenPairAndSession(userExists, deviceInfo);
+
+    void this.prisma.activityLog
+      .create({
+        data: {
+          userId: userExists.id,
+          action: 'LOGIN',
+          metadata: { ipAddress: deviceInfo.ipAddress },
+          ipAddress: deviceInfo.ipAddress,
+        },
+      })
+      .catch((err) => logger.error('Failed to log LOGIN activity', err));
+
+    return result;
   }
 
   async logout(userId: string, refreshToken: string): Promise<void> {
@@ -293,6 +312,12 @@ export class AuthService {
       return updated;
     });
 
+    void this.prisma.activityLog
+      .create({
+        data: { userId: updatedUser.id, action: 'RESET_PASSWORD' },
+      })
+      .catch((err) => logger.error('Failed to log RESET_PASSWORD activity', err));
+
     return { user: excludePassword(updatedUser) };
   }
 
@@ -357,6 +382,15 @@ export class AuthService {
       await tx.session.deleteMany({ where: { userId: user.id } });
       return updated;
     });
+
+    void this.prisma.activityLog
+      .create({
+        data: {
+          userId: updatedUser.id,
+          action: 'CHANGE_PASSWORD',
+        },
+      })
+      .catch((err) => logger.error('Failed to log CHANGE_PASSWORD activity', err));
 
     return { user: excludePassword(updatedUser) };
   }
