@@ -1,4 +1,4 @@
-import { JobLocation } from 'generated/prisma';
+import { JobLocation, JobQualification, JobSpecialization } from 'generated/prisma';
 import { PaginationMeta } from '@/shared/utils/api-response';
 
 export interface JobResponse {
@@ -6,6 +6,8 @@ export interface JobResponse {
   title: string;
   companyName: string;
   location: JobLocation | null;
+  qualification: JobQualification;
+  specialization: JobSpecialization;
   category: string | null;
   description: string | null;
   source: string;

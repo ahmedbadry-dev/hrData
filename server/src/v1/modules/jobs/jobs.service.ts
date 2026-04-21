@@ -2,6 +2,9 @@ import {
   ApplicationStatus,
   DateFilter,
   Job,
+  JobLocation,
+  JobQualification,
+  JobSpecialization,
   Prisma,
   PrismaClient,
   SavedJob,
@@ -357,7 +360,7 @@ export class JobsService {
   }
 
   private buildBaseJobsWhere(
-    query: Pick<GetJobsDto['query'], 'keyword' | 'location'>
+    query: Pick<GetJobsDto['query'], 'keyword' | 'location' | 'qualification' | 'specialization'>
   ): Prisma.JobWhereInput {
     return {
       ...(query.keyword
@@ -379,12 +382,22 @@ export class JobsService {
           }
         : {}),
       ...(query.location ? { location: query.location } : {}),
+      ...(query.qualification ? { qualification: query.qualification } : {}),
+      ...(query.specialization ? { specialization: query.specialization } : {}),
     };
   }
 
   private buildSearchJobsWhere(
     query: Partial<
-      Pick<SearchJobsDto['query'], 'keyword' | 'location' | 'dateFilter' | 'isExpired'>
+      Pick<
+        SearchJobsDto['query'],
+        | 'keyword'
+        | 'location'
+        | 'qualification'
+        | 'specialization'
+        | 'dateFilter'
+        | 'isExpired'
+      >
     >
   ): Prisma.JobWhereInput {
     const postedAgo = this.getPostedAgoDate(query.dateFilter);
@@ -499,6 +512,8 @@ export class JobsService {
       title: job.title,
       companyName: job.companyName,
       location: job.location,
+      qualification: job.qualification,
+      specialization: job.specialization,
       category: job.category,
       description: job.description,
       source: job.source,

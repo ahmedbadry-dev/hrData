@@ -4,6 +4,7 @@ import { EmptyState, SearchBox, Select } from '@/components/common';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { getPageNumbers } from '@/lib/pagination';
+import { qualificationOptions, specializationOptions } from '@/modules/jobs/types/filterOptions';
 import styles from './UserSearchSection.module.css';
 
 interface UserSearchSectionProps {
@@ -29,6 +30,10 @@ interface UserSearchSectionProps {
   onCountryChange: (value: string) => void;
   timeFilter: string;
   onTimeFilterChange: (value: string) => void;
+  qualification: string;
+  onQualificationChange: (value: string) => void;
+  specialization: string;
+  onSpecializationChange: (value: string) => void;
   showSaveButtons?: boolean;
 }
 
@@ -75,6 +80,10 @@ export default function UserSearchSection({
   onCountryChange,
   timeFilter,
   onTimeFilterChange,
+  qualification,
+  onQualificationChange,
+  specialization,
+  onSpecializationChange,
   showSaveButtons = true,
 }: UserSearchSectionProps) {
   const isSaved = (job: UserJob) =>
@@ -105,6 +114,7 @@ export default function UserSearchSection({
               value={country}
               onValueChange={onCountryChange}
               containerClassName={styles['city-select']}
+              scrollable={true}
             />
           </div>
           <div className={styles['filter-field']}>
@@ -114,6 +124,26 @@ export default function UserSearchSection({
               value={timeFilter}
               onValueChange={onTimeFilterChange}
               containerClassName={styles['time-select']}
+            />
+          </div>
+          <div className={styles['filter-field']}>
+            <span className={styles['search-label']}>المؤهل</span>
+            <Select
+              options={qualificationOptions}
+              value={qualification}
+              onValueChange={onQualificationChange}
+              containerClassName={styles['qualification-select']}
+              scrollable={true}
+            />
+          </div>
+          <div className={styles['filter-field']}>
+            <span className={styles['search-label']}>التخصص</span>
+            <Select
+              options={specializationOptions}
+              value={specialization}
+              onValueChange={onSpecializationChange}
+              containerClassName={styles['specialization-select']}
+              scrollable={true}
             />
           </div>
         </div>

@@ -33,7 +33,9 @@
 }
 
 .city-select,
-.time-select {
+.time-select,
+.qualification-select,
+.specialization-select {
   width: 100%;
 }
 
@@ -417,6 +419,8 @@
 
   .city-select,
   .time-select,
+  .qualification-select,
+  .specialization-select,
   .search-main-field,
   .filter-field {
     width: 100%;

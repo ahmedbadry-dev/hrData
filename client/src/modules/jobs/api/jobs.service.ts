@@ -15,6 +15,8 @@ export interface Job {
   expiresAt: string | null;
   isExpired: boolean;
   isSaved?: boolean;
+  qualification?: string;
+  specialization?: string;
   previousFailedStatus?: 'FAILED';
 }
 
@@ -29,6 +31,8 @@ export interface GetJobsParams {
   keyword?: string;
   location?: string;
   category?: string;
+  qualification?: string;
+  specialization?: string;
   dateFilter?: string;
 }
 
@@ -38,6 +42,8 @@ export const fetchJobs = async (params?: GetJobsParams): Promise<ApiResponse<Pag
   if (params?.limit) searchParams.set('limit', String(params.limit));
   if (params?.keyword) searchParams.set('keyword', params.keyword);
   if (params?.location) searchParams.set('location', params.location.toUpperCase());
+  if (params?.qualification) searchParams.set('qualification', params.qualification.toUpperCase());
+  if (params?.specialization) searchParams.set('specialization', params.specialization.toUpperCase());
   if (params?.dateFilter) searchParams.set('dateFilter', params.dateFilter.toUpperCase());
 
   const { data } = await axiosClient.get<ApiResponse<PaginatedJobs>>(
@@ -85,6 +91,8 @@ export const fetchSavedJobs = async (
   if (params?.limit) searchParams.set('limit', String(params.limit));
   if (params?.keyword) searchParams.set('keyword', params.keyword);
   if (params?.location) searchParams.set('location', params.location.toUpperCase());
+  if (params?.qualification) searchParams.set('qualification', params.qualification.toUpperCase());
+  if (params?.specialization) searchParams.set('specialization', params.specialization.toUpperCase());
   if (params?.dateFilter) searchParams.set('dateFilter', params.dateFilter.toUpperCase());
 
   const { data } = await axiosClient.get<ApiResponse<PaginatedJobs>>(

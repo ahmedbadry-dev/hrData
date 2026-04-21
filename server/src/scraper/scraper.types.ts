@@ -20,6 +20,8 @@ export interface ExtractedJob {
   companyName: string;
   source: string;
   location: string;
+  qualification: string;
+  specialization: string;
   category: string;
   description: string;
   hrEmail: string | null;

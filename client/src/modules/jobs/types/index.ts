@@ -10,6 +10,8 @@ export interface UserJob {
   date: string;
   email: string;
   hrEmail?: string;
+  qualification?: string;
+  specialization?: string;
   jobId?: string;
   isSaved?: boolean;
 }

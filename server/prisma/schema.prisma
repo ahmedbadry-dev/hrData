@@ -60,6 +60,27 @@ enum DateFilter {
   MONTH
 }
 
+enum JobQualification {
+  HIGH_SCHOOL
+  DIPLOMA
+  BACHELOR
+  MASTER
+  PHD
+  OTHER
+}
+
+enum JobSpecialization {
+  ENGINEERING
+  INFORMATION_TECHNOLOGY
+  BUSINESS_ADMINISTRATION
+  ACCOUNTING_FINANCE
+  MARKETING_SALES
+  HEALTHCARE
+  EDUCATION
+  HUMAN_RESOURCES
+  OTHER
+}
+
 model User {
   id                         String     @id @default(uuid())
   firstName                  String     @map("first_name")
@@ -136,9 +157,11 @@ model Job {
   language    String       @default("ar")
   postedAt    DateTime?    @map("posted_at")
   expiresAt   DateTime?    @map("expires_at")
-  isExpired   Boolean      @default(false) @map("is_expired")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
+  isExpired      Boolean           @default(false) @map("is_expired")
+  qualification  JobQualification  @default(OTHER)
+  specialization JobSpecialization @default(OTHER)
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
 
   savedJobs    SavedJob[]
   applications Application[]

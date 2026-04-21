@@ -31,6 +31,8 @@ const mapJobToUserJob = (job: Job): UserJob & { jobId: string } => ({
   city: job.location || '',
   date: job.postedAt || '',
   email: job.hrEmail || '',
+  qualification: job.qualification,
+  specialization: job.specialization,
   jobId: job.id,
   isSaved: Boolean(job.isSaved),
 });
@@ -72,10 +74,14 @@ export default function DashboardJobsPage() {
   const [searchTriggered, setSearchTriggered] = useState(false);
   const [country, setCountry] = useState('');
   const [timeFilter, setTimeFilter] = useState('');
+  const [qualification, setQualification] = useState('');
+  const [specialization, setSpecialization] = useState('');
   const [appliedFilters, setAppliedFilters] = useState({
     keyword: '',
     location: '',
     dateFilter: '',
+    qualification: '',
+    specialization: '',
   });
   const [page, setPage] = useState(1);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
@@ -86,9 +92,18 @@ export default function DashboardJobsPage() {
       page,
       keyword: appliedFilters.keyword || undefined,
       location: appliedFilters.location || undefined,
+      qualification: appliedFilters.qualification || undefined,
+      specialization: appliedFilters.specialization || undefined,
       dateFilter: appliedFilters.dateFilter || undefined,
     }),
-    [appliedFilters.dateFilter, appliedFilters.keyword, appliedFilters.location, page]
+    [
+      appliedFilters.dateFilter,
+      appliedFilters.keyword,
+      appliedFilters.location,
+      appliedFilters.qualification,
+      appliedFilters.specialization,
+      page,
+    ]
   );
 
   const jobsQueryKey = useMemo(() => jobsQueryKeys.list(queryParams), [queryParams]);
@@ -253,6 +268,8 @@ export default function DashboardJobsPage() {
       keyword: searchQuery,
       location: country,
       dateFilter: timeFilter,
+      qualification,
+      specialization,
     });
   };
 
@@ -316,6 +333,10 @@ export default function DashboardJobsPage() {
       onCountryChange={setCountry}
       timeFilter={timeFilter}
       onTimeFilterChange={setTimeFilter}
+      qualification={qualification}
+      onQualificationChange={setQualification}
+      specialization={specialization}
+      onSpecializationChange={setSpecialization}
     />
   );
 }

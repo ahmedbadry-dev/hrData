@@ -106,8 +106,24 @@ export const JOB_RESPONSE_SCHEMA = {
       companyName: { type: 'STRING', description: 'اسم الشركة', nullable: false },
       location: {
         type: 'STRING',
+        description: 'ONE of: RIYADH, JEDDAH, DAMMAM, KHOBAR, MECCA, MEDINA, TABUK, OTHER',
+        nullable: false,
+      },
+      hrEmail: {
+        type: 'STRING',
+        description: 'HR/contact email if found, otherwise null',
+        nullable: true,
+      },
+      qualification: {
+        type: 'STRING',
         description:
-          'المدينة بالإنجليزي كابيتال: RIYADH أو JEDDAH أو DAMMAM أو KHOBAR أو MECCA أو MEDINA أو TABUK',
+          'academic qualification. ONE of: HIGH_SCHOOL, DIPLOMA, BACHELOR, MASTER, PHD, OTHER',
+        nullable: false,
+      },
+      specialization: {
+        type: 'STRING',
+        description:
+          'job field. ONE of: ENGINEERING, INFORMATION_TECHNOLOGY, BUSINESS_ADMINISTRATION, ACCOUNTING_FINANCE, MARKETING_SALES, HEALTHCARE, EDUCATION, HUMAN_RESOURCES, OTHER',
         nullable: false,
       },
       category: {
@@ -116,11 +132,6 @@ export const JOB_RESPONSE_SCHEMA = {
         nullable: false,
       },
       description: { type: 'STRING', description: 'وصف مختصر للوظيفة في 2-3 جمل', nullable: false },
-      hrEmail: {
-        type: 'STRING',
-        description: 'البريد الإلكتروني للتقديم أو التواصل — null لو مش موجود في النص',
-        nullable: true,
-      },
       language: { type: 'STRING', description: 'لغة الإعلان: ar أو en', nullable: false },
       postedAt: {
         type: 'STRING',
@@ -133,7 +144,16 @@ export const JOB_RESPONSE_SCHEMA = {
         nullable: true,
       },
     },
-    required: ['title', 'companyName', 'location', 'category', 'description', 'language'],
+    required: [
+      'title',
+      'companyName',
+      'location',
+      'qualification',
+      'specialization',
+      'category',
+      'description',
+      'language',
+    ],
   },
 };
 

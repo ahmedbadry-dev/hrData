@@ -1,38 +1,93 @@
 .selectWrapper {
   position: relative;
-  border: 2px solid var(--ink);
-  background: var(--paper);
-  display: flex;
-  align-items: center;
   min-width: 140px;
-  transition: background-color 0.2s ease;
-}
-
-.selectWrapper:hover {
-  background: var(--cream);
+  direction: rtl;
 }
 
 .select {
-  appearance: none;
   width: 100%;
-  border: none;
-  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  padding: 14px 16px;
+  cursor: pointer;
+  outline: none;
   font-family: 'Cairo', sans-serif;
   font-size: 15px;
   font-weight: 700;
   color: var(--ink);
-  padding: 14px 16px 14px 45px;
-  cursor: pointer;
-  outline: none;
-  direction: rtl;
+  transition: all 0.2s ease;
+  text-align: right;
+}
+
+.select:hover {
+  background: var(--cream);
+}
+
+.select.isOpen {
+  background: var(--cream);
+  border-bottom-color: transparent;
 }
 
 .icon {
-  position: absolute;
-  left: 15px;
-  pointer-events: none;
-  color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--ink);
+  transition: transform 0.2s ease;
+}
+
+.dropdownList {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  z-index: 100;
+  margin-top: -2px;
+  box-shadow: 4px 4px 0px var(--ink);
+}
+
+.scrollable {
+  max-height: 200px; /* shows ~4 items */
+  overflow-y: auto;
+  /* custom scrollbar to match Neo-Brutalist theme */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--paper);
+}
+
+/* Custom scrollbar for Webkit */
+.scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable::-webkit-scrollbar-track {
+  background: var(--paper);
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 0;
+}
+
+.option {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  color: var(--ink);
+}
+
+.option:hover {
+  background: var(--cream);
+}
+
+.selectedOption {
+  background: var(--cream);
+  font-weight: 800;
+  color: var(--accent);
 }

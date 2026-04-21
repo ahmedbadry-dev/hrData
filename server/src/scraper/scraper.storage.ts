@@ -3,7 +3,7 @@ import path from 'path';
 import prisma from '@/config/db.config';
 import logger from '@/shared/utils/logger.util';
 import { ExtractedJob } from './scraper.types';
-import { JobLocation } from 'generated/prisma';
+import { JobLocation, JobQualification, JobSpecialization } from 'generated/prisma';
 import { VALID_LOCATIONS } from './scraper.config';
 
 export class ScraperStorage {
@@ -51,6 +51,8 @@ export class ScraperStorage {
         update: {
           description: job.description,
           hrEmail: job.hrEmail,
+          qualification: job.qualification as JobQualification,
+          specialization: job.specialization as JobSpecialization,
           sourceUrl: job.sourceUrl,
           expiresAt: job.expiresAt ? new Date(job.expiresAt) : null,
         },
@@ -59,6 +61,8 @@ export class ScraperStorage {
           companyName: job.companyName,
           source: job.source,
           location: job.location as JobLocation,
+          qualification: job.qualification as JobQualification,
+          specialization: job.specialization as JobSpecialization,
           category: job.category,
           description: job.description,
           hrEmail: job.hrEmail,
@@ -92,6 +96,8 @@ export class ScraperStorage {
       title: String(job.title ?? '').slice(0, 500),
       companyName: String(job.companyName ?? '').slice(0, 300),
       location: validLocation,
+      qualification: job.qualification?.toUpperCase() || 'OTHER',
+      specialization: job.specialization?.toUpperCase() || 'OTHER',
       category: String(job.category ?? '').slice(0, 200),
       description: String(job.description ?? '').slice(0, 5000),
       source: String(job.source ?? '').slice(0, 200),
