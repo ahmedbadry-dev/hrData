@@ -32,6 +32,8 @@ export const mapErrorToArabic = (message: string): string => {
     'please verify your email first': 'يرجى التحقق من بريدك الإلكتروني أولاً لتفعيل الحساب',
     'too many requests': 'عدد كبير من المحاولات، حاول لاحقاً',
     'rate limit exceeded': 'عدد كبير من المحاولات، حاول لاحقاً',
+    'لقد وصلت إلى الحد اليومي': 'لقد وصلت إلى الحد اليومي لإرسال الإيميلات',
+    'daily email limit': 'لقد وصلت إلى الحد اليومي لإرسال الإيميلات',
     'internal server error': 'حدث خطأ في الخادم، يرجى المحاولة لاحقاً',
     'server error': 'حدث خطأ في الخادم، يرجى المحاولة لاحقاً',
     'service unavailable': 'الخدمة غير متاحة حالياً',

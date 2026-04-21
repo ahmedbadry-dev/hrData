@@ -14,6 +14,7 @@ export const useScheduleApplication = () => {
     ...useScheduleApplicationMutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: applicationsQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: applicationsQueryKeys.quota });
     },
   });
 };

@@ -1,4 +1,11 @@
-import { ApplicationStatus, Job } from 'generated/prisma';
+import { ApplicationStatus } from 'generated/prisma';
+
+export interface EmailQuotaResponse {
+  emailsUsedToday: number;
+  dailyEmailLimit: number;
+  remaining: number;
+  resetsAt: Date | null;
+}
 
 export interface ApplicationResponse {
   id: string;
@@ -31,7 +38,14 @@ export interface PaginatedApplicationsResponse {
   };
 }
 
-export interface ScheduleApplicationResponse {
+export interface GetApplicationsResponse extends PaginatedApplicationsResponse, EmailQuotaResponse {}
+
+export interface GetApplicationByIdResponse extends ApplicationResponse, EmailQuotaResponse {}
+
+export interface ScheduleApplicationResponse extends EmailQuotaResponse {
+  requestedCount: number;
   scheduledCount: number;
+  skippedCount: number;
+  cappedByLimit: boolean;
   applicationIds: string[];
 }

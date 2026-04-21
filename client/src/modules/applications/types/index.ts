@@ -35,6 +35,17 @@ export interface PaginatedApplications {
     hasNextPage: boolean;
     hasPreviousPage: boolean;
   };
+  emailsUsedToday: number;
+  dailyEmailLimit: number;
+  remaining: number;
+  resetsAt: string | null;
+}
+
+export interface ApplicationsQuota {
+  emailsUsedToday: number;
+  dailyEmailLimit: number;
+  remaining: number;
+  resetsAt: string | null;
 }
 
 export interface ScheduleApplicationsRequest {
@@ -44,8 +55,11 @@ export interface ScheduleApplicationsRequest {
   cv?: File;
 }
 
-export interface ScheduleApplicationsResponse {
+export interface ScheduleApplicationsResponse extends ApplicationsQuota {
+  requestedCount: number;
   scheduledCount: number;
+  skippedCount: number;
+  cappedByLimit: boolean;
   applicationIds: string[];
 }
 
