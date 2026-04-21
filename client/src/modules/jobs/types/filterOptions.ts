@@ -1,5 +1,5 @@
 export const qualificationOptions = [
-  { value: '', label: 'كل المؤهلات' },
+  { value: '', label: 'الكل' },
   { value: 'HIGH_SCHOOL', label: 'ثانوية عامة' },
   { value: 'DIPLOMA', label: 'دبلوم' },
   { value: 'BACHELOR', label: 'بكالوريوس' },
@@ -9,7 +9,7 @@ export const qualificationOptions = [
 ];
 
 export const specializationOptions = [
-  { value: '', label: 'كل التخصصات' },
+  { value: '', label: 'الكل' },
   { value: 'ENGINEERING', label: 'هندسة' },
   { value: 'INFORMATION_TECHNOLOGY', label: 'تقنية المعلومات' },
   { value: 'BUSINESS_ADMINISTRATION', label: 'إدارة أعمال' },

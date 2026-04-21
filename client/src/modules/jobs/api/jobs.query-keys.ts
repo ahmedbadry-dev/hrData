@@ -5,6 +5,8 @@ const DEFAULT_LIMIT = 20;
 
 const normalizeKeyword = (value?: string): string => value?.trim() ?? '';
 const normalizeLocation = (value?: string): string => value?.trim() ?? '';
+const normalizeQualification = (value?: string): string => value?.trim() ?? '';
+const normalizeSpecialization = (value?: string): string => value?.trim() ?? '';
 const normalizeDateFilter = (value?: string): string => value?.trim() ?? '';
 
 export const normalizeJobsListQueryParams = (params?: GetJobsParams) => ({
@@ -12,6 +14,8 @@ export const normalizeJobsListQueryParams = (params?: GetJobsParams) => ({
   limit: params?.limit ?? DEFAULT_LIMIT,
   keyword: normalizeKeyword(params?.keyword),
   location: normalizeLocation(params?.location),
+  qualification: normalizeQualification(params?.qualification),
+  specialization: normalizeSpecialization(params?.specialization),
   dateFilter: normalizeDateFilter(params?.dateFilter),
 });
 

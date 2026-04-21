@@ -411,6 +411,23 @@
   }
 }
 
+@media (max-width: 1400px) {
+  .search-flex {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .search-main-field {
+    flex: 1 1 100%;
+    margin-bottom: 8px;
+  }
+
+  .filter-field {
+    flex: 1 1 calc(25% - 12px);
+    min-width: 140px;
+  }
+}
+
 @media (max-width: 600px) {
   .search-flex {
     flex-direction: column;
