@@ -8,6 +8,8 @@ export interface AdminNotification {
   target: NotificationTarget;
   isRead: boolean;
   createdAt: string;
+  userName?: string;
+  userEmail?: string;
 }
 
 export interface PaginatedNotifications {

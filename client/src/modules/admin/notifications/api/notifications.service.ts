@@ -5,7 +5,7 @@ export const fetchNotificationsList = async (params?: {
   page?: number;
   limit?: number;
 }): Promise<{ data: PaginatedNotifications }> => {
-  const { data } = await axiosClient.get('/admin/notifications', { params });
+  const { data } = await axiosClient.get('/admin/notifications/admin/list', { params });
   return data;
 };
 

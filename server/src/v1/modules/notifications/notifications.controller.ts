@@ -22,6 +22,13 @@ export class NotificationsController {
     return ResponseHelper.ok(res, data, NOTIFICATIONS_MESSAGES.LIST, req.path);
   };
 
+  listAdminAllNotifications = async (req: Request, res: Response): Promise<Response> => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const data = await this.notificationsService.listAdminAllNotifications(page, limit);
+    return ResponseHelper.ok(res, data, NOTIFICATIONS_MESSAGES.LIST, req.path);
+  };
+
   deleteNotification = async (req: Request, res: Response): Promise<Response> => {
     await this.notificationsService.deleteNotification(
       (req.params as NotificationIdParamDto['params']).id

@@ -12,6 +12,8 @@ import {
 } from 'generated/prisma';
 import { NOTIFICATIONS_MESSAGES } from './notifications.constants';
 import {
+  AdminNotificationItem,
+  AdminNotificationsListResult,
   CreateNotificationInput,
   NotificationItem,
   NotificationsListResult,
@@ -57,6 +59,27 @@ export class NotificationsService {
 
     return {
       notifications: notifications.map((notification) => this.mapNotificationItem(notification)),
+      pagination: buildPaginationMeta(total, page, limit),
+    };
+  }
+
+  async listAdminAllNotifications(page: number, limit: number): Promise<AdminNotificationsListResult> {
+    page = Number(page || 1);
+    limit = Number(limit || 20);
+    const skip = (page - 1) * limit;
+
+    const [notifications, total] = await Promise.all([
+      this.prisma.notification.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        include: { user: { select: { fullName: true, email: true } } },
+      }),
+      this.prisma.notification.count(),
+    ]);
+
+    return {
+      notifications: notifications.map((notification) => this.mapNotificationItemWithUser(notification)),
       pagination: buildPaginationMeta(total, page, limit),
     };
   }
@@ -142,6 +165,22 @@ export class NotificationsService {
       target: notification.target,
       isRead: notification.isRead,
       createdAt: notification.createdAt,
+    };
+  }
+
+  private mapNotificationItemWithUser(
+    notification: Notification & { user?: { fullName: string | null; email: string } | null }
+  ): AdminNotificationItem {
+    return {
+      id: notification.id,
+      title: notification.title,
+      body: notification.body,
+      type: notification.type,
+      target: notification.target,
+      isRead: notification.isRead,
+      createdAt: notification.createdAt,
+      userName: notification.user?.fullName ?? undefined,
+      userEmail: notification.user?.email ?? undefined,
     };
   }
 

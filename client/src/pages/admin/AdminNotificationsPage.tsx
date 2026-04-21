@@ -14,7 +14,7 @@ import {
 import { NotificationType, NotificationTarget } from '@/constants/enums';
 import type { AdminDashboardContextType } from './AdminDashboardLayout';
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 20;
 
 export default function AdminNotificationsPage() {
   const { showToast } = useOutletContext<AdminDashboardContextType>();
@@ -43,7 +43,7 @@ export default function AdminNotificationsPage() {
     })) || [];
 
   const pagination = data?.data?.pagination;
-  const totalPages = pagination?.totalPages || 1;
+  const totalPages = pagination?.totalPages ?? 1;
 
   const handleDelete = (id: string | number) => {
     deleteMutation.mutate(String(id), {

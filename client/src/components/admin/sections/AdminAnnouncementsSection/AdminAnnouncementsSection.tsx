@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { AdminAnnouncement } from '@/components/admin/sections/adminData';
-import { PageHeader } from '@/components/common';
+import { EmptyState, PageHeader } from '@/components/common';
 import { Badge, Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { getPageNumbers } from '@/lib/pagination';
@@ -82,34 +82,42 @@ export default function AdminAnnouncementsSection({
         </div>
 
         <div>
-          {announcements.map((a, i) => (
-            <div
-              className={cn(styles['announce-card'], styles[a.type])}
-              style={{ animationDelay: `${i * 0.07}s` }}
-              key={a.id}
-            >
-              <div className={styles['announce-head']}>
-                <div>
-                  <div className={styles['announce-title']}>{a.title}</div>
-                  <div className={styles['announce-meta']}>
-                    {a.target} · {a.date}
+          {announcements.length === 0 && !isLoading ? (
+            <EmptyState
+              symbol={<NotificationIcon />}
+              title="لا توجد إشعارات"
+              description="لا توجد إشعارات حتى الآن"
+            />
+          ) : (
+            announcements.map((a, i) => (
+              <div
+                className={cn(styles['announce-card'], styles[a.type])}
+                style={{ animationDelay: `${i * 0.07}s` }}
+                key={a.id}
+              >
+                <div className={styles['announce-head']}>
+                  <div>
+                    <div className={styles['announce-title']}>{a.title}</div>
+                    <div className={styles['announce-meta']}>
+                      {a.target} · {a.date}
+                    </div>
+                  </div>
+
+                  <div className={styles['announce-actions']}>
+                    <Badge className={styles['type-badge']}>{typeLabels[a.type]}</Badge>
+                    <Button
+                      className={cn(styles['action-btn'], styles.danger)}
+                      onClick={() => handleDeleteClick(a.id)}
+                    >
+                      حذف
+                    </Button>
                   </div>
                 </div>
 
-                <div className={styles['announce-actions']}>
-                  <Badge className={styles['type-badge']}>{typeLabels[a.type]}</Badge>
-                  <Button
-                    className={cn(styles['action-btn'], styles.danger)}
-                    onClick={() => handleDeleteClick(a.id)}
-                  >
-                    حذف
-                  </Button>
-                </div>
+                <div className={styles['announce-body']}>{a.body}</div>
               </div>
-
-              <div className={styles['announce-body']}>{a.body}</div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {totalPages > 1 && onPageChange && (
@@ -148,5 +156,24 @@ export default function AdminAnnouncementsSection({
         )}
       </section>
     </>
+  );
+}
+
+function NotificationIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="64"
+      height="64"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+    </svg>
   );
 }

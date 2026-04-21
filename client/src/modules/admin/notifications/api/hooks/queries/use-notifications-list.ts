@@ -7,6 +7,10 @@ export const useNotificationsListQueryOptions = (params?: { page?: number; limit
   return queryOptions({
     queryKey: [...ADMIN_NOTIFICATIONS_QUERY_KEY, 'list', params] as const,
     queryFn: () => fetchNotificationsList(params),
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 };
 

@@ -35,6 +35,11 @@ export const notificationsRoutes = (
     notificationsController.listAllNotifications
   );
 
+  adminRouter.get(
+    NOTIFICATIONS_ROUTES.ADMIN_ALL_NOTIFICATIONS,
+    notificationsController.listAdminAllNotifications
+  );
+
   adminRouter.delete(
     NOTIFICATIONS_ROUTES.ADMIN_DELETE,
     validateParamsMiddleware(NotificationIdParamDtoSchema),

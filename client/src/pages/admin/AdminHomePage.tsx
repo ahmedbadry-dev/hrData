@@ -23,7 +23,7 @@ function toAdminLog(log: {
     type: 'info' as const,
   };
   const userName = log.user
-    ? log.user.fullName || `${log.user.firstName} ${log.user.lastName}`
+    ? `${log.user.firstName} ${log.user.lastName}`
     : 'النظام';
   const time = new Date(log.createdAt).toLocaleString('ar-SA');
 
