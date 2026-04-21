@@ -49,7 +49,7 @@ export const v1Routes = () => {
   const gmailService = new GmailService(prisma);
   const gmailController = new GmailController(gmailService);
 
-  const scraperService = new ScraperService();
+  const scraperService = new ScraperService(prisma);
   const scraperController = new ScraperController(scraperService);
 
   const { adminRouter: adminNotificationsRouter, userRouter: userNotificationsRouter } =

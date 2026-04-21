@@ -6,34 +6,32 @@ import { cn } from '@/lib/utils';
 import styles from './AdminScraperSection.module.css';
 
 interface AdminScraperSectionProps {
-  scraperRunning: boolean;
+  status: { isRunning: boolean; lastRun: string | null };
+  totalJobs: number | undefined;
+  activeSources: number;
+  nextRuns: string[];
+  onStart: () => void;
+  onStop: () => void;
+  onRunNow: () => void;
   scraperLogs: ScraperLog[];
-  savedToken: string;
-  tokenVisible: boolean;
-  onSaveToken: (token: string) => void;
-  onToggleTokenVisibility: () => void;
-  onToggleScraper: () => void;
   onClearLog: () => void;
   onExportLog: () => void;
+  scraperSources: string[];
 }
 
 export default function AdminScraperSection({
-  scraperRunning,
+  status,
+  totalJobs,
+  activeSources,
+  nextRuns,
+  onStart,
+  onStop,
+  onRunNow,
   scraperLogs,
-  savedToken,
-  tokenVisible,
-  onSaveToken,
-  onToggleTokenVisibility,
-  onToggleScraper,
   onClearLog,
   onExportLog,
+  scraperSources,
 }: AdminScraperSectionProps) {
-  const [tokenValue, setTokenValue] = useState(savedToken);
-
-  useEffect(() => {
-    setTokenValue(savedToken);
-  }, [savedToken]);
-
   return (
     <section>
       <PageHeader
@@ -43,80 +41,70 @@ export default function AdminScraperSection({
         titleClassName={styles['section-headline']}
       />
 
-      <div className={cn(styles['scraper-card'], scraperRunning ? styles.running : styles.stopped)}>
+      <div
+        className={cn(styles['scraper-card'], status.isRunning ? styles.running : styles.stopped)}
+      >
         <div className={styles['scraper-head']}>
           <div className={styles['status-col']}>
             <div className={styles['status-mini']}>الحالة الحالية</div>
             <div
               className={cn(
                 styles['scraper-status-big'],
-                scraperRunning ? styles.running : styles.stopped
+                status.isRunning ? styles.running : styles.stopped
               )}
             >
-              {scraperRunning ? '● شغال' : '○ متوقف'}
+              {status.isRunning ? '● شغال' : '○ متوقف'}
             </div>
             <div className={styles['status-desc']}>
-              {scraperRunning
-                ? 'السكراب يعمل تلقائياً — كل ٣٠ دقيقة'
-                : 'السكراب متوقف — لا يتم جمع بيانات'}
+              {status.isRunning
+                ? 'السكراب يعمل تلقائياً — حسب الجدول الزمني'
+                : 'السكراب متوقف — لا يتم جمع بيانات حالياً'}
             </div>
           </div>
 
-          <div>
-            <Button
-              className={cn(
-                styles['toggle-scraper-btn'],
-                scraperRunning ? styles.stop : styles.start
-              )}
-              onClick={onToggleScraper}
-            >
-              {scraperRunning ? 'إيقاف السكراب' : 'تشغيل السكراب'}
-            </Button>
+          <div className={styles['control-col']}>
+            <div className={styles['btn-group']}>
+              <Button
+                className={cn(
+                  styles['toggle-scraper-btn'],
+                  status.isRunning ? styles.stop : styles.start
+                )}
+                onClick={status.isRunning ? onStop : onStart}
+              >
+                {status.isRunning ? 'إيقاف السكراب' : 'تشغيل السكراب'}
+              </Button>
+              <Button onClick={onRunNow} variant="secondary">
+                تشغيل الآن
+              </Button>
+            </div>
+
             <div className={styles['scraper-kpis']}>
               <div className={styles['kpi-row']}>
                 <span>آخر تشغيل</span>
-                <b>١٠:٤٢ ص</b>
+                <b>
+                  {status.lastRun
+                    ? new Date(status.lastRun).toLocaleString('ar-SA')
+                    : 'لم يتم التشغيل بعد'}
+                </b>
               </div>
               <div className={styles['kpi-row']}>
                 <span>الوظائف المجموعة</span>
-                <b>١٣</b>
+                <b>{totalJobs ?? '...'}</b>
               </div>
               <div className={styles['kpi-row']}>
                 <span>المصادر النشطة</span>
-                <b>٣</b>
+                <b>{activeSources}</b>
               </div>
               <div className={styles['kpi-row']}>
                 <span>التشغيل القادم</span>
-                <b>{scraperRunning ? '١١:١٢ ص' : '—'}</b>
+                <b>
+                  {nextRuns.map((time, i) => (
+                    <b key={i}>{time}&nbsp;&nbsp; &nbsp;</b>
+                  ))}
+                </b>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className={styles['api-token-box']}>
-        <div className={styles['api-token-label']}>API Token — مفتاح الوصول</div>
-        <div className={styles['token-hint']}>
-          أدخل رمز API الخاص بك لتفعيل التكامل مع مصادر السكراب الخارجية.
-        </div>
-
-        <div className={styles['token-input-row']}>
-          <Input
-            type={tokenVisible ? 'text' : 'password'}
-            placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx"
-            value={tokenValue}
-            onChange={(e) => setTokenValue(e.target.value)}
-            dir="ltr"
-            variant="token"
-          />
-          <Button onClick={onToggleTokenVisibility}>عرض</Button>
-          <Button className={styles.save} onClick={() => onSaveToken(tokenValue)}>
-            حفظ
-          </Button>
-        </div>
-
-        <div className={cn(styles['token-status-row'], savedToken ? styles.saved : styles.missing)}>
-          {savedToken ? 'تم حفظ الرمز' : 'لم يتم ضبط الرمز بعد'}
         </div>
       </div>
 
@@ -125,23 +113,19 @@ export default function AdminScraperSection({
           <div className={styles['chart-title']}>مصادر السكراب</div>
         </div>
 
-        {[
-          { name: 'LinkedIn Jobs', status: scraperRunning, jobs: 8 },
-          { name: 'Bayt.com', status: scraperRunning, jobs: 5 },
-          { name: 'Jadarat', status: false, jobs: 0 },
-        ].map((src) => (
-          <div className={styles['source-row']} key={src.name}>
-            <div className={styles['source-info']}>
-              <div className={styles['source-name']}>{src.name}</div>
-              <div className={styles['source-jobs']}>{src.jobs} وظيفة مجموعة اليوم</div>
+        <div className={styles.sourcesList}>
+          {scraperSources.map((source) => (
+            <div key={source} className={styles.sourceRow}>
+              <div className={styles.sourceRight}>
+                <span className={styles.sourceDot}></span>
+                <span className={styles.sourceName}>{source}</span>
+              </div>
+              <div className={styles.sourceLeft}>
+                <span className={styles.sourceBadge}>نشط</span>
+              </div>
             </div>
-            <Badge
-              className={cn(styles['status-badge'], src.status ? styles.active : styles.suspended)}
-            >
-              {src.status ? 'نشط' : 'متوقف'}
-            </Badge>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <div className={styles['chart-box']}>

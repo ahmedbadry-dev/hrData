@@ -5,6 +5,7 @@
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+import { PrismaClient } from 'generated/prisma';
 import { ConflictException } from '@/shared/errors/ConflictException';
 import { BadRequestException } from '@/shared/errors/BadRequestException';
 import redis from '@/config/redis';
@@ -13,35 +14,27 @@ import { startScraperSchedule, clearScraperSchedule } from '@/scraper/scraper.sc
 import { SCRAPER_CONSTANTS } from './scraper.constants';
 
 export interface ScraperStatusResponse {
-  status: string;
-  isCurrentlyRunning: boolean;
-  scheduledJobs: number;
-  queue: {
-    waiting: number;
-    active: number;
-    failed: number;
-  };
+  isRunning: boolean;
+  lastRun: string | null;
 }
 
 export class ScraperService {
+  constructor(private readonly prisma: PrismaClient) {}
+
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   async getStatus(): Promise<ScraperStatusResponse> {
-    const [status, isRunning, repeatableJobs, waiting, active, failed] = await Promise.all([
+    const [status, lastRunSetting] = await Promise.all([
       redis.get('scraper:status'), // running | paused | stopped
-      redis.get('scraper:is-running'),
-      scraperQueue.getJobSchedulers(),
-      scraperQueue.getWaitingCount(),
-      scraperQueue.getActiveCount(),
-      scraperQueue.getFailedCount(),
+      this.prisma.systemSetting.findUnique({
+        where: { key: 'scraper_last_run' },
+      }),
     ]);
 
     return {
-      status: status ?? 'stopped',
-      isCurrentlyRunning: isRunning === 'true',
-      scheduledJobs: repeatableJobs.length,
-      queue: { waiting, active, failed },
+      isRunning: status === 'running',
+      lastRun: lastRunSetting?.value ?? null,
     };
   }
 
@@ -56,6 +49,13 @@ export class ScraperService {
     }
 
     await startScraperSchedule();
+
+    // Record last run time in SystemSetting
+    await this.prisma.systemSetting.upsert({
+      where: { key: 'scraper_last_run' },
+      update: { value: new Date().toISOString() },
+      create: { key: 'scraper_last_run', value: new Date().toISOString() },
+    });
 
     await redis.set('scraper:status', 'running');
   }
