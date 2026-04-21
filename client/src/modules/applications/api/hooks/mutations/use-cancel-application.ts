@@ -20,6 +20,7 @@ export const useCancelApplication = (options?: UseCancelApplicationMutationOptio
     ...options,
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: applicationsQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: applicationsQueryKeys.quota });
       options?.onSuccess?.(...args);
     },
   });

@@ -34,6 +34,12 @@ export const applicationsRoutes = (applicationsController: ApplicationsControlle
   );
 
   router.get(
+    '/quota',
+    authenticationMiddleware,
+    applicationsController.getEmailQuota
+  );
+
+  router.get(
     '/:id',
     authenticationMiddleware,
     validateParamsMiddleware(ApplicationIdParamDtoSchema),

@@ -7,6 +7,7 @@ const typeClassMap: Record<string, string> = {
   success: styles.success,
   error: styles.error,
   info: styles.info,
+  warning: styles.warning,
 };
 
 export const Toast = () => {

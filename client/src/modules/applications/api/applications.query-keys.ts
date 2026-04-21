@@ -20,4 +20,5 @@ export const applicationsQueryKeys = {
   list: (params?: ApplicationsListParams) =>
     ['applications', normalizeListParams(params)] as const,
   weeklyActivity: ['applications', 'weekly-activity'] as const,
+  quota: ['applications', 'quota'] as const,
 };

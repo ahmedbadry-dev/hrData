@@ -1,5 +1,6 @@
 import { axiosClient, type ApiResponse } from '@/services/api';
 import type {
+  ApplicationsQuota,
   PaginatedApplications,
   ScheduleApplicationsRequest,
   ScheduleApplicationsResponse,
@@ -45,6 +46,11 @@ export const scheduleApplication = async (
     '/applications/schedule',
     body
   );
+  return data;
+};
+
+export const fetchApplicationsQuota = async (): Promise<ApiResponse<ApplicationsQuota>> => {
+  const { data } = await axiosClient.get<ApiResponse<ApplicationsQuota>>('/applications/quota');
   return data;
 };
 

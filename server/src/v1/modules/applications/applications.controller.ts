@@ -35,6 +35,16 @@ export class ApplicationsController {
     );
   };
 
+  getEmailQuota = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.applicationsService.getEmailQuota(req.user!.id);
+    return ResponseHelper.ok(
+      res,
+      data,
+      APPLICATIONS_CONSTANTS.MESSAGES.EMAIL_QUOTA_FETCHED_SUCCESSFULLY,
+      req.path
+    );
+  };
+
   scheduleApplications = async (req: Request, res: Response): Promise<Response> => {
     const {
       jobIds,

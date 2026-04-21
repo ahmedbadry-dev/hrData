@@ -5,7 +5,9 @@ import { UserAutoApplySection } from '@/components/user/sections';
 import type { SavedJob } from '@/components/user/sections/userData';
 import { useAuth } from '@/modules/auth/api/hooks';
 import { useEligibleSavedJobsList } from '@/modules/jobs/api/hooks';
-import { useScheduleApplication } from '@/modules/applications/api/hooks';
+import { useApplicationsQuota, useScheduleApplication } from '@/modules/applications/api/hooks';
+import type { ScheduleApplicationsResponse } from '@/modules/applications/types';
+import { getErrorStatus, mapError } from '@/lib/error-mapper';
 
 const AUTO_APPLY_LIMIT = 100;
 
@@ -50,6 +52,12 @@ export default function DashboardAutoApplyPage() {
   );
 
   const scheduleApplicationMutation = useScheduleApplication();
+  const { data: quotaResponse, isLoading: isQuotaLoading } = useApplicationsQuota({
+    enabled: authData.isAuthenticated,
+    refetchOnMount: true,
+  });
+
+  const quota = quotaResponse?.data ?? null;
 
   const savedJobs = useMemo(
     () =>
@@ -76,7 +84,7 @@ export default function DashboardAutoApplyPage() {
       cv: File | null;
       body: string;
     },
-    onSuccess: () => void,
+    onSuccess: (result: ScheduleApplicationsResponse) => void,
     onError: () => void
   ) => {
     const jobIds = payload.selected.map((job) => job.jobId).filter((id): id is string => !!id);
@@ -131,11 +139,34 @@ export default function DashboardAutoApplyPage() {
         cv: payload.cv,
       },
       {
-        onSuccess: () => {
-          onSuccess();
+        onSuccess: (response) => {
+          const result = response.data;
+
+          if (!result) {
+            showToast({ message: 'تمت الجدولة لكن تعذر قراءة تفاصيل الحصة اليومية.', type: 'info' });
+            onError();
+            return;
+          }
+
+          if (result.cappedByLimit && result.skippedCount > 0) {
+            showToast({
+              message: `تم جدولة ${result.scheduledCount} وظيفة فقط. تم تجاوز ${result.skippedCount} بسبب الحد اليومي.`,
+              type: 'warning',
+            });
+          }
+
+          onSuccess(result);
         },
         onError: (error: unknown) => {
-          showToast({ message: 'حدث خطأ في جدولة التقديم', type: 'error' });
+          const status = getErrorStatus(error);
+          const message = mapError(error);
+
+          if (status === 429) {
+            showToast({ message, type: 'error' });
+          } else {
+            showToast({ message: message || 'حدث خطأ في جدولة التقديم', type: 'error' });
+          }
+
           console.error(error);
           onError();
         },
@@ -148,6 +179,8 @@ export default function DashboardAutoApplyPage() {
       savedJobs={savedJobs}
       gmailConnected={authData.gmailConnected}
       gmailEmail={authData.gmailEmail}
+      quota={quota}
+      isQuotaLoading={isQuotaLoading}
       onGoToSettings={() => navigate('/dashboard/settings', { state: { returnToAutoApply: true } })}
       onGoSavedJobs={() => navigate('/dashboard/saved-jobs')}
       onStartSending={startSending}

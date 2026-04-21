@@ -32,3 +32,8 @@
   background: var(--ink, #0d0d0d);
   color: white;
 }
+
+.toast.warning {
+  background: #f59e0b;
+  color: #18181b;
+}
