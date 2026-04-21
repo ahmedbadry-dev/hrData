@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useToast } from '@/contexts/ToastContext';
 import type { SavedJob } from '@/components/user/sections/userData';
 import { EmptyState, PageHeader } from '@/components/common';
 import { Button, Input } from '@/components/ui';
@@ -50,6 +51,7 @@ export default function UserAutoApplySection({
   onGoAnalytics,
   onGoHome,
 }: UserAutoApplySectionProps) {
+  const { showToast } = useToast();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedMap, setSelectedMap] = useState<Record<string, boolean>>({});
   const [selectionError, setSelectionError] = useState<string | null>(null);
@@ -111,12 +113,12 @@ export default function UserAutoApplySection({
     if (!file) return;
 
     if (file.type !== 'application/pdf') {
-      window.alert('يرجى رفع ملف PDF فقط');
+      showToast({ message: 'يرجى رفع ملف PDF فقط', type: 'error' });
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      window.alert('حجم الملف يجب أن يكون أقل من 5 ميجابايت');
+      showToast({ message: 'حجم الملف يجب أن يكون أقل من 5 ميجابايت', type: 'error' });
       return;
     }
 

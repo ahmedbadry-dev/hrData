@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/contexts/ToastContext';
 import { UserSearchSection } from '@/components/user/sections';
 import {
   useJobsList,
@@ -69,6 +70,7 @@ const updateJobsInCache = (
 
 export default function DashboardJobsPage() {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTriggered, setSearchTriggered] = useState(false);
@@ -135,7 +137,7 @@ export default function DashboardJobsPage() {
         queryClient.setQueryData(jobsQueryKey, context.previous);
       }
 
-      alert('تعذر تحديث حالة الحفظ. حاول مرة أخرى.');
+      showToast({ message: 'تعذر تحديث حالة الحفظ. حاول مرة أخرى.', type: 'error' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedAll });
@@ -162,7 +164,7 @@ export default function DashboardJobsPage() {
         queryClient.setQueryData(jobsQueryKey, context.previous);
       }
 
-      alert('تعذر تحديث حالة الحفظ. حاول مرة أخرى.');
+      showToast({ message: 'تعذر تحديث حالة الحفظ. حاول مرة أخرى.', type: 'error' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedAll });
@@ -190,7 +192,7 @@ export default function DashboardJobsPage() {
         queryClient.setQueryData(jobsQueryKey, context.previous);
       }
 
-      alert('تعذر تنفيذ عملية الحفظ الجماعي. حاول مرة أخرى.');
+      showToast({ message: 'تعذر تنفيذ عملية الحفظ الجماعي. حاول مرة أخرى.', type: 'error' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedAll });
@@ -218,7 +220,7 @@ export default function DashboardJobsPage() {
         queryClient.setQueryData(jobsQueryKey, context.previous);
       }
 
-      alert('تعذر تنفيذ عملية الإزالة الجماعية. حاول مرة أخرى.');
+      showToast({ message: 'تعذر تنفيذ عملية الإزالة الجماعية. حاول مرة أخرى.', type: 'error' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedAll });

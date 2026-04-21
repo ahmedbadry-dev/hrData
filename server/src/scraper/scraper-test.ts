@@ -3,21 +3,22 @@ import logger from '@/shared/utils/logger.util';
 import fs from 'fs';
 import path from 'path';
 import { SITES_CONFIG, DELAY_BETWEEN_SITES_MS, MAX_CONCURRENT_REQUESTS } from './scraper.config';
-import { SiteConfig } from './scraper.types';
+import { WebSiteConfig, ApiSourceConfig } from './scraper.types';
 import { ScraperClient } from './scraper.client';
 import { ScraperStorage } from './scraper.storage';
+import { TwitterClient } from './scraper.twitter';
 import prisma from '@/config/db.config';
 
 const limit = pLimit(MAX_CONCURRENT_REQUESTS);
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 let aiProcessCount = 0;
-const MAX_AI_LIMIT = 2;
+const MAX_AI_LIMIT = 5;
 
 const scrapedJobsForAi: { site: string; url: string; content: string }[] = [];
 const aiResponses: any[] = [];
 
-async function processSingleJobTest(jobUrl: string, site: SiteConfig): Promise<string | null> {
+async function processSingleJobTest(jobUrl: string, site: WebSiteConfig): Promise<string | null> {
   try {
     const content = await ScraperClient.getJobContent(jobUrl, site);
     if (!content) return null;
@@ -69,7 +70,10 @@ export async function runScraperTest(): Promise<void> {
   logger.info('[Scraper Test] 🚀 Starting Scraper Test (Limit 5 AI requests)...');
   aiProcessCount = 0;
 
-  for (const site of SITES_CONFIG) {
+  const webSites = SITES_CONFIG.filter((s) => s.type === 'web') as WebSiteConfig[];
+  const apiSources = SITES_CONFIG.filter((s) => s.type === 'api') as ApiSourceConfig[];
+
+  for (const site of webSites) {
     if (aiProcessCount >= MAX_AI_LIMIT) break;
     try {
       logger.info(`[Scraper Test] 🔍 Exploring ${site.name}...`);
@@ -91,6 +95,65 @@ export async function runScraperTest(): Promise<void> {
       await sleep(DELAY_BETWEEN_SITES_MS);
     } catch (siteError) {
       logger.error(`[Scraper Test] ❌ Site ${site.name} failed:`, siteError);
+    }
+  }
+
+  for (const apiSource of apiSources) {
+    if (aiProcessCount >= MAX_AI_LIMIT) break;
+    try {
+      logger.info(`[Scraper Test] 🔍 Testing API source: ${apiSource.name}...`);
+
+      const { valid, error } = await TwitterClient.verifyApiKey(apiSource);
+      if (!valid) {
+        logger.error(`[Scraper Test] ❌ API key verification failed: ${error}`);
+        continue;
+      }
+      logger.info(`[Scraper Test] ✅ API key verified`);
+
+      const { jobs, error: searchError } = await TwitterClient.searchTweets(apiSource);
+      if (searchError) {
+        logger.error(`[Scraper Test] ❌ Search failed: ${searchError}`);
+        continue;
+      }
+
+      logger.info(`[Scraper Test] 📝 Found ${jobs.length} jobs with emails`);
+
+      for (const job of jobs) {
+        if (aiProcessCount >= MAX_AI_LIMIT) break;
+        const content = `${job.text}\n\nEmails: ${job.emails.join(', ')}`;
+
+        scrapedJobsForAi.push({ site: apiSource.name, url: job.sourceUrl, content });
+
+        aiProcessCount++;
+        logger.info(
+          `[Scraper Test] 🧠 Sending job ${aiProcessCount}/${MAX_AI_LIMIT} to AI: ${job.sourceUrl}`
+        );
+
+        try {
+          const extractedList = await ScraperClient.extractWithAI(
+            content,
+            job.sourceUrl,
+            apiSource.name
+          );
+          if (extractedList && extractedList.length > 0) {
+            aiResponses.push({ url: job.sourceUrl, site: apiSource.name, response: extractedList });
+
+            for (const extracted of extractedList) {
+              const normalized = ScraperStorage.validateAndNormalize(extracted);
+              if (normalized) {
+                await ScraperStorage.saveJobToDb(normalized);
+                logger.info(
+                  `[Scraper Test] ✅ Successfully saved returned job from AI to DB: ${job.sourceUrl} - ${normalized.title}`
+                );
+              }
+            }
+          }
+        } catch (error) {
+          logger.error(`[Scraper Test] ❌ AI Error for ${job.sourceUrl}:`, error);
+        }
+      }
+    } catch (siteError) {
+      logger.error(`[Scraper Test] ❌ API source ${apiSource.name} failed:`, siteError);
     }
   }
 

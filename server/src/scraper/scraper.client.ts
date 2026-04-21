@@ -4,7 +4,7 @@ import Bottleneck from 'bottleneck';
 import logger from '@/shared/utils/logger.util';
 import { geminiClient } from '@/config/llm';
 import { AI_REQUESTS_PER_MINUTE, JOB_RESPONSE_SCHEMA, MAX_CONTENT_CHARS } from './scraper.config';
-import { SiteConfig, ExtractedJob } from './scraper.types';
+import { WebSiteConfig, ExtractedJob } from './scraper.types';
 
 export class ScraperClient {
   private static readonly httpClient = axios.create({
@@ -41,7 +41,7 @@ export class ScraperClient {
     return null;
   }
 
-  static async getJobLinks(site: SiteConfig): Promise<string[]> {
+  static async getJobLinks(site: WebSiteConfig): Promise<string[]> {
     let html: string | null;
 
     if (site.ajaxConfig) {
@@ -79,7 +79,7 @@ export class ScraperClient {
     return links;
   }
 
-  static async getJobContent(jobUrl: string, site: SiteConfig): Promise<string | null> {
+  static async getJobContent(jobUrl: string, site: WebSiteConfig): Promise<string | null> {
     const html = await this.fetchHtml(jobUrl);
     if (!html) return null;
 

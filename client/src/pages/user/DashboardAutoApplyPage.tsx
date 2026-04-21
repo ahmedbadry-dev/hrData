@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/contexts/ToastContext';
 import { UserAutoApplySection } from '@/components/user/sections';
 import type { SavedJob } from '@/components/user/sections/userData';
 import { useAuth } from '@/modules/auth/api/hooks';
@@ -33,6 +34,7 @@ const mapSavedJob = (job: {
 
 export default function DashboardAutoApplyPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const { data: authData } = useAuth();
 
   const { data: eligibleSavedJobsData } = useEligibleSavedJobsList(
@@ -80,12 +82,12 @@ export default function DashboardAutoApplyPage() {
     const jobIds = payload.selected.map((job) => job.jobId).filter((id): id is string => !!id);
 
     if (jobIds.length === 0) {
-      alert('لا توجد وظائف محددة');
+      showToast({ message: 'لا توجد وظائف محددة', type: 'error' });
       return;
     }
 
     if (!payload.cv) {
-      alert('يرجى رفع سيرة ذاتية');
+      showToast({ message: 'يرجى رفع سيرة ذاتية', type: 'error' });
       return;
     }
 
@@ -133,7 +135,7 @@ export default function DashboardAutoApplyPage() {
           onSuccess();
         },
         onError: (error: unknown) => {
-          alert('حدث خطأ في جدولة التقديم');
+          showToast({ message: 'حدث خطأ في جدولة التقديم', type: 'error' });
           console.error(error);
           onError();
         },

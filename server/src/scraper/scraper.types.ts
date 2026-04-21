@@ -3,8 +3,9 @@
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export interface SiteConfig {
+export interface WebSiteConfig {
   name: string;
+  type: 'web';
   url: string;
   jobLinkSelector: string;
   jobContentSelector: string;
@@ -14,6 +15,17 @@ export interface SiteConfig {
     params: Record<string, string>;
   };
 }
+
+export interface ApiSourceConfig {
+  name: string;
+  type: 'api';
+  apiUrl: string;
+  verifyUrl: string;
+  searchPhrases: string[];
+  authToken: string;
+}
+
+export type SiteConfig = WebSiteConfig | ApiSourceConfig;
 
 export interface ExtractedJob {
   title: string;
@@ -29,4 +41,12 @@ export interface ExtractedJob {
   language: string;
   postedAt: string | null;
   expiresAt: string | null;
+}
+
+export interface TwitterJob {
+  id: string;
+  text: string;
+  emails: string[];
+  relativeTime: string;
+  sourceUrl: string;
 }

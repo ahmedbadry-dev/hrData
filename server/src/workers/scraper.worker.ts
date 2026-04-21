@@ -7,9 +7,10 @@ import { Worker, Job } from 'bullmq';
 import redis from '@/config/redis';
 import logger from '@/shared/utils/logger.util';
 import { runScraperForAllSites } from '@/scraper/scraper.service';
+import { scraperQueue } from '@/config/bullmq';
 
 export const scraperWorker = new Worker(
-  'job-scraper',
+  scraperQueue.name,
 
   async (job: Job) => {
     logger.info(`[ScraperWorker] ⚙️ Processing: ${job.name} (id: ${job.id})`);

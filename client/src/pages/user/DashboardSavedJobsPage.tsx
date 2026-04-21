@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/contexts/ToastContext';
 import { EmptyState } from '@/components/common';
 import { UserSavedJobsSection } from '@/components/user/sections';
 import { useSavedJobsList, useUnsaveJob, useUnsaveJobs } from '@/modules/jobs/api/hooks';
@@ -148,6 +149,7 @@ const removeJobsFromSavedCache = (
 
 export default function DashboardSavedJobsPage() {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
   const [page, setPage] = useState(1);
 
   const queryParams = useMemo(
@@ -199,7 +201,7 @@ export default function DashboardSavedJobsPage() {
         queryClient.setQueryData(currentSavedJobsKey, context.previous);
       }
 
-      alert('تعذر إزالة الوظيفة المحفوظة. حاول مرة أخرى.');
+      showToast({ message: 'تعذر إزالة الوظيفة المحفوظة. حاول مرة أخرى.', type: 'error' });
     },
     onSuccess: (_result, _jobId, onMutateResult) => {
       const context = onMutateResult as UnsaveOneContext | undefined;
@@ -255,7 +257,7 @@ export default function DashboardSavedJobsPage() {
         queryClient.setQueryData(currentSavedJobsKey, context.previous);
       }
 
-      alert('تعذر إزالة جميع الوظائف المحفوظة. حاول مرة أخرى.');
+      showToast({ message: 'تعذر إزالة جميع الوظائف المحفوظة. حاول مرة أخرى.', type: 'error' });
     },
   });
 

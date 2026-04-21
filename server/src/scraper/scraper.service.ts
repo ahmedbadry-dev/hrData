@@ -2,8 +2,9 @@ import pLimit from 'p-limit';
 import logger from '@/shared/utils/logger.util';
 import redis from '@/config/redis';
 import { SITES_CONFIG, DELAY_BETWEEN_SITES_MS, MAX_CONCURRENT_REQUESTS } from './scraper.config';
-import { SiteConfig } from './scraper.types';
+import { WebSiteConfig, ApiSourceConfig } from './scraper.types';
 import { ScraperClient } from './scraper.client';
+import { TwitterClient } from './scraper.twitter';
 import { ScraperStorage } from './scraper.storage';
 import { SCRAPER_INTERNAL_CONSTANTS } from './scraper.constants';
 
@@ -11,21 +12,21 @@ const limit = pLimit(MAX_CONCURRENT_REQUESTS);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function processSingleJob(jobUrl: string, site: SiteConfig): Promise<string | null> {
+async function processSingleJob(jobUrl: string, site: WebSiteConfig): Promise<string | null> {
   try {
     const content = await ScraperClient.getJobContent(jobUrl, site);
     if (!content) return null;
 
     if (content.includes('@')) {
-      // const extractedList = await ScraperClient.extractWithAI(content, jobUrl, site.name);
-      // if (extractedList && extractedList.length > 0) {
-      //   for (const extracted of extractedList) {
-      //     const normalized = ScraperStorage.validateAndNormalize(extracted);
-      //     if (normalized) {
-      //       await ScraperStorage.saveJobToDb(normalized);
-      //     }
-      //   }
-      // }
+      const extractedList = await ScraperClient.extractWithAI(content, jobUrl, site.name);
+      if (extractedList && extractedList.length > 0) {
+        for (const extracted of extractedList) {
+          const normalized = ScraperStorage.validateAndNormalize(extracted);
+          if (normalized) {
+            await ScraperStorage.saveJobToDb(normalized);
+          }
+        }
+      }
     }
 
     return content;
@@ -33,6 +34,37 @@ async function processSingleJob(jobUrl: string, site: SiteConfig): Promise<strin
     logger.error(SCRAPER_INTERNAL_CONSTANTS.LOGS.EXCEPTION(jobUrl, error));
     return null;
   }
+}
+
+async function processTwitterSource(
+  config: ApiSourceConfig
+): Promise<{ count: number; urls: { site: string; url: string }[] }> {
+  const { valid, error } = await TwitterClient.verifyApiKey(config);
+  if (!valid) {
+    logger.error(`[Twitter] Verification failed: ${error}`);
+    return { count: 0, urls: [] };
+  }
+
+  const { jobs, error: searchError } = await TwitterClient.searchTweets(config);
+  if (searchError) {
+    logger.error(`[Twitter] Search error: ${searchError}`);
+    return { count: 0, urls: [] };
+  }
+
+  if (jobs.length === 0) {
+    return { count: 0, urls: [] };
+  }
+
+  const jobDetails = jobs.map((job) => ({
+    site: config.name,
+    url: job.sourceUrl,
+    content: `${job.text}\n\nEmails: ${job.emails.join(', ')}`,
+  }));
+
+  const urls = jobs.map((job) => ({ site: config.name, url: job.sourceUrl }));
+
+  await ScraperStorage.saveJobDetail(jobDetails);
+  return { count: jobs.length, urls };
 }
 
 export async function runScraperForAllSites(): Promise<void> {
@@ -63,35 +95,45 @@ export async function runScraperForAllSites(): Promise<void> {
       try {
         logger.info(SCRAPER_INTERNAL_CONSTANTS.LOGS.EXPLORING(site.name));
 
-        const jobLinks = await ScraperClient.getJobLinks(site);
-        if (jobLinks.length === 0) continue;
-        const allLinksCount = allLinks.length;
-        const scrapedJobsCount = scrapedJobs.length;
-        allLinks.push(...jobLinks.map((url) => ({ site: site.name, url })));
+        if (site.type === 'api') {
+          const apiSite = site as ApiSourceConfig;
+          const { count, urls } = await processTwitterSource(apiSite);
+          allLinks.push(...urls);
+          logger.info(SCRAPER_INTERNAL_CONSTANTS.LOGS.FINISHED(apiSite.name, urls.length, count));
+        } else {
+          const webSite = site as WebSiteConfig;
+          const jobLinks = await ScraperClient.getJobLinks(webSite);
+          if (jobLinks.length === 0) continue;
+          const allLinksCount = allLinks.length;
+          const scrapedJobsCount = scrapedJobs.length;
+          allLinks.push(...jobLinks.map((url) => ({ site: webSite.name, url })));
 
-        await Promise.all(
-          jobLinks.map((jobUrl) =>
-            limit(async () => {
-              const content = await processSingleJob(jobUrl, site);
+          await Promise.all(
+            jobLinks.map((jobUrl) =>
+              limit(async () => {
+                const content = await processSingleJob(jobUrl, webSite);
 
-              if (
-                content &&
-                scrapedJobs.length <= SCRAPER_INTERNAL_CONSTANTS.LIMITS.MAX_SCRAPED_ITEMS_TO_SAVE &&
-                content.includes('@')
-              ) {
-                scrapedJobs.push({ site: site.name, url: jobUrl, content });
-              }
-            })
-          )
-        );
+                if (
+                  content &&
+                  scrapedJobs.length <=
+                    SCRAPER_INTERNAL_CONSTANTS.LIMITS.MAX_SCRAPED_ITEMS_TO_SAVE &&
+                  content.includes('@')
+                ) {
+                  scrapedJobs.push({ site: webSite.name, url: jobUrl, content });
+                }
+              })
+            )
+          );
 
-        logger.info(
-          SCRAPER_INTERNAL_CONSTANTS.LOGS.FINISHED(
-            site.name,
-            allLinks.length - allLinksCount,
-            scrapedJobs.length - scrapedJobsCount
-          )
-        );
+          logger.info(
+            SCRAPER_INTERNAL_CONSTANTS.LOGS.FINISHED(
+              webSite.name,
+              allLinks.length - allLinksCount,
+              scrapedJobs.length - scrapedJobsCount
+            )
+          );
+        }
+
         await sleep(DELAY_BETWEEN_SITES_MS);
       } catch (siteError) {
         logger.error(SCRAPER_INTERNAL_CONSTANTS.LOGS.SITE_FAILURE(site.name, siteError));
