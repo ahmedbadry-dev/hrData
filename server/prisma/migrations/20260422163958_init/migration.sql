@@ -5,7 +5,7 @@ CREATE TYPE "UserRole" AS ENUM ('USER', 'ADMIN', 'SUPER_ADMIN');
 CREATE TYPE "UserStatus" AS ENUM ('PENDING_VERIFICATION', 'ACTIVE', 'SUSPENDED');
 
 -- CreateEnum
-CREATE TYPE "ApplicationStatus" AS ENUM ('SCHEDULED', 'SENDING', 'SENT', 'FAILED', 'EMAIL_OPENED');
+CREATE TYPE "ApplicationStatus" AS ENUM ('SCHEDULED', 'SENDING', 'SENT', 'FAILED', 'EMAIL_SENT', 'EMAIL_OPENED', 'EMAIL_FAILED');
 
 -- CreateEnum
 CREATE TYPE "NotificationType" AS ENUM ('INFO', 'SUCCESS', 'WARNING', 'ALERT');
@@ -14,21 +14,30 @@ CREATE TYPE "NotificationType" AS ENUM ('INFO', 'SUCCESS', 'WARNING', 'ALERT');
 CREATE TYPE "NotificationTarget" AS ENUM ('ALL', 'ADMIN', 'USER');
 
 -- CreateEnum
-CREATE TYPE "JobLocation" AS ENUM ('RIYADH', 'JEDDAH', 'DAMMAM', 'KHOBAR', 'MECCA', 'MEDINA', 'TABUK');
+CREATE TYPE "JobLocation" AS ENUM ('RIYADH', 'JEDDAH', 'DAMMAM', 'KHOBAR', 'MECCA', 'MEDINA', 'TABUK', 'OTHER');
 
 -- CreateEnum
 CREATE TYPE "DateFilter" AS ENUM ('DAY', 'WEEK', 'MONTH');
+
+-- CreateEnum
+CREATE TYPE "JobQualification" AS ENUM ('HIGH_SCHOOL', 'DIPLOMA', 'BACHELOR', 'MASTER', 'PHD', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "JobSpecialization" AS ENUM ('ENGINEERING', 'INFORMATION_TECHNOLOGY', 'BUSINESS_ADMINISTRATION', 'ACCOUNTING_FINANCE', 'MARKETING_SALES', 'HEALTHCARE', 'EDUCATION', 'HUMAN_RESOURCES', 'OTHER');
 
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
     "first_name" TEXT NOT NULL,
     "last_name" TEXT NOT NULL,
+    "full_name" TEXT,
     "email" TEXT NOT NULL,
     "phone" TEXT,
     "password_hash" TEXT NOT NULL,
     "role" "UserRole" NOT NULL DEFAULT 'USER',
     "status" "UserStatus" NOT NULL DEFAULT 'PENDING_VERIFICATION',
+    "daily_email_limit" INTEGER NOT NULL DEFAULT 50,
+    "limit_reached_at" TIMESTAMP(3),
     "email_verified" BOOLEAN NOT NULL DEFAULT false,
     "verification_token" TEXT,
     "verification_token_expires_at" TIMESTAMP(3),
@@ -76,7 +85,7 @@ CREATE TABLE "jobs" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "company_name" TEXT NOT NULL,
-    "location" "JobLocation",
+    "location" "JobLocation" DEFAULT 'OTHER',
     "category" TEXT,
     "description" TEXT,
     "hr_email" TEXT,
@@ -86,6 +95,8 @@ CREATE TABLE "jobs" (
     "posted_at" TIMESTAMP(3),
     "expires_at" TIMESTAMP(3),
     "is_expired" BOOLEAN NOT NULL DEFAULT false,
+    "qualification" "JobQualification" NOT NULL DEFAULT 'OTHER',
+    "specialization" "JobSpecialization" NOT NULL DEFAULT 'OTHER',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -100,20 +111,6 @@ CREATE TABLE "saved_jobs" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "saved_jobs_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "cvs" (
-    "id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
-    "file_name" TEXT NOT NULL,
-    "file_url" TEXT NOT NULL,
-    "file_size" INTEGER NOT NULL,
-    "is_default" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "cvs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -135,7 +132,6 @@ CREATE TABLE "applications" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "job_id" TEXT NOT NULL,
-    "cv_id" TEXT,
     "email_template_id" TEXT,
     "status" "ApplicationStatus" NOT NULL DEFAULT 'SCHEDULED',
     "scheduled_at" TIMESTAMP(3),
@@ -215,6 +211,9 @@ CREATE UNIQUE INDEX "saved_jobs_user_id_job_id_key" ON "saved_jobs"("user_id", "
 CREATE UNIQUE INDEX "applications_tracking_token_key" ON "applications"("tracking_token");
 
 -- CreateIndex
+CREATE INDEX "applications_user_id_status_created_at_idx" ON "applications"("user_id", "status", "created_at");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "system_settings_key_key" ON "system_settings"("key");
 
 -- AddForeignKey
@@ -230,9 +229,6 @@ ALTER TABLE "saved_jobs" ADD CONSTRAINT "saved_jobs_user_id_fkey" FOREIGN KEY ("
 ALTER TABLE "saved_jobs" ADD CONSTRAINT "saved_jobs_job_id_fkey" FOREIGN KEY ("job_id") REFERENCES "jobs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "cvs" ADD CONSTRAINT "cvs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "email_templates" ADD CONSTRAINT "email_templates_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -240,9 +236,6 @@ ALTER TABLE "applications" ADD CONSTRAINT "applications_user_id_fkey" FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE "applications" ADD CONSTRAINT "applications_job_id_fkey" FOREIGN KEY ("job_id") REFERENCES "jobs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "applications" ADD CONSTRAINT "applications_cv_id_fkey" FOREIGN KEY ("cv_id") REFERENCES "cvs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "applications" ADD CONSTRAINT "applications_email_template_id_fkey" FOREIGN KEY ("email_template_id") REFERENCES "email_templates"("id") ON DELETE SET NULL ON UPDATE CASCADE;

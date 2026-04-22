@@ -99,6 +99,7 @@ export const jwtConfig = {
 
 export const dbConfig = {
   databaseUrl: getEnvVariable('DATABASE_URL'),
+  databaseName: getEnvVariable('DATABASE_NAME'),
 };
 
 export const redisConfig = {
