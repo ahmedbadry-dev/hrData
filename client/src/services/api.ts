@@ -25,7 +25,7 @@ export interface PaginatedResponse<T> {
   pagination: PaginationMeta;
 }
 
-export const API_BASE_URL = '/api/v1';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 export const AUTH_REQUIRED_EVENT = 'auth:required';
 export const SESSION_HINT_COOKIE_NAME = 'sessionHint';
 export const CSRF_COOKIE_NAME = 'csrfToken';
