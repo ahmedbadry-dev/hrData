@@ -16,7 +16,13 @@ const smtpOptions: SMTPTransport.Options = {
       : undefined,
   tls: {
     rejectUnauthorized: !emailConfig.allowSelfSignedTls,
+    // Helping with some cloud provider network restrictions
+    minVersion: 'TLSv1.2',
   },
+  // Adding timeouts to prevent hanging
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
 };
 
 export const transporterSingleton = nodemailer.createTransport(smtpOptions);
