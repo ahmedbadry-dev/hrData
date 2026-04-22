@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import { PrismaClient } from 'generated/prisma';
-import MailComposer from 'nodemailer/lib/mail-composer';
+import MailComposer from 'nodemailer/lib/mail-composer/index.js';
 
 import { gmailOAuthConfig } from '@/config/env.config';
 import logger from '@/shared/utils/logger.util';

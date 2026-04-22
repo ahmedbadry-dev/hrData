@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/main.js",
   "scripts": {
     "dev": "tsx watch src/main.ts",
-    "build": "tsc --project tsconfig.json",
+    "build": "tsc && tsc-alias -f",
     "start": "node dist/main.js",
     "type:check": "tsc --noEmit",
     "prisma:migrate": "npx prisma migrate dev",
@@ -76,6 +76,9 @@
     "globals": "^17.5.0",
     "prettier": "^3.8.3",
     "prisma": "^6.19.3",
+    "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0",
+    "tsup": "^8.5.1",
     "tsx": "latest",
     "typescript": "latest",
     "typescript-eslint": "^8.58.2"

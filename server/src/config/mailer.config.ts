@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
 import { emailConfig } from './env.config';
 import logger from '@/shared/utils/logger.util';
 
