@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
 import type { ScraperLog } from '@/components/admin/sections/adminData';
 import { PageHeader } from '@/components/common';
-import { Button, Input, Badge } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import styles from './AdminScraperSection.module.css';
 
