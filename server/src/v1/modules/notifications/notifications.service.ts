@@ -9,7 +9,7 @@ import {
   PrismaClient,
   UserRole,
   UserStatus,
-} from 'generated/prisma';
+} from '@generated/prisma';
 import { NOTIFICATIONS_MESSAGES } from './notifications.constants';
 import {
   AdminNotificationItem,

@@ -8,7 +8,7 @@ import {
   Prisma,
   PrismaClient,
   SavedJob,
-} from 'generated/prisma';
+} from '@generated/prisma';
 import { ConflictException } from '@/shared/errors/ConflictException';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
 import {

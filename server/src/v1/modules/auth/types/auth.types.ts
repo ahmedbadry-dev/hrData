@@ -1,4 +1,4 @@
-import { UserRole } from 'generated/prisma';
+import { UserRole } from '@generated/prisma';
 import { SafeUser } from '../../users/types/user.types';
 
 export interface AccessTokenPayload {

@@ -1,5 +1,5 @@
 import { google } from 'googleapis';
-import { PrismaClient } from 'generated/prisma';
+import { PrismaClient } from '@generated/prisma';
 import MailComposer from 'nodemailer/lib/mail-composer/index.js';
 
 import { gmailOAuthConfig } from '@/config/env.config';

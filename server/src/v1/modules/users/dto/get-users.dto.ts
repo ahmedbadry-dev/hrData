@@ -1,4 +1,4 @@
-import { UserStatus } from 'generated/prisma';
+import { UserStatus } from '@generated/prisma';
 import { z } from 'zod';
 import { USERS_CONSTANTS } from '../users.constants';
 

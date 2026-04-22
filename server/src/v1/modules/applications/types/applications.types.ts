@@ -1,4 +1,4 @@
-import { ApplicationStatus } from 'generated/prisma';
+import { ApplicationStatus } from '@generated/prisma';
 
 export interface EmailQuotaResponse {
   emailsUsedToday: number;

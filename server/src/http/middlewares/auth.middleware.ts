@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { UnauthorizedException } from '../../shared/errors/UnauthorizedException';
 import { verifyAccessToken } from '@/shared/utils/jwt.util';
 import prisma from '@/config/db.config';
-import { PrismaClient, UserRole, UserStatus } from 'generated/prisma';
+import { PrismaClient, UserRole, UserStatus } from '@generated/prisma';
 import { ForbiddenException } from '@/shared/errors/ForbiddenException';
 import { excludePassword } from '@/shared/utils/exclude-password.utils';
 

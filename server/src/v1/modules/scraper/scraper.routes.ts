@@ -8,7 +8,7 @@ import {
   authenticationMiddleware,
   authorizationMiddleware,
 } from '@/http/middlewares/auth.middleware';
-import { UserRole } from 'generated/prisma';
+import { UserRole } from '@generated/prisma';
 import { ScraperController } from './scraper.controller';
 
 export const scraperRoutes = (scraperController: ScraperController): Router => {

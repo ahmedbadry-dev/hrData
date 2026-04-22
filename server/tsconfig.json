@@ -16,11 +16,10 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "exactOptionalPropertyTypes": true,
-    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "generated/*": ["generated/*"]
+      "@generated/*": ["generated/*"]
     }
   },
   "include": ["src/**/*", "src/shared/types/**/*"],

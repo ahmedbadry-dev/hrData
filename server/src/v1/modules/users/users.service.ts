@@ -1,4 +1,4 @@
-import { User, Prisma, PrismaClient, UserStatus, UserRole } from 'generated/prisma';
+import { User, Prisma, PrismaClient, UserStatus, UserRole } from '@generated/prisma';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
 import { ConflictException } from '@/shared/errors/ConflictException';
 import { resolvePagination, buildPaginationMeta } from '@/shared/utils/paginate.util';

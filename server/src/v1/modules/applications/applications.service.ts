@@ -1,4 +1,4 @@
-import { Application, ApplicationStatus, Prisma, PrismaClient } from 'generated/prisma';
+import { Application, ApplicationStatus, Prisma, PrismaClient } from '@generated/prisma';
 
 import { APPLICATIONS_CONSTANTS } from './applications.constants';
 import {

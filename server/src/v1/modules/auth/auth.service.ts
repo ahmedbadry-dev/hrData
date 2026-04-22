@@ -1,4 +1,4 @@
-import { PrismaClient, User, UserStatus } from 'generated/prisma';
+import { PrismaClient, User, UserStatus } from '@generated/prisma';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
 import { BadRequestException } from '@/shared/errors/BadRequestException';

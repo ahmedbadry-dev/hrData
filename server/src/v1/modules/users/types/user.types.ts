@@ -1,4 +1,4 @@
-import { User, UserStatus, UserRole } from 'generated/prisma';
+import { User, UserStatus } from '@generated/prisma';
 import { PaginationMeta } from '@/shared/utils/api-response';
 
 export type SafeUser = Omit<
@@ -20,8 +20,8 @@ export interface PaginatedUsersResponse {
   pagination: PaginationMeta;
 }
 
-export interface UpdateUserResponse extends UserResponse {}
+export type UpdateUserResponse = UserResponse;
 
-export interface SuspendUserResponse extends UserResponse {}
+export type SuspendUserResponse = UserResponse;
 
-export interface ActivateUserResponse extends UserResponse {}
+export type ActivateUserResponse = UserResponse;

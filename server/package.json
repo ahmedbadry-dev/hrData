@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "build": "rimraf dist && tsc && tsc-alias -f",
-    "prestart": "node -e \"const fs=require('fs'); try{ fs.symlinkSync('../generated', 'node_modules/generated', 'junction') } catch(e){ if(e.code !== 'EEXIST') throw e; }\"",
+    "prestart": "node -e \"const fs=require('fs'); if (!fs.existsSync('node_modules')) fs.mkdirSync('node_modules'); try{ fs.symlinkSync('../generated', 'node_modules/@generated', 'junction') } catch(e){ if(e.code !== 'EEXIST') throw e; }\"",
     "start": "node dist/main.js",
     "type:check": "tsc --noEmit",
     "prisma:migrate": "npx prisma migrate dev",

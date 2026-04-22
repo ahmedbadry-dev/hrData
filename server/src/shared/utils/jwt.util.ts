@@ -9,7 +9,7 @@ import {
   VerifiedToken,
 } from '../../v1/modules/auth/types/auth.types';
 import { jwtConfig } from '@/config/env.config';
-import { UserRole } from 'generated/prisma';
+import { UserRole } from '@generated/prisma';
 
 const generateAccessToken = (payload: AccessTokenPayload): string => {
   const accessToken = jwt.sign(

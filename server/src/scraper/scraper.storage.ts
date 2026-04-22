@@ -3,7 +3,7 @@ import path from 'path';
 import prisma from '@/config/db.config';
 import logger from '@/shared/utils/logger.util';
 import { ExtractedJob } from './scraper.types';
-import { JobLocation, JobQualification, JobSpecialization } from 'generated/prisma';
+import { JobLocation, JobQualification, JobSpecialization } from '@generated/prisma';
 import { VALID_LOCATIONS } from './scraper.config';
 
 export class ScraperStorage {
