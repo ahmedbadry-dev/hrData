@@ -105,6 +105,8 @@ export const dbConfig = {
 export const redisConfig = {
   host: getEnvVariable('REDIS_HOST', 'localhost'),
   port: getEnvVarAsNumber('REDIS_PORT', 6379),
+  password: process.env.REDIS_PASSWORD || undefined,
+  url: process.env.REDIS_URL || undefined,
 };
 
 export const corsConfig = {
@@ -119,6 +121,10 @@ export const emailConfig = {
   port: getEnvVarAsNumber('SMTP_PORT', 587),
   user: getEnvVariable('SMTP_USER', ''),
   password: getEnvVariable('SMTP_PASSWORD', ''),
+  secure:
+    process.env.SMTP_SECURE !== undefined
+      ? getEnvVarAsBoolean('SMTP_SECURE')
+      : getEnvVarAsNumber('SMTP_PORT', 587) === 465,
   from: getEnvVariable('EMAIL_FROM', 'noreply@kafoo.com'),
   serverUrl: getEnvVariable('SERVER_URL', 'http://localhost:5000'),
   allowSelfSignedTls: getEnvVarAsBoolean('SMTP_ALLOW_SELF_SIGNED_TLS', false),

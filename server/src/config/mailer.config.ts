@@ -6,7 +6,7 @@ import logger from '@/shared/utils/logger.util';
 const smtpOptions: SMTPTransport.Options = {
   host: emailConfig.host,
   port: emailConfig.port,
-  secure: emailConfig.port === 465,
+  secure: emailConfig.secure,
   auth:
     emailConfig.user && emailConfig.password
       ? {

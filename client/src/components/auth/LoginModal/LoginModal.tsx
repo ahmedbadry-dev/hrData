@@ -74,7 +74,7 @@ export default function LoginModal({
       {
         onError: (error) => {
           const status = getErrorStatus(error);
-          if (status === 401 || status === 400) {
+          if (status === 401) {
             setServerError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
           } else {
             setServerError(mapError(error));
