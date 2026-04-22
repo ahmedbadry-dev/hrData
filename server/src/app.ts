@@ -30,6 +30,7 @@ const buildCorsOriginValidator = (): CorsOptions['origin'] => {
 };
 
 const app: Application = express();
+app.set('trust proxy', 1);
 const corsOptions: CorsOptions = {
   origin: buildCorsOriginValidator(),
   credentials: true,
