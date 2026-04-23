@@ -4,9 +4,14 @@ import redis from '@/config/redis';
 import prismaClient from '@/config/db.config';
 import logger from '@/shared/utils/logger.util';
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Maintenance Worker
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 export const maintenanceWorker = new Worker<Record<string, unknown>>(
   maintenanceQueue.name,
   async (job: Job<Record<string, unknown>>) => {
+    // 1. Clear Old Activity Logs (Older than 7 days)
     if (job.name === 'clear-old-activity-logs') {
       logger.info(`🧹 Processing maintenance job ${job.id}: Clearing old activity logs`);
 
@@ -27,14 +32,40 @@ export const maintenanceWorker = new Worker<Record<string, unknown>>(
         );
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        logger.error(`❌ Maintenance failed for job ${job.id}: ${errorMessage}`);
+        logger.error(`❌ Maintenance failed for job ${job.id} (Logs): ${errorMessage}`);
+        throw error;
+      }
+    }
+
+    // 2. Clear Old Jobs (Older than 30 days)
+    if (job.name === 'clear-old-jobs') {
+      logger.info(`🧹 Processing maintenance job ${job.id}: Clearing jobs older than 30 days`);
+
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      try {
+        const deletedCount = await prismaClient.job.deleteMany({
+          where: {
+            createdAt: {
+              lt: thirtyDaysAgo,
+            },
+          },
+        });
+
+        logger.info(
+          `✅ Maintenance complete: Deleted ${deletedCount.count} jobs older than ${thirtyDaysAgo.toISOString()}`
+        );
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logger.error(`❌ Maintenance failed for job ${job.id} (Jobs): ${errorMessage}`);
         throw error;
       }
     }
   },
   {
     connection: redis,
-    concurrency: 1, // Maintenance is typically a single-concurrency task
+    concurrency: 1,
   }
 );
 
@@ -43,7 +74,7 @@ export const maintenanceWorker = new Worker<Record<string, unknown>>(
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 maintenanceWorker.on('completed', (job) => {
-  logger.info(`🎉 Maintenance job ${job.id} completed successfully`);
+  logger.info(`🎉 Maintenance job ${job.id} (${job.name}) completed successfully`);
 });
 
 maintenanceWorker.on('failed', (job, error) => {
@@ -61,28 +92,41 @@ maintenanceWorker.on('error', (error) => {
 export async function startMaintenanceSchedule() {
   try {
     // Remove existing repeatable jobs to avoid duplicates
-    const repeatableJobs = await maintenanceQueue.getRepeatableJobs();
-    for (const job of repeatableJobs) {
-      await maintenanceQueue.removeRepeatableByKey(job.key);
+    const jobSchedulers = await maintenanceQueue.getJobSchedulers();
+    for (const scheduler of jobSchedulers) {
+      await maintenanceQueue.removeJobScheduler(scheduler.key);
     }
 
-    // Schedule to run every Sunday at 00:00 (Midnight)
+    // A. Schedule Log Cleanup: Every Sunday at 00:00 (Midnight)
     await maintenanceQueue.add(
       'clear-old-activity-logs',
       {},
       {
         repeat: {
-          pattern: '0 0 * * 0', // Cron: Every Sunday at midnight
+          pattern: '0 0 * * 0', // Every Sunday
         },
         removeOnComplete: true,
         removeOnFail: false,
       }
     );
 
-    logger.info('🗓️ System Maintenance (Weekly Log Cleanup) scheduled successfully');
+    // B. Schedule Job Cleanup: Every Sunday at 01:00 (1 AM)
+    await maintenanceQueue.add(
+      'clear-old-jobs',
+      {},
+      {
+        repeat: {
+          pattern: '0 1 * * 0', // Every Sunday at 1 AM
+        },
+        removeOnComplete: true,
+        removeOnFail: false,
+      }
+    );
+
+    logger.info('🗓️ System Maintenance (Logs & Jobs Cleanup) scheduled successfully');
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error(`❌ Failed to schedule maintenance task: ${errorMessage}`);
+    logger.error(`❌ Failed to schedule maintenance tasks: ${errorMessage}`);
   }
 }
 
