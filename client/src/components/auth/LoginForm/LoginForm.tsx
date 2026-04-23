@@ -12,6 +12,7 @@ interface LoginFormProps {
 export default function LoginForm({ onRegisterClick }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loginMutation = useLoginMutation();
@@ -31,7 +32,7 @@ export default function LoginForm({ onRegisterClick }: LoginFormProps) {
     }
 
     try {
-      await loginMutation.mutateAsync({ email: email.trim(), password });
+      await loginMutation.mutateAsync({ email: email.trim(), password, rememberMe });
     } catch (err) {
       const axiosError = err as {
         response?: {
@@ -88,6 +89,21 @@ export default function LoginForm({ onRegisterClick }: LoginFormProps) {
               if (error) setError(null);
             }}
           />
+        </div>
+
+        <div className={styles.optionsRow}>
+          <label className={styles.rememberMe}>
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              disabled={loginMutation.isPending}
+            />
+            <span>ابقني مسجلاً</span>
+          </label>
+          <Link to="/forgot-password" className={styles.forgotLink}>
+            نسيت كلمة المرور؟
+          </Link>
         </div>
 
         <Button

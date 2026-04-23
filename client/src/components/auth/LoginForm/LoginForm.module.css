@@ -191,3 +191,41 @@
     opacity: 1;
   }
 }
+
+.optionsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  width: 100%;
+}
+
+.rememberMe {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.rememberMe input {
+  cursor: pointer;
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--ink);
+}
+
+.forgotLink {
+  font-size: 0.85rem;
+  color: var(--warm);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.forgotLink:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
