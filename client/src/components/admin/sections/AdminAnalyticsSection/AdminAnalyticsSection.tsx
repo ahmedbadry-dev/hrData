@@ -70,7 +70,7 @@ export default function AdminAnalyticsSection({
   const dailyApplyRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    if (!overview && !advanced && !topJobs?.length && !userActivity?.length) {
+    if (!topJobsRef.current && !usersActivityRef.current && !autoSuccessRef.current && !dailyApplyRef.current) {
       return;
     }
 
@@ -312,8 +312,10 @@ export default function AdminAnalyticsSection({
               <div className={styles['chart-loading']}>
                 <Spinner size="md" />
               </div>
-            ) : (
+            ) : topJobs && topJobs.length > 0 ? (
               <canvas ref={topJobsRef} />
+            ) : (
+              <div className={styles['chart-empty']}>لا توجد بيانات متاحة للوظائف حالياً</div>
             )}
           </div>
         </div>
@@ -323,7 +325,11 @@ export default function AdminAnalyticsSection({
             <div className={styles['chart-title']}>نشاط المستخدمين</div>
           </div>
           <div className={styles['chart-wrap']}>
-            <canvas ref={usersActivityRef} />
+            {userActivity && userActivity.length > 0 ? (
+              <canvas ref={usersActivityRef} />
+            ) : (
+              <div className={styles['chart-empty']}>لا يوجد نشاط مسجل للمستخدمين خلال هذه الفترة</div>
+            )}
           </div>
         </div>
       </div>
@@ -334,7 +340,11 @@ export default function AdminAnalyticsSection({
             <div className={styles['chart-title']}>نسبة نجاح التقديم الآلي</div>
           </div>
           <div className={styles['chart-wrap-small']}>
-            <canvas ref={autoSuccessRef} />
+            {statusDistribution && (statusDistribution.success > 0 || statusDistribution.failed > 0 || statusDistribution.pending > 0) ? (
+              <canvas ref={autoSuccessRef} />
+            ) : (
+              <div className={styles['chart-empty']}>لم يتم رصد أي محاولات تقديم آلي بعد</div>
+            )}
           </div>
         </div>
 
@@ -343,7 +353,11 @@ export default function AdminAnalyticsSection({
             <div className={styles['chart-title']}>التقديمات اليومية — ٣٠ يوم</div>
           </div>
           <div className={styles['chart-wrap-small']}>
-            <canvas ref={dailyApplyRef} />
+            {applicationsPerDay && applicationsPerDay.length > 0 ? (
+              <canvas ref={dailyApplyRef} />
+            ) : (
+              <div className={styles['chart-empty']}>لا توجد بيانات تقديمات يومية متاحة</div>
+            )}
           </div>
         </div>
       </div>

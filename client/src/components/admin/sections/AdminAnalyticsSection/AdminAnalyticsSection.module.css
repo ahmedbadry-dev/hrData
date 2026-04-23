@@ -119,14 +119,21 @@
   color: var(--ink);
 }
 
-.chart-error {
+.chart-error,
+.chart-empty {
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent);
+  color: var(--muted);
   font-size: 12px;
   font-weight: 700;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.chart-error {
+  color: var(--accent);
 }
 
 .chart-wrap-small {
