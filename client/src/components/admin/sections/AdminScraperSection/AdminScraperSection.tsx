@@ -13,8 +13,6 @@ interface AdminScraperSectionProps {
   onStop: () => void;
   onRunNow: () => void;
   scraperLogs: ScraperLog[];
-  onClearLog: () => void;
-  onExportLog: () => void;
   scraperSources: string[];
 }
 
@@ -27,8 +25,6 @@ export default function AdminScraperSection({
   onStop,
   onRunNow,
   scraperLogs,
-  onClearLog,
-  onExportLog,
   scraperSources,
 }: AdminScraperSectionProps) {
   return (

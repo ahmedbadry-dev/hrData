@@ -53,8 +53,6 @@ export default function AdminScrapPage() {
       onStop={() => stopMutation.mutate()}
       onRunNow={() => runNowMutation.mutate()}
       scraperLogs={dbLogsResponse?.data ?? []}
-      onClearLog={() => {}}
-      onExportLog={() => {}}
       scraperSources={scraperSources}
     />
   );

@@ -1,21 +1,16 @@
 import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { AdminLayout, type AdminPageKey } from '@/components/admin/layout';
-import { AdminToast, initialScraperLogs } from '@/components/admin/sections';
+import { AdminToast } from '@/components/admin/sections';
 
 export type AdminDashboardContextType = {
   openActivityId: number | null;
   setOpenActivityId: React.Dispatch<React.SetStateAction<number | null>>;
 
-  scraperRunning: boolean;
-  scraperLogs: typeof initialScraperLogs;
   savedToken: string;
   tokenVisible: boolean;
   saveToken: (token: string) => void;
   toggleTokenVisibility: () => void;
-  toggleScraper: () => void;
-  clearLogs: () => void;
-  exportLogs: () => void;
 
   showToast: (message: string, type?: 'success' | 'error') => void;
 };
@@ -32,8 +27,6 @@ export default function AdminDashboardLayout() {
   else if (location.pathname.includes('/admin/settings')) activePage = 'settings';
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [scraperLogs, setScraperLogs] = useState(initialScraperLogs);
-  const [scraperRunning, setScraperRunning] = useState(true);
   const [savedToken, setSavedToken] = useState('');
   const [tokenVisible, setTokenVisible] = useState(false);
 
@@ -65,35 +58,6 @@ export default function AdminDashboardLayout() {
 
   const toggleTokenVisibility = () => setTokenVisible((prev) => !prev);
 
-  const toggleScraper = () => {
-    setScraperRunning((prev) => {
-      const next = !prev;
-      const now = new Date();
-      const ts = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-
-      setScraperLogs((logs) => [
-        next
-          ? { t: 'green', m: `[${ts}] ▶ تم تشغيل السكراب يدوياً` }
-          : { t: 'red', m: `[${ts}] ⏹ تم إيقاف السكراب يدوياً` },
-        ...logs,
-      ]);
-      return next;
-    });
-  };
-
-  const exportLogs = () => {
-    const text = scraperLogs.map((l) => l.m).join('\n');
-    const a = document.createElement('a');
-    a.href = `data:text/plain;charset=utf-8,${encodeURIComponent(text)}`;
-    a.download = 'scraper-log.txt';
-    a.click();
-    showToast('تم تصدير السجل');
-  };
-
-  const clearLogs = () => {
-    setScraperLogs([{ t: 'gray', m: `[${new Date().toLocaleTimeString('en-SA')}] — السجل فارغ` }]);
-  };
-
   const handleNavigate = (page: AdminPageKey) => {
     setMobileSidebarOpen(false);
     switch (page) {
@@ -121,15 +85,10 @@ export default function AdminDashboardLayout() {
   const contextValue: AdminDashboardContextType = {
     openActivityId,
     setOpenActivityId,
-    scraperRunning,
-    scraperLogs,
     savedToken,
     tokenVisible,
     saveToken,
     toggleTokenVisibility,
-    toggleScraper,
-    clearLogs,
-    exportLogs,
     showToast,
   };
 
@@ -138,7 +97,7 @@ export default function AdminDashboardLayout() {
       <AdminLayout
         activePage={activePage}
         onNavigate={handleNavigate}
-        scraperRunning={scraperRunning}
+        scraperRunning={true}
         mobileSidebarOpen={mobileSidebarOpen}
         onToggleSidebar={() => setMobileSidebarOpen((prev) => !prev)}
         onCloseSidebar={() => setMobileSidebarOpen(false)}

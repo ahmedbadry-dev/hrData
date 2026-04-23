@@ -235,13 +235,4 @@ export const recentAdminLogs: AdminLog[] = [
   },
 ];
 
-export const initialScraperLogs: ScraperLog[] = [
-  { t: 'green', m: '[10:42:01] ✓ جلسة سكراب بدأت بنجاح' },
-  { t: 'yellow', m: '[10:42:03] ← جاري الاتصال بـ LinkedIn...' },
-  { t: 'green', m: '[10:42:05] ✓ تم استخراج 8 وظائف جديدة' },
-  { t: 'yellow', m: '[10:42:08] ← جاري الاتصال بـ Bayt.com...' },
-  { t: 'green', m: '[10:42:10] ✓ تم استخراج 5 وظائف جديدة' },
-  { t: 'yellow', m: '[10:42:12] ← جاري معالجة البيانات...' },
-  { t: 'green', m: '[10:42:14] ✓ تم تحديث قاعدة البيانات — 13 وظيفة مضافة' },
-  { t: 'gray', m: '[10:42:15] — انتظار الجولة القادمة (٣٠ دقيقة)...' },
-];
+export const initialScraperLogs: ScraperLog[] = [];
