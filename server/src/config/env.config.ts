@@ -1,4 +1,8 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+
+if (process.env.NODE_ENV !== 'production' && !process.env.RAILWAY_ENVIRONMENT) {
+  dotenv.config();
+}
 
 export const getEnvVariable = (key: string, defaultValue?: string): string => {
   const value = process.env[key] ?? defaultValue;

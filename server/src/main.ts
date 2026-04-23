@@ -3,7 +3,6 @@
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-import 'dotenv/config';
 import app from './app';
 import { appConfig, getEnvVarAsNumber } from './config/env.config';
 import logger from '@/shared/utils/logger.util';
