@@ -1,4 +1,4 @@
-import { ApplicationStatus, PrismaClient } from '@generated/prisma';
+import { ApplicationStatus, PrismaClient } from '@prisma/client';
 
 import logger from '@/shared/utils/logger.util';
 import { InternalServerError } from '@/shared/errors/InternalServerError';

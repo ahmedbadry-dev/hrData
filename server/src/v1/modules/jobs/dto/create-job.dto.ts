@@ -1,4 +1,4 @@
-import { JobLocation } from '@generated/prisma';
+import { JobLocation } from '@prisma/client';
 import { z } from 'zod';
 import { JOBS_CONSTANTS } from '../jobs.constants';
 

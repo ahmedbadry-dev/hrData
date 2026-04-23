@@ -13,7 +13,7 @@ import { CreateBulkJobsDtoSchema } from './dto/create-bulk-jobs.dto';
 import { BulkSaveJobsDtoSchema } from './dto/bulk-save-jobs.dto';
 import { BulkUnsaveJobsDtoSchema } from './dto/bulk-unsave-jobs.dto';
 import { JobsController } from './jobs.controller';
-import { UserRole } from '@generated/prisma';
+import { UserRole } from '@prisma/client';
 import { authorizationMiddleware } from '@/http/middlewares/auth.middleware';
 
 export const jobsRoutes = (jobsController: JobsController): Router => {

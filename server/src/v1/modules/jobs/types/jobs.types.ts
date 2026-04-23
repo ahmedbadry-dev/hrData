@@ -1,4 +1,4 @@
-import { JobLocation, JobQualification, JobSpecialization } from '@generated/prisma';
+import { JobLocation, JobQualification, JobSpecialization } from '@prisma/client';
 import { PaginationMeta } from '@/shared/utils/api-response';
 
 export interface JobResponse {

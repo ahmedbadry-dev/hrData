@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { PrismaClient } from '@generated/prisma';
+import { PrismaClient } from '@prisma/client';
 
 import { gmailOAuthConfig, jwtConfig } from '@/config/env.config';
 import { UnauthorizedException } from '@/shared/errors/UnauthorizedException';

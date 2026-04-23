@@ -5,7 +5,7 @@
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-import { PrismaClient } from '@generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import { ConflictException } from '@/shared/errors/ConflictException';
 import { BadRequestException } from '@/shared/errors/BadRequestException';
 import redis from '@/config/redis';

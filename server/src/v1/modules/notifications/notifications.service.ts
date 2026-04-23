@@ -9,7 +9,7 @@ import {
   PrismaClient,
   UserRole,
   UserStatus,
-} from '@generated/prisma';
+} from '@prisma/client';
 import { NOTIFICATIONS_MESSAGES } from './notifications.constants';
 import {
   AdminNotificationItem,
@@ -63,7 +63,10 @@ export class NotificationsService {
     };
   }
 
-  async listAdminAllNotifications(page: number, limit: number): Promise<AdminNotificationsListResult> {
+  async listAdminAllNotifications(
+    page: number,
+    limit: number
+  ): Promise<AdminNotificationsListResult> {
     page = Number(page || 1);
     limit = Number(limit || 20);
     const skip = (page - 1) * limit;
@@ -79,7 +82,9 @@ export class NotificationsService {
     ]);
 
     return {
-      notifications: notifications.map((notification) => this.mapNotificationItemWithUser(notification)),
+      notifications: notifications.map((notification) =>
+        this.mapNotificationItemWithUser(notification)
+      ),
       pagination: buildPaginationMeta(total, page, limit),
     };
   }

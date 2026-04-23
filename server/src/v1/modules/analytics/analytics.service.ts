@@ -1,4 +1,5 @@
-import { ApplicationStatus, PrismaClient, UserStatus } from '@generated/prisma';
+import { ApplicationStatus, PrismaClient, UserStatus } from '@prisma/client';
+
 import {
   AdvancedOverviewStats,
   ApplicationStatusDistribution,

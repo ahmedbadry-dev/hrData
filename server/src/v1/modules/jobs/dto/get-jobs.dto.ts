@@ -1,4 +1,4 @@
-import { DateFilter, JobLocation, JobQualification, JobSpecialization } from '@generated/prisma';
+import { DateFilter, JobLocation, JobQualification, JobSpecialization } from '@prisma/client';
 import { z } from 'zod';
 import { JOBS_CONSTANTS } from '../jobs.constants';
 

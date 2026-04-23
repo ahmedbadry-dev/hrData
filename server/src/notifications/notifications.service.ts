@@ -1,38 +1,41 @@
-import nodemailer, { Transporter } from 'nodemailer';
-import SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
-
+import { Resend } from 'resend';
 import { verifyEmailTemplate } from './templates/verify-email.template';
 import { resetPasswordTemplate } from './templates/reset-password.template';
 import { announcementTemplate } from './templates/announcement.template';
 import { notificationEmailTemplate } from './templates/notification-email.template';
-import { appConfig, emailConfig } from '@/config/env.config';
+import { appConfig, resendConfig } from '@/config/env.config';
 import logger from '@/shared/utils/logger.util';
-import { transporterSingleton } from '@/config/mailer.config';
 
 export class NotificationsService {
+  private readonly resend: Resend;
+  private readonly fromAddress: string;
+
   constructor(
-    private readonly transporter: Transporter<SMTPTransport.SentMessageInfo> = transporterSingleton,
-    private readonly fromAddress: string = emailConfig.from
-  ) {}
+    resendApiKey: string = resendConfig.resendApiKey,
+    fromAddress: string = resendConfig.from
+  ) {
+    this.resend = new Resend(resendApiKey);
+    this.fromAddress = fromAddress;
+  }
 
   private async sendEmail(options: { to: string; subject: string; html: string }) {
     const MAX_RETRIES = 3;
     let attempts = 0;
 
+    logger.info(`📧 Attempting to send email from: ${this.fromAddress}`);
+
     while (attempts < MAX_RETRIES) {
       try {
-        const info = await this.transporter.sendMail({
+        const { data, error } = await this.resend.emails.send({
           from: this.fromAddress,
           to: options.to,
           subject: options.subject,
           html: options.html,
         });
 
-        logger.info(`📧 Email sent to ${options.to} — messageId: ${info.messageId}`);
-        const hasSmtpCredentials = emailConfig.user && emailConfig.password;
-        if (!hasSmtpCredentials) {
-          logger.info(`🔍 Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
-        }
+        if (error) throw new Error(error.message);
+
+        logger.info(`📧 Email sent to ${options.to} — id: ${data?.id}`);
         return;
       } catch (error) {
         attempts++;

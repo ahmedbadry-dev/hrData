@@ -1,4 +1,4 @@
-import { User, UserStatus } from '@generated/prisma';
+import { User, UserStatus } from '@prisma/client';
 import { PaginationMeta } from '@/shared/utils/api-response';
 
 export type SafeUser = Omit<

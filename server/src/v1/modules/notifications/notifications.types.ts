@@ -1,4 +1,4 @@
-import { NotificationTarget, NotificationType } from '@generated/prisma';
+import { NotificationTarget, NotificationType } from '@prisma/client';
 import { PaginationMeta } from '@/shared/utils/api-response';
 
 export interface CreateNotificationInput {

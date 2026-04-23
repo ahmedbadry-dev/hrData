@@ -1,4 +1,4 @@
-import { NotificationTarget, NotificationType } from '@generated/prisma';
+import { NotificationTarget, NotificationType } from '@prisma/client';
 import { z } from 'zod';
 
 export const CreateNotificationDtoSchema = z.object({

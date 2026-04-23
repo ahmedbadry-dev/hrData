@@ -130,6 +130,11 @@ export const emailConfig = {
   allowSelfSignedTls: getEnvVarAsBoolean('SMTP_ALLOW_SELF_SIGNED_TLS', false),
 };
 
+export const resendConfig = {
+  resendApiKey: getEnvVariable('RESEND_API_KEY', ''),
+  from: getEnvVariable('RESEND_EMAIL_FROM', 'noreply@kafoo.com'),
+};
+
 export const gmailOAuthConfig = {
   clientId: getEnvVariable('GMAIL_OAUTH_CLIENT_ID', ''),
   clientSecret: getEnvVariable('GMAIL_OAUTH_CLIENT_SECRET', ''),

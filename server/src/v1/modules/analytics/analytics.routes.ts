@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { UserRole } from '@generated/prisma';
+import { UserRole } from '@prisma/client';
 import {
   authenticationMiddleware,
   authorizationMiddleware,

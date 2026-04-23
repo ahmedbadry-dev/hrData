@@ -8,7 +8,7 @@ import prismaClient from '@/config/db.config';
 import { jobApplicationTemplate } from '@/notifications/templates/job-application.template';
 import { generateTrackingPixelUrl } from '@/shared/utils/tracking-pixel.util';
 import logger from '@/shared/utils/logger.util';
-import { ApplicationStatus } from '@generated/prisma';
+import { ApplicationStatus } from '@prisma/client';
 import { GmailSender } from '@/v1/modules/gmail/gmail-sender.util';
 
 export interface JobApplicationsScheduleJobData {

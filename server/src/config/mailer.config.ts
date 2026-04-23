@@ -1,36 +1,17 @@
-import nodemailer from 'nodemailer';
-import SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
-import { emailConfig } from './env.config';
+import { Resend } from 'resend';
 import logger from '@/shared/utils/logger.util';
+import { resendConfig } from './env.config';
 
-const smtpOptions: SMTPTransport.Options = {
-  host: emailConfig.host,
-  port: emailConfig.port,
-  secure: emailConfig.secure,
-  auth:
-    emailConfig.user && emailConfig.password
-      ? {
-          user: emailConfig.user,
-          pass: emailConfig.password,
-        }
-      : undefined,
-  tls: {
-    rejectUnauthorized: !emailConfig.allowSelfSignedTls,
-    // Helping with some cloud provider network restrictions
-    minVersion: 'TLSv1.2',
-  },
-  // Adding timeouts to prevent hanging
-  connectionTimeout: 10000, // 10 seconds
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
-};
+export const resendClient = new Resend(resendConfig.resendApiKey);
 
-export const transporterSingleton = nodemailer.createTransport(smtpOptions);
-
-transporterSingleton.verify((error) => {
-  if (error) {
-    logger.error('❌ Mailer connection failed:', error);
-  } else {
-    logger.info('✅ Mailer ready');
-  }
-});
+if (process.env.NODE_ENV === 'development' && resendConfig.resendApiKey) {
+  resendClient.emails
+    .send({
+      from: resendConfig.from,
+      to: 'delivered@resend.dev',
+      subject: 'Kafoo Mailer Ready',
+      html: '<p>Mailer is configured correctly.</p>',
+    })
+    .then(() => logger.info('✅ Mailer ready (Test email sent)'))
+    .catch((err) => logger.error('❌ Mailer test failed:', err.message));
+}
