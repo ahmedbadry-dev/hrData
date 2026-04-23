@@ -89,7 +89,7 @@ model User {
   passwordHash               String     @map("password_hash")
   role                       UserRole   @default(USER)
   status                     UserStatus @default(PENDING_VERIFICATION)
-  dailyEmailLimit            Int        @default(50) @map("daily_email_limit")
+  dailyEmailLimit            Int        @default(20) @map("daily_email_limit")
   limitReachedAt             DateTime?  @map("limit_reached_at")
   emailVerified              Boolean    @default(false) @map("email_verified")
   verificationToken          String?    @map("verification_token")

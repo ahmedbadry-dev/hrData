@@ -11,24 +11,24 @@ import logger from '@/shared/utils/logger.util';
 export const maintenanceWorker = new Worker<Record<string, unknown>>(
   maintenanceQueue.name,
   async (job: Job<Record<string, unknown>>) => {
-    // 1. Clear Old Activity Logs (Older than 7 days)
+    // 1. Clear Old Activity Logs (Older than 12 hours)
     if (job.name === 'clear-old-activity-logs') {
       logger.info(`🧹 Processing maintenance job ${job.id}: Clearing old activity logs`);
 
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      const twelveHoursAgo = new Date();
+      twelveHoursAgo.setHours(twelveHoursAgo.getHours() - 12);
 
       try {
         const deletedCount = await prismaClient.activityLog.deleteMany({
           where: {
             createdAt: {
-              lt: oneWeekAgo,
+              lt: twelveHoursAgo,
             },
           },
         });
 
         logger.info(
-          `✅ Maintenance complete: Deleted ${deletedCount.count} activity log entries older than ${oneWeekAgo.toISOString()}`
+          `✅ Maintenance complete: Deleted ${deletedCount.count} activity log entries older than ${twelveHoursAgo.toISOString()}`
         );
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -124,13 +124,13 @@ export async function startMaintenanceSchedule() {
       await maintenanceQueue.removeJobScheduler(scheduler.key);
     }
 
-    // A. Schedule Log Cleanup: Every Sunday at 00:00 (Midnight)
+    // A. Schedule Log Cleanup: Every 12 hours
     await maintenanceQueue.add(
       'clear-old-activity-logs',
       {},
       {
         repeat: {
-          pattern: '0 0 * * 0', // Every Sunday
+          pattern: '0 */12 * * *', // Every 12 hours
         },
         removeOnComplete: true,
         removeOnFail: false,
