@@ -130,18 +130,35 @@ export default function AdminScraperSection({
       <div className={styles['chart-box']}>
         <div className={styles['chart-header']}>
           <div className={styles['chart-title']}>سجل العمليات</div>
-          <div className={styles['log-actions']}>
-            <Button onClick={onExportLog}>تصدير</Button>
-            <Button onClick={onClearLog}>مسح</Button>
-          </div>
         </div>
 
         <div className={styles['scraper-log-box']}>
-          {scraperLogs.map((line) => (
-            <div className={styles[`log-line-${line.t}`]} key={line.m}>
-              {line.m}
-            </div>
-          ))}
+          {scraperLogs.length === 0 ? (
+            <div className={styles['log-line-gray']}>لا توجد سجلات حالياً</div>
+          ) : (
+            scraperLogs.map((log) => (
+              <div
+                className={cn(
+                  styles.logEntry,
+                  log.status === 'SUCCESS' ? styles['log-line-green'] : styles['log-line-red']
+                )}
+                key={log.id}
+              >
+                <span className={styles.logTime}>
+                  [{new Date(log.createdAt).toLocaleTimeString('ar-SA')}]
+                </span>{' '}
+                <span className={styles.logSite}>{log.siteName}</span>:{' '}
+                {log.status === 'SUCCESS' ? (
+                  <>
+                    تم العثور على {log.linksFound} رابط واستخراج {log.jobsScraped} وظيفة
+                    {log.duration ? ` (${(log.duration / 1000).toFixed(1)} ثانية)` : ''}
+                  </>
+                ) : (
+                  <span className={styles.logError}>فشل: {log.errorMessage}</span>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </section>

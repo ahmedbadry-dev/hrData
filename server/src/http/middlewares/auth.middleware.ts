@@ -30,15 +30,10 @@ export const createAuthenticationMiddleware = (db: UserLookupClient) => {
         status: UserStatus.ACTIVE,
         emailVerified: true,
       },
-      include: {
-        sessions: {
-          where: { id: verified.payload.tokenId },
-        },
-      },
     });
 
-    if (!user || user.sessions.length === 0) {
-      throw new UnauthorizedException('User not found or session expired. Please login again.');
+    if (!user) {
+      throw new UnauthorizedException('User not found or account inactive. Please login again.');
     }
 
     req.user = excludePassword(user);

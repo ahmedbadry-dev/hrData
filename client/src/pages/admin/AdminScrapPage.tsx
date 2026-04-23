@@ -25,17 +25,23 @@ export default function AdminScrapPage() {
   const nextRuns = ['09:00 صباحاً', '12:00 مساءً'];
 
   const scraperSources = [
-    'ewdifh',
-    'wadifh',
-    'linkedksa',
-    'tabiwazifa',
-    'jbscv',
-    'fu1sa',
-    'alwzifa',
-    'jobhuna',
-    'awamirtawzif',
-    'X',
+    'Ewdifh',
+    'Wadifh',
+    'Linkedksa',
+    'Tabiwazifa',
+    'Jbscv',
+    'Fu1sa',
+    'Alwzifa',
+    'Jobhuna',
+    'Awamirtawzif',
+    'Twitter',
   ];
+
+  const { data: dbLogsResponse } = useQuery({
+    queryKey: ['admin', 'scraper-logs'],
+    queryFn: () => axiosClient.get('/admin/scraper/logs').then((r) => r.data),
+    refetchInterval: 10000,
+  });
 
   return (
     <AdminScraperSection
@@ -46,7 +52,7 @@ export default function AdminScrapPage() {
       onStart={() => startMutation.mutate()}
       onStop={() => stopMutation.mutate()}
       onRunNow={() => runNowMutation.mutate()}
-      scraperLogs={[]} // We will handle logs separately if needed, but for now empty
+      scraperLogs={dbLogsResponse?.data ?? []}
       onClearLog={() => {}}
       onExportLog={() => {}}
       scraperSources={scraperSources}

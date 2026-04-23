@@ -80,4 +80,12 @@ export class ScraperService {
   async runNow(): Promise<void> {
     await scraperQueue.add('run-scraper-manual', {}, { priority: 1 });
   }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  async getScrapedLogs() {
+    return this.prisma.scrapedLog.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+  }
 }

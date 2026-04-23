@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -85,7 +84,6 @@ model User {
   id                         String     @id @default(uuid())
   firstName                  String     @map("first_name")
   lastName                   String     @map("last_name")
-  fullName                   String?    @map("full_name")
   email                      String     @unique
   phone                      String?    @unique @map("phone")
   passwordHash               String     @map("password_hash")
@@ -103,32 +101,13 @@ model User {
   createdAt                  DateTime   @default(now()) @map("created_at")
   updatedAt                  DateTime   @updatedAt @map("updated_at")
 
-  sessions       Session[]
   gmailTokens    GmailToken[]
   savedJobs      SavedJob[]
-  emailTemplates EmailTemplate[]
   applications   Application[]
   notifications  Notification[]
   activityLogs   ActivityLog[]
 
   @@map("users")
-}
-
-model Session {
-  id         String   @id
-  userId     String   @map("user_id")
-  tokenHash  String   @unique @map("token_hash")
-  expiresAt  DateTime @map("expires_at")
-  deviceName String?  @map("device_name")
-  ipAddress  String?  @map("ip_address")
-  userAgent  String?  @map("user_agent")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("sessions")
 }
 
 model GmailToken {
@@ -185,27 +164,10 @@ model SavedJob {
   @@map("saved_jobs")
 }
 
-model EmailTemplate {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  name      String
-  subject   String
-  body      String
-  isDefault Boolean  @default(false) @map("is_default")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  applications Application[]
-
-  @@map("email_templates")
-}
-
 model Application {
   id              String            @id @default(uuid())
   userId          String            @map("user_id")
   jobId           String            @map("job_id")
-  emailTemplateId String?           @map("email_template_id")
   status          ApplicationStatus @default(SCHEDULED)
   scheduledAt     DateTime?         @map("scheduled_at")
   sentAt          DateTime?         @map("sent_at")
@@ -219,7 +181,6 @@ model Application {
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   job           Job            @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  emailTemplate EmailTemplate? @relation(fields: [emailTemplateId], references: [id], onDelete: SetNull)
 
   @@index([userId, status, createdAt])
   @@map("applications")
@@ -253,6 +214,19 @@ model ActivityLog {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@map("activity_logs")
+}
+
+model ScrapedLog {
+  id           String   @id @default(uuid())
+  siteName     String   @map("site_name")
+  linksFound   Int      @default(0) @map("links_found")
+  jobsScraped  Int      @default(0) @map("jobs_scraped")
+  status       String   @default("SUCCESS")
+  errorMessage String?  @map("error_message")
+  duration     Int?     @map("duration_ms")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("scraped_logs")
 }
 
 model SystemSetting {

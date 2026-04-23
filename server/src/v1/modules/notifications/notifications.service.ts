@@ -76,7 +76,7 @@ export class NotificationsService {
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
-        include: { user: { select: { fullName: true, email: true } } },
+        include: { user: { select: { firstName: true, lastName: true, email: true } } },
       }),
       this.prisma.notification.count(),
     ]);
@@ -174,7 +174,9 @@ export class NotificationsService {
   }
 
   private mapNotificationItemWithUser(
-    notification: Notification & { user?: { fullName: string | null; email: string } | null }
+    notification: Notification & {
+      user?: { firstName: string; lastName: string; email: string } | null;
+    }
   ): AdminNotificationItem {
     return {
       id: notification.id,
@@ -184,7 +186,9 @@ export class NotificationsService {
       target: notification.target,
       isRead: notification.isRead,
       createdAt: notification.createdAt,
-      userName: notification.user?.fullName ?? undefined,
+      userName: notification.user
+        ? `${notification.user.firstName} ${notification.user.lastName}`
+        : undefined,
       userEmail: notification.user?.email ?? undefined,
     };
   }
@@ -195,7 +199,7 @@ export class NotificationsService {
   }): Promise<void> {
     const users = await this.prisma.user.findMany({
       where: { status: UserStatus.ACTIVE },
-      select: { id: true, email: true, fullName: true },
+      select: { id: true, email: true, firstName: true, lastName: true },
     });
 
     if (users.length === 0) {
@@ -206,7 +210,7 @@ export class NotificationsService {
       await notificationEmailService
         .sendNotificationEmail({
           to: user.email,
-          fullName: user.fullName,
+          fullName: `${user.firstName} ${user.lastName}`,
           title: notificationData.title,
           body: notificationData.body,
         })

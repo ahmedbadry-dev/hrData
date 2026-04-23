@@ -119,9 +119,7 @@ export class UsersService {
     await this.findUserOrThrow(userId);
 
     await this.prisma.$transaction([
-      this.prisma.session.deleteMany({ where: { userId } }),
       this.prisma.savedJob.deleteMany({ where: { userId } }),
-      this.prisma.emailTemplate.deleteMany({ where: { userId } }),
       this.prisma.application.deleteMany({ where: { userId } }),
       this.prisma.notification.deleteMany({ where: { userId } }),
       this.prisma.activityLog.deleteMany({ where: { userId } }),
@@ -137,7 +135,6 @@ export class UsersService {
 
     if (query.keyword) {
       where.OR = [
-        { fullName: { contains: query.keyword, mode: USERS_CONSTANTS.TEXT_SEARCH_MODE } },
         { firstName: { contains: query.keyword, mode: USERS_CONSTANTS.TEXT_SEARCH_MODE } },
         { lastName: { contains: query.keyword, mode: USERS_CONSTANTS.TEXT_SEARCH_MODE } },
         { email: { contains: query.keyword, mode: USERS_CONSTANTS.TEXT_SEARCH_MODE } },
@@ -160,10 +157,10 @@ export class UsersService {
     return where;
   }
 
-  private mapUserResponse(user: User & { fullName?: string | null }): UserResponse {
+  private mapUserResponse(user: User): UserResponse {
     return {
       id: user.id,
-      fullName: user.fullName || `${user.firstName} ${user.lastName}`,
+      fullName: `${user.firstName} ${user.lastName}`,
       email: user.email,
       phone: user.phone || null,
       joinDate: user.createdAt,
@@ -176,7 +173,6 @@ export class UsersService {
       id: true,
       firstName: true,
       lastName: true,
-      fullName: true,
       email: true,
       phone: true,
       status: true,

@@ -17,27 +17,27 @@ async function processSingleJob(jobUrl: string, site: WebSiteConfig): Promise<st
     const content = await ScraperClient.getJobContent(jobUrl, site);
     if (!content) return null;
 
-    if (content.includes('@')) {
-      const extractedList = await ScraperClient.extractWithAI(content, jobUrl, site.name);
-      if (extractedList && extractedList.length > 0) {
-        for (const extracted of extractedList) {
-          const normalized = ScraperStorage.validateAndNormalize(extracted);
-          if (normalized) {
-            const isDuplicate = await ScraperStorage.isCompanyRecentlyPosted(
-              normalized.companyName
-            );
-            if (isDuplicate) {
-              logger.info(
-                `[Scraper] ⏭️ Skipping: ${normalized.companyName} already has a post in the last 24h`
-              );
-              continue;
-            }
+    // if (content.includes('@')) {
+    //   const extractedList = await ScraperClient.extractWithAI(content, jobUrl, site.name);
+    //   if (extractedList && extractedList.length > 0) {
+    //     for (const extracted of extractedList) {
+    //       const normalized = ScraperStorage.validateAndNormalize(extracted);
+    //       if (normalized) {
+    //         const isDuplicate = await ScraperStorage.isCompanyRecentlyPosted(
+    //           normalized.companyName
+    //         );
+    //         if (isDuplicate) {
+    //           logger.info(
+    //             `[Scraper] ⏭️ Skipping: ${normalized.companyName} already has a post in the last 24h`
+    //           );
+    //           continue;
+    //         }
 
-            await ScraperStorage.saveJobToDb(normalized);
-          }
-        }
-      }
-    }
+    //         await ScraperStorage.saveJobToDb(normalized);
+    //       }
+    //     }
+    //   }
+    // }
 
     return content;
   } catch (error) {
@@ -101,20 +101,37 @@ export async function runScraperForAllSites(): Promise<void> {
 
   try {
     for (const site of SITES_CONFIG) {
+      const siteStartTime = Date.now();
+      let linksFound = 0;
+      let jobsScraped = 0;
+
       try {
         logger.info(SCRAPER_INTERNAL_CONSTANTS.LOGS.EXPLORING(site.name));
 
         if (site.type === 'api') {
           const apiSite = site as ApiSourceConfig;
           const { count, urls } = await processTwitterSource(apiSite);
+          linksFound = urls.length;
+          jobsScraped = count;
           allLinks.push(...urls);
           logger.info(SCRAPER_INTERNAL_CONSTANTS.LOGS.FINISHED(apiSite.name, urls.length, count));
         } else {
           const webSite = site as WebSiteConfig;
           const jobLinks = await ScraperClient.getJobLinks(webSite);
-          if (jobLinks.length === 0) continue;
-          const allLinksCount = allLinks.length;
-          const scrapedJobsCount = scrapedJobs.length;
+          if (jobLinks.length === 0) {
+            // Log empty results
+            await ScraperStorage.saveScrapedLog({
+              siteName: webSite.name,
+              linksFound: 0,
+              jobsScraped: 0,
+              status: 'SUCCESS',
+              duration: Date.now() - siteStartTime,
+            });
+            continue;
+          }
+
+          const scrapedJobsBefore = scrapedJobs.length;
+          linksFound = jobLinks.length;
           allLinks.push(...jobLinks.map((url) => ({ site: webSite.name, url })));
 
           await Promise.all(
@@ -134,18 +151,34 @@ export async function runScraperForAllSites(): Promise<void> {
             )
           );
 
+          jobsScraped = scrapedJobs.length - scrapedJobsBefore;
           logger.info(
-            SCRAPER_INTERNAL_CONSTANTS.LOGS.FINISHED(
-              webSite.name,
-              allLinks.length - allLinksCount,
-              scrapedJobs.length - scrapedJobsCount
-            )
+            SCRAPER_INTERNAL_CONSTANTS.LOGS.FINISHED(webSite.name, linksFound, jobsScraped)
           );
         }
+
+        // Save Scraped Log to DB
+        await ScraperStorage.saveScrapedLog({
+          siteName: site.name,
+          linksFound,
+          jobsScraped,
+          status: 'SUCCESS',
+          duration: Date.now() - siteStartTime,
+        });
 
         await sleep(DELAY_BETWEEN_SITES_MS);
       } catch (siteError) {
         logger.error(SCRAPER_INTERNAL_CONSTANTS.LOGS.SITE_FAILURE(site.name, siteError));
+
+        // Save Failure Log
+        await ScraperStorage.saveScrapedLog({
+          siteName: site.name,
+          linksFound: 0,
+          jobsScraped: 0,
+          status: 'FAILURE',
+          errorMessage: siteError instanceof Error ? siteError.message : String(siteError),
+          duration: Date.now() - siteStartTime,
+        });
       }
     }
 

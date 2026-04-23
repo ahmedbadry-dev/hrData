@@ -28,5 +28,8 @@ export const scraperRoutes = (scraperController: ScraperController): Router => {
   // POST /api/v1/admin/scraper/run-now
   router.post('/run-now', ...adminOnly, scraperController.runNow);
 
+  // GET /api/v1/admin/scraper/logs
+  router.get('/logs', ...adminOnly, scraperController.getScrapedLogs);
+
   return router;
 };

@@ -62,6 +62,33 @@ export const maintenanceWorker = new Worker<Record<string, unknown>>(
         throw error;
       }
     }
+
+    if (job.name === 'clear-scraper-logs') {
+      logger.info(
+        `🧹 Processing maintenance job ${job.id}: Clearing scraper logs older than 12 hours`
+      );
+
+      const twelveHoursAgo = new Date();
+      twelveHoursAgo.setHours(twelveHoursAgo.getHours() - 12);
+
+      try {
+        const deletedCount = await prismaClient.scrapedLog.deleteMany({
+          where: {
+            createdAt: {
+              lt: twelveHoursAgo,
+            },
+          },
+        });
+
+        logger.info(
+          `✅ Maintenance complete: Deleted ${deletedCount.count} scraper logs older than ${twelveHoursAgo.toISOString()}`
+        );
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logger.error(`❌ Maintenance failed for job ${job.id} (Scraper Logs): ${errorMessage}`);
+        throw error;
+      }
+    }
   },
   {
     connection: redis,
@@ -123,7 +150,20 @@ export async function startMaintenanceSchedule() {
       }
     );
 
-    logger.info('🗓️ System Maintenance (Logs & Jobs Cleanup) scheduled successfully');
+    // C. Schedule Scraper Logs Cleanup: Every 12 hours
+    await maintenanceQueue.add(
+      'clear-scraper-logs',
+      {},
+      {
+        repeat: {
+          pattern: '0 */12 * * *', // Every 12 hours
+        },
+        removeOnComplete: true,
+        removeOnFail: false,
+      }
+    );
+
+    logger.info('🗓️ System Maintenance (Logs, Jobs, Scraper Logs Cleanup) scheduled successfully');
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`❌ Failed to schedule maintenance tasks: ${errorMessage}`);

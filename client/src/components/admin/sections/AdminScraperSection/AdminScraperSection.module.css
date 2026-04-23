@@ -375,6 +375,29 @@
   color: #666;
 }
 
+.logEntry {
+  border-bottom: 1px solid rgba(160, 200, 120, 0.1);
+  padding: 4px 0;
+}
+
+.logTime {
+  color: var(--warm);
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+.logSite {
+  color: #fff;
+  font-weight: 900;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+
+.logError {
+  color: #ff8080;
+  font-style: italic;
+}
+
 .control-col {
   display: flex;
   flex-direction: column;

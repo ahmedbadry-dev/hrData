@@ -156,40 +156,17 @@ export class AuthService {
 
     this.validateUserStatus(userExists);
 
-    const result = await this.createTokenPairAndSession(userExists, deviceInfo);
-
-    void this.prisma.activityLog
-      .create({
-        data: {
-          userId: userExists.id,
-          action: 'LOGIN',
-          metadata: { ipAddress: deviceInfo.ipAddress },
-          ipAddress: deviceInfo.ipAddress,
-        },
-      })
-      .catch((err) => logger.error('Failed to log LOGIN activity', err));
-
-    return result;
+    return this.createTokenPairAndSession(userExists, deviceInfo);
   }
 
   async logout(userId: string, refreshToken: string): Promise<void> {
-    if (!refreshToken) {
-      throw new BadRequestException('Refresh token is required');
-    }
-    const hashedRefreshToken = generateHashedWithSha256(refreshToken);
-    const session = await this.prisma.session.findUnique({
-      where: { tokenHash: hashedRefreshToken, userId },
-    });
-    if (!session) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-    await this.prisma.session.delete({
-      where: { tokenHash: hashedRefreshToken, userId },
-    });
+    // Session-less logout: The controller will clear the cookies.
+    // No database action needed since we removed the Session table.
   }
 
   async logoutAll(userId: string): Promise<void> {
-    await this.prisma.session.deleteMany({ where: { userId } });
+    // Session-less logoutAll: In a stateless system, this would require a blacklist.
+    // For now, we just acknowledge the request.
   }
 
   async refresh(refreshToken: string, deviceInfo: DeviceInfo): Promise<AuthResponseWithTokens> {
@@ -202,15 +179,6 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const tokenHash = generateHashedWithSha256(refreshToken);
-    const session = await this.prisma.session.findUnique({
-      where: { tokenHash, userId: verifiedToken.payload.userId },
-    });
-
-    if (!session || session.expiresAt < new Date()) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
-    }
-
     const user = await this.prisma.user.findUnique({
       where: { id: verifiedToken.payload.userId },
     });
@@ -219,8 +187,6 @@ export class AuthService {
     }
 
     this.validateUserStatus(user);
-
-    await this.prisma.session.delete({ where: { id: session.id } });
 
     return this.createTokenPairAndSession(user, deviceInfo);
   }
@@ -314,7 +280,6 @@ export class AuthService {
         where: { id: user.id },
         data: { passwordHash: hashedPassword, resetToken: null, resetTokenExpiresAt: null },
       });
-      await tx.session.deleteMany({ where: { userId: user.id } });
       return updated;
     });
 
@@ -385,7 +350,6 @@ export class AuthService {
         where: { id: user.id },
         data: { passwordHash: hashedPassword },
       });
-      await tx.session.deleteMany({ where: { userId: user.id } });
       return updated;
     });
 
@@ -462,22 +426,19 @@ export class AuthService {
       email: user.email,
     });
 
-    const hashedRefreshToken = generateHashedWithSha256(tokenPair.refreshToken);
-    const refreshTokenExpiresAt = new Date(
-      Date.now() + AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE
-    );
+    // We no longer save sessions to the database as requested.
+    // The system is now stateless.
 
-    await this.prisma.session.create({
-      data: {
-        id: tokenId,
-        userId: user.id,
-        tokenHash: hashedRefreshToken,
-        expiresAt: refreshTokenExpiresAt,
-        deviceName: deviceInfo.deviceName,
-        ipAddress: deviceInfo.ipAddress,
-        userAgent: deviceInfo.userAgent,
-      },
-    });
+    void this.prisma.activityLog
+      .create({
+        data: {
+          userId: user.id,
+          action: 'LOGIN',
+          metadata: { ipAddress: deviceInfo.ipAddress },
+          ipAddress: deviceInfo.ipAddress,
+        },
+      })
+      .catch((err) => logger.error('Failed to log LOGIN activity', err));
 
     return { user: excludePassword(user), tokens: tokenPair };
   }

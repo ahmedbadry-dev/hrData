@@ -34,4 +34,10 @@ export class ScraperController {
     await this.scraperService.runNow();
     return ResponseHelper.ok(res, {}, SCRAPER_CONSTANTS.MESSAGES.MANUAL_RUN_QUEUED, req.path);
   };
+
+  // GET /api/v1/admin/scraper/logs
+  getScrapedLogs = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.scraperService.getScrapedLogs();
+    return ResponseHelper.ok(res, data, 'Scraper logs fetched successfully', req.path);
+  };
 }

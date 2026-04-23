@@ -36,8 +36,14 @@ export interface AdminLog {
 }
 
 export interface ScraperLog {
-  t: 'green' | 'yellow' | 'red' | 'gray';
-  m: string;
+  id: string;
+  siteName: string;
+  linksFound: number;
+  jobsScraped: number;
+  status: 'SUCCESS' | 'FAILURE';
+  errorMessage?: string | null;
+  duration?: number | null;
+  createdAt: string;
 }
 
 export const initialAdminUsers: AdminUser[] = [

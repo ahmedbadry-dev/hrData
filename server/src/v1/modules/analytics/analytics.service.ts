@@ -134,8 +134,9 @@ export class AnalyticsService {
       emailOpenedCount,
       emailSentCount,
     ] = await Promise.all([
-      this.prisma.session.findMany({
+      this.prisma.activityLog.findMany({
         where: {
+          action: 'LOGIN',
           createdAt: {
             gte: this.getStartOfDay(29),
           },
@@ -193,8 +194,9 @@ export class AnalyticsService {
   async getLoginsPerDay(days: number): Promise<DailyDataPoint[]> {
     const dateSeries = this.buildDateSeries(days);
 
-    const sessions = await this.prisma.session.findMany({
+    const logs = await this.prisma.activityLog.findMany({
       where: {
+        action: 'LOGIN',
         createdAt: {
           gte: this.getStartOfDay(days - 1),
         },
@@ -204,8 +206,8 @@ export class AnalyticsService {
       },
     });
 
-    const groupedData = sessions.reduce<Record<string, number>>((accumulator, session) => {
-      const date = session.createdAt.toISOString().split('T')[0];
+    const groupedData = logs.reduce<Record<string, number>>((accumulator, log) => {
+      const date = log.createdAt.toISOString().split('T')[0];
       accumulator[date] = (accumulator[date] || 0) + 1;
       return accumulator;
     }, {});
@@ -282,8 +284,9 @@ export class AnalyticsService {
   async getUserActivityPerDay(days: number): Promise<UserActivityDataPoint[]> {
     const dateSeries = this.buildDateSeries(days);
 
-    const sessions = await this.prisma.session.findMany({
+    const logs = await this.prisma.activityLog.findMany({
       where: {
+        action: 'LOGIN',
         createdAt: {
           gte: this.getStartOfDay(days - 1),
         },
@@ -294,7 +297,7 @@ export class AnalyticsService {
       },
     });
 
-    const groupedData = sessions.reduce<
+    const groupedData = logs.reduce<
       Record<
         string,
         {
@@ -302,8 +305,8 @@ export class AnalyticsService {
           activeUserIds: Set<string>;
         }
       >
-    >((accumulator, session) => {
-      const date = session.createdAt.toISOString().split('T')[0];
+    >((accumulator, log) => {
+      const date = log.createdAt.toISOString().split('T')[0];
 
       if (!accumulator[date]) {
         accumulator[date] = {
@@ -313,7 +316,9 @@ export class AnalyticsService {
       }
 
       accumulator[date].newSessions += 1;
-      accumulator[date].activeUserIds.add(session.userId);
+      if (log.userId) {
+        accumulator[date].activeUserIds.add(log.userId);
+      }
 
       return accumulator;
     }, {});
@@ -385,7 +390,7 @@ export class AnalyticsService {
         ipAddress: true,
         createdAt: true,
         user: {
-          select: { firstName: true, lastName: true, fullName: true },
+          select: { firstName: true, lastName: true },
         },
       },
     });

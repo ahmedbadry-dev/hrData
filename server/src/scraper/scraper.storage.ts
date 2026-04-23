@@ -39,6 +39,30 @@ export class ScraperStorage {
     await this.saveJson(this.SCRAPED_DIR, 'job.json', jobs);
   }
 
+  static async saveScrapedLog(data: {
+    siteName: string;
+    linksFound: number;
+    jobsScraped: number;
+    status: 'SUCCESS' | 'FAILURE';
+    errorMessage?: string;
+    duration?: number;
+  }): Promise<void> {
+    try {
+      await prisma.scrapedLog.create({
+        data: {
+          siteName: data.siteName,
+          linksFound: data.linksFound,
+          jobsScraped: data.jobsScraped,
+          status: data.status,
+          errorMessage: data.errorMessage ?? null,
+          duration: data.duration ?? null,
+        },
+      });
+    } catch (error: any) {
+      logger.error(`[Scraper] Failed to save ScrapedLog: ${error.message}`);
+    }
+  }
+
   private static async saveJson(dirName: string, fileName: string, newData: any): Promise<void> {
     try {
       const dirPath = path.join(process.cwd(), dirName);
