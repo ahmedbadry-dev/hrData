@@ -12,6 +12,7 @@ import redis from './config/redis';
 
 import '@/workers/job-applications-schedule.worker';
 import '@/workers/scraper.worker';
+import { startMaintenanceSchedule } from '@/workers/maintenance.worker';
 
 import { startScraperSchedule } from './scraper/scraper.scheduler';
 
@@ -50,6 +51,7 @@ process.on('uncaughtException', (err: Error) => {
 const startServer = async () => {
   try {
     await bootstrapScraper();
+    await startMaintenanceSchedule();
 
     const server = app.listen(PORT, () => {
       logger.info(`🚀 Server is running on http://localhost:${PORT}`);

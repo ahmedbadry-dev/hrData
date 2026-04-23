@@ -25,3 +25,7 @@ export const jobApplicationsScheduleQueue = new Queue('job-applications-schedule
     removeOnFail: { count: 10 },
   },
 });
+
+export const maintenanceQueue = new Queue('system-maintenance', {
+  connection: redis,
+});

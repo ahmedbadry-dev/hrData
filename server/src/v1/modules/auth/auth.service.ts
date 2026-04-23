@@ -82,6 +82,12 @@ export class AuthService {
         logger.error('❌ Failed to send verification email:', { email, error: emailError });
       });
 
+    void this.prisma.activityLog
+      .create({
+        data: { userId: user.id, action: 'REGISTER' },
+      })
+      .catch((err) => logger.error('Failed to log REGISTER activity', err));
+
     return { user: excludePassword(user) };
   }
 

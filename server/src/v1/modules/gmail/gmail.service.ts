@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { gmailOAuthConfig, jwtConfig } from '@/config/env.config';
 import { UnauthorizedException } from '@/shared/errors/UnauthorizedException';
 import { BadRequestException } from '@/shared/errors/BadRequestException';
+import logger from '@/shared/utils/logger.util';
 
 const GOOGLE_OAUTH_AUTHORIZE_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_OAUTH_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -97,6 +98,16 @@ export class GmailService {
         email: profile.email,
       },
     });
+
+    void this.prisma.activityLog
+      .create({
+        data: {
+          userId: decodedState.userId,
+          action: 'CONNECT_GMAIL',
+          metadata: { email: profile.email },
+        },
+      })
+      .catch((err) => logger.error('Failed to log CONNECT_GMAIL activity', err));
   }
 
   async disconnect(userId: string): Promise<void> {

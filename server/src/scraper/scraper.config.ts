@@ -1,14 +1,14 @@
 import { WebSiteConfig, ApiSourceConfig } from './scraper.types';
 
 export const SITES_CONFIG: (WebSiteConfig | ApiSourceConfig)[] = [
-  {
-    name: 'ewdifh',
-    type: 'web',
-    url: 'https://www.ewdifh.com/category/corporate-jobs',
-    baseUrl: 'https://www.ewdifh.com',
-    jobLinkSelector: 'div.grid a[href*="/jobs/"]',
-    jobContentSelector: 'div.card-body',
-  },
+  // {
+  //   name: 'ewdifh',
+  //   type: 'web',
+  //   url: 'https://www.ewdifh.com/category/corporate-jobs',
+  //   baseUrl: 'https://www.ewdifh.com',
+  //   jobLinkSelector: 'div.grid a[href*="/jobs/"]',
+  //   jobContentSelector: 'div.card-body',
+  // },
   {
     name: 'twitter',
     type: 'api',

@@ -339,6 +339,16 @@ export class ApplicationsService {
       }
     }
 
+    void this.prisma.activityLog
+      .create({
+        data: {
+          userId,
+          action: 'SCHEDULE_APPLICATIONS',
+          metadata: { count: createdApplications.length },
+        },
+      })
+      .catch((err) => logger.error('Failed to log SCHEDULE_APPLICATIONS activity', err));
+
     return {
       requestedCount,
       scheduledCount: createdApplications.length,
