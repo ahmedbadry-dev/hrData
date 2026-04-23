@@ -264,7 +264,8 @@ export default function UserAutoApplySection({
       return;
     }
 
-    const selectCount = Math.min(effectiveSelectionLimit, savedJobs.length);
+    // Select only the first 10 jobs (or less if limit/available jobs are less)
+    const selectCount = Math.min(10, effectiveSelectionLimit, savedJobs.length);
     const nextSelection: Record<string, boolean> = {};
 
     for (let index = 0; index < selectCount; index++) {
@@ -273,6 +274,11 @@ export default function UserAutoApplySection({
 
     setSelectionError(null);
     setSelectedMap(nextSelection);
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedMap({});
+    setSelectionError(null);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -535,14 +541,24 @@ export default function UserAutoApplySection({
       ) : (
         <div className={styles['results-list']}>
           <div className={styles['selection-tools']}>
-            <span className={styles['search-label']}>الوظائف المختارة</span>
-            <Button
-              className={styles['btn-ghost']}
-              disabled={isQuotaBlocked || savedJobs.length === 0 || effectiveSelectionLimit <= 0}
-              onClick={handleSelectFirstJobs}
-            >
-              اختر أول 50 وظيفة
-            </Button>
+            <span className={styles['search-label']}>الوظائف المختارة ({selectedCount})</span>
+            <div className={styles['tool-buttons']}>
+              <Button
+                className={styles['btn-ghost']}
+                disabled={isQuotaBlocked || savedJobs.length === 0 || effectiveSelectionLimit <= 0}
+                onClick={handleSelectFirstJobs}
+              >
+                اختر أول 10 وظائف
+              </Button>
+              <Button
+                className={styles['btn-ghost']}
+                disabled={selectedCount === 0}
+                onClick={handleDeselectAll}
+                style={{ color: 'var(--red)' }}
+              >
+                إلغاء تحديد الكل
+              </Button>
+            </div>
           </div>
           <div className={styles['results-list']}>
             {savedJobs.map((job, index) => {
@@ -593,7 +609,7 @@ export default function UserAutoApplySection({
         <Button className={styles['btn-ghost']} onClick={onGoSavedJobs}>
           ← المحفوظات
         </Button>
-        <div>
+        <div className={styles['next-group']}>
           <Button
             className={styles['btn-primary']}
             disabled={!selectedCv || selectedJobs.length === 0 || isQuotaBlocked}
