@@ -20,7 +20,7 @@ const setCsrfCookie = (res: Response, token: string): void => {
   res.cookie(AUTH_CONSTANTS.CSRF_TOKEN_COOKIE_NAME, token, {
     httpOnly: false,
     secure: appConfig.isProduction,
-    sameSite: 'strict',
+    sameSite: appConfig.isProduction ? 'none' : 'lax',
     path: '/',
   });
 };
