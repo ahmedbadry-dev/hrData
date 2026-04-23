@@ -10,6 +10,25 @@ export class ScraperStorage {
   private static readonly SCRAPED_DATA_DIR = 'scrapedData';
   private static readonly SCRAPED_DIR = 'scraped';
 
+  static async isCompanyRecentlyPosted(companyName: string): Promise<boolean> {
+    const twentyFourHoursAgo = new Date();
+    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+    const existingJobCount = await prisma.job.count({
+      where: {
+        companyName: {
+          equals: companyName,
+          mode: 'insensitive',
+        },
+        createdAt: {
+          gte: twentyFourHoursAgo,
+        },
+      },
+    });
+
+    return existingJobCount > 0;
+  }
+
   static async saveAllAds(links: { site: string; url: string }[]): Promise<void> {
     await this.saveJson(this.SCRAPED_DATA_DIR, 'allAds.json', links);
   }

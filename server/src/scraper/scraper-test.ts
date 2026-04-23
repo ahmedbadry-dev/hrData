@@ -40,6 +40,17 @@ async function processSingleJobTest(jobUrl: string, site: WebSiteConfig): Promis
             for (const extracted of extractedList) {
               const normalized = ScraperStorage.validateAndNormalize(extracted);
               if (normalized) {
+                // Check if company already posted today (Match service logic)
+                const isDuplicate = await ScraperStorage.isCompanyRecentlyPosted(
+                  normalized.companyName
+                );
+                if (isDuplicate) {
+                  logger.info(
+                    `[Scraper Test] ⏭️ Skipping: ${normalized.companyName} already has a post in the last 24h`
+                  );
+                  continue;
+                }
+
                 await ScraperStorage.saveJobToDb(normalized);
                 logger.info(
                   `[Scraper Test] ✅ Successfully saved returned job from AI to DB: ${jobUrl} - ${normalized.title}`
@@ -141,6 +152,17 @@ export async function runScraperTest(): Promise<void> {
             for (const extracted of extractedList) {
               const normalized = ScraperStorage.validateAndNormalize(extracted);
               if (normalized) {
+                // Check if company already posted today (Match service logic)
+                const isDuplicate = await ScraperStorage.isCompanyRecentlyPosted(
+                  normalized.companyName
+                );
+                if (isDuplicate) {
+                  logger.info(
+                    `[Scraper Test] ⏭️ Skipping: ${normalized.companyName} already has a post in the last 24h`
+                  );
+                  continue;
+                }
+
                 await ScraperStorage.saveJobToDb(normalized);
                 logger.info(
                   `[Scraper Test] ✅ Successfully saved returned job from AI to DB: ${job.sourceUrl} - ${normalized.title}`

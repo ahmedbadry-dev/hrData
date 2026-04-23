@@ -23,6 +23,16 @@ async function processSingleJob(jobUrl: string, site: WebSiteConfig): Promise<st
         for (const extracted of extractedList) {
           const normalized = ScraperStorage.validateAndNormalize(extracted);
           if (normalized) {
+            const isDuplicate = await ScraperStorage.isCompanyRecentlyPosted(
+              normalized.companyName
+            );
+            if (isDuplicate) {
+              logger.info(
+                `[Scraper] ⏭️ Skipping: ${normalized.companyName} already has a post in the last 24h`
+              );
+              continue;
+            }
+
             await ScraperStorage.saveJobToDb(normalized);
           }
         }
@@ -63,7 +73,6 @@ async function processTwitterSource(
 
   const urls = jobs.map((job) => ({ site: config.name, url: job.sourceUrl }));
 
-  await ScraperStorage.saveJobDetail(jobDetails);
   return { count: jobs.length, urls };
 }
 
@@ -138,17 +147,6 @@ export async function runScraperForAllSites(): Promise<void> {
       } catch (siteError) {
         logger.error(SCRAPER_INTERNAL_CONSTANTS.LOGS.SITE_FAILURE(site.name, siteError));
       }
-    }
-
-    if (allLinks.length > 0) {
-      await ScraperStorage.saveAllAds(
-        allLinks.slice(0, SCRAPER_INTERNAL_CONSTANTS.LIMITS.MAX_SCRAPED_ITEMS_TO_SAVE)
-      );
-    }
-    if (scrapedJobs.length > 0) {
-      await ScraperStorage.saveJobDetail(
-        scrapedJobs.slice(0, SCRAPER_INTERNAL_CONSTANTS.LIMITS.MAX_SCRAPED_ITEMS_TO_SAVE)
-      );
     }
 
     logger.info(SCRAPER_INTERNAL_CONSTANTS.LOGS.SUCCESS);
