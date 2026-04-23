@@ -109,16 +109,14 @@ export class AuthController {
     const cookieOptions: {
       httpOnly: boolean;
       secure: boolean;
-      sameSite: 'strict';
+      sameSite: 'strict' | 'lax' | 'none';
       maxAge?: number;
     } = {
       httpOnly: true,
       secure: appConfig.isProduction,
-      sameSite: 'strict',
+      sameSite: appConfig.isProduction ? 'none' : 'lax',
     };
 
-    // rememberMe = true  → persistent cookie (30 days)
-    // rememberMe = false → session cookie (no maxAge, deleted when browser closes)
     if (rememberMe) {
       cookieOptions.maxAge = AUTH_CONSTANTS.REMEMBER_ME_MAX_AGE;
     }
@@ -128,7 +126,7 @@ export class AuthController {
     res.cookie(AUTH_CONSTANTS.SESSION_HINT_COOKIE_NAME, '1', {
       httpOnly: false,
       secure: appConfig.isProduction,
-      sameSite: 'strict',
+      sameSite: appConfig.isProduction ? 'none' : 'lax',
       path: '/',
       ...(rememberMe ? { maxAge: AUTH_CONSTANTS.REMEMBER_ME_MAX_AGE } : {}),
     });
@@ -136,7 +134,7 @@ export class AuthController {
     res.cookie(AUTH_CONSTANTS.CSRF_TOKEN_COOKIE_NAME, csrfToken, {
       httpOnly: false,
       secure: appConfig.isProduction,
-      sameSite: 'strict',
+      sameSite: appConfig.isProduction ? 'none' : 'lax',
       path: '/',
     });
   }
