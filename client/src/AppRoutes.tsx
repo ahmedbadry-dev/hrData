@@ -9,7 +9,6 @@ import AdminUsersPage from '@/pages/admin/AdminUsersPage';
 import AdminAnalyticsPage from '@/pages/admin/AdminAnalyticsPage';
 import AdminNotificationsPage from '@/pages/admin/AdminNotificationsPage';
 import AdminScrapPage from '@/pages/admin/AdminScrapPage';
-import AdminSettingsPage from '@/pages/admin/AdminSettingsPage';
 import UserDashboardLayout from '@/pages/user/UserDashboardLayout';
 import DashboardHomePage from '@/pages/user/DashboardHomePage';
 import DashboardJobsPage from '@/pages/user/DashboardJobsPage';
@@ -63,7 +62,6 @@ export default function AppRoutes() {
         <Route path="analysis" element={<AdminAnalyticsPage />} />
         <Route path="notifications" element={<AdminNotificationsPage />} />
         <Route path="scrap" element={<AdminScrapPage />} />
-        <Route path="settings" element={<AdminSettingsPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

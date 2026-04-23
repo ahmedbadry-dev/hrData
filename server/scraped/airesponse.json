@@ -1,304 +1,106 @@
 [
   {
-    "url": "https://www.ewdifh.com/jobs/84979",
-    "site": "ewdifh",
+    "url": "https://x.com/i/web/status/2047084813367054811",
+    "site": "twitter",
     "response": [
       {
-        "title": "ممثل خدمة عملاء عبر الهاتف",
-        "companyName": "شركة المساندة للإسناد ومراكز الاتصال (إكستنسيا)",
+        "title": "مهندس إنتاج",
+        "companyName": "غير محدد",
+        "location": "MECCA",
+        "hrEmail": "Baalmutairi1@gmail.com",
+        "qualification": "BACHELOR",
+        "specialization": "ENGINEERING",
+        "category": "الهندسة الإنتاجية",
+        "description": "مطلوب مهندس إنتاج سعودي للعمل في مدينة مكة المكرمة. يشترط وجود خبرة سابقة تتراوح بين سنتين إلى خمس سنوات وحصول المتقدم على درجة البكالوريوس في الهندسة.",
+        "language": "ar",
+        "postedAt": null,
+        "expiresAt": null,
+        "source": "twitter",
+        "sourceUrl": "https://x.com/i/web/status/2047084813367054811"
+      }
+    ]
+  },
+  {
+    "url": "https://x.com/i/web/status/2047041320242311605",
+    "site": "twitter",
+    "response": [
+      {
+        "title": "مهندس تقنية معلومات",
+        "companyName": "شركة مقاولات",
+        "location": "JEDDAH",
+        "hrEmail": "hr.job2230@gmail.com",
+        "qualification": "BACHELOR",
+        "specialization": "ENGINEERING",
+        "category": "تقنية المعلومات",
+        "description": "مطلوب مهندس تقنية معلومات حديث تخرج للعمل في شركة مقاولات بجدة. يشترط أن يكون المتقدم سعودي الجنسية وحاصل على ترخيص من هيئة المهندسين.",
+        "language": "ar",
+        "postedAt": null,
+        "expiresAt": null,
+        "source": "twitter",
+        "sourceUrl": "https://x.com/i/web/status/2047041320242311605"
+      }
+    ]
+  },
+  {
+    "url": "https://x.com/i/web/status/2047030669541261698",
+    "site": "twitter",
+    "response": [
+      {
+        "title": "مهندس تقنية معلومات",
+        "companyName": "شركة في مجال المقاولات",
+        "location": "JEDDAH",
+        "hrEmail": "hr.job2230@gmail.com",
+        "qualification": "BACHELOR",
+        "specialization": "INFORMATION_TECHNOLOGY",
+        "category": "تقنية المعلومات",
+        "description": "مطلوب مهندس تقنية معلومات للعمل في شركة مقاولات بمدينة جدة. الوظيفة مخصصة للسعوديين حديثي التخرج مع اشتراط وجود ترخيص ساري من هيئة المهندسين وإتقان اللغة الإنجليزية.",
+        "language": "ar",
+        "postedAt": null,
+        "expiresAt": null,
+        "source": "twitter",
+        "sourceUrl": "https://x.com/i/web/status/2047030669541261698"
+      }
+    ]
+  },
+  {
+    "url": "https://x.com/i/web/status/2047018483553313271",
+    "site": "twitter",
+    "response": [
+      {
+        "title": "موظف تأجير سيارات",
+        "companyName": "شركة لتأجير السيارات",
         "location": "RIYADH",
-        "hrEmail": "recruitmentksa@sa.extensya.com",
+        "hrEmail": "HR.carrental@hotmail.com",
         "qualification": "HIGH_SCHOOL",
-        "specialization": "OTHER",
-        "category": "خدمة العملاء",
-        "description": "تعلن شركة إكستنسيا عن توفر أكثر من 200 وظيفة لممثلي خدمة العملاء بنظام الورديات. تتطلب الوظيفة إجادة اللغة الإنجليزية والحاسب الآلي للسعوديين والسعوديات.",
-        "language": "ar",
-        "postedAt": "2026-04-20T00:00:00Z",
-        "expiresAt": null,
-        "source": "ewdifh",
-        "sourceUrl": "https://www.ewdifh.com/jobs/84979"
-      }
-    ]
-  },
-  {
-    "url": "https://www.ewdifh.com/jobs/84971",
-    "site": "ewdifh",
-    "response": [
-      {
-        "title": "مندوب مبيعات",
-        "companyName": "حسن جميل للسيارات",
-        "location": "DAMMAM",
-        "hrEmail": "jhj@hassanjameel.com.sa",
-        "qualification": "BACHELOR",
-        "specialization": "BUSINESS_ADMINISTRATION",
-        "category": "المبيعات والتسويق",
-        "description": "مندوب مبيعات للعمل في مدينة الدمام براتب يبدأ من 5600 ريال وعمولات مجزية. الوظيفة متاحة للجنسين من حملة الدبلوم أو البكالوريوس في التخصصات الإدارية ولا تشترط الخبرة.",
-        "language": "ar",
-        "postedAt": "2026-04-19T00:00:00Z",
-        "expiresAt": null,
-        "source": "ewdifh",
-        "sourceUrl": "https://www.ewdifh.com/jobs/84971"
-      }
-    ]
-  },
-  {
-    "url": "https://x.com/i/web/status/2046622406853153125",
-    "site": "twitter",
-    "response": [
-      {
-        "title": "مدير تشغيلي",
-        "companyName": "شركة AHC",
-        "location": "MEDINA",
-        "hrEmail": "ahc.hr2@gmail.com",
-        "qualification": "OTHER",
-        "specialization": "BUSINESS_ADMINISTRATION",
-        "category": "الإدارة والتشغيل",
-        "description": "مطلوب مدير تشغيلي للعمل في المدينة المنورة يشترط وجود خبرة سابقة في نفس المجال. الوظيفة مخصصة للسعوديين فقط وتتطلب معرفة سابقة بسوق العمل في المنطقة.",
+        "specialization": "MARKETING_SALES",
+        "category": "خدمة العملاء والمبيعات",
+        "description": "موظفين وموظفات للعمل في مجال تأجير السيارات بمنطقة الرياض. الوظيفة تشمل راتب أساسي بالإضافة إلى عمولات على المبيعات بنظام عمل 8 ساعات يومياً.",
         "language": "ar",
         "postedAt": null,
         "expiresAt": null,
         "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046622406853153125"
+        "sourceUrl": "https://x.com/i/web/status/2047018483553313271"
       }
     ]
   },
   {
-    "url": "https://x.com/i/web/status/2046622196370485548",
+    "url": "https://x.com/i/web/status/2047076243766448374",
     "site": "twitter",
     "response": [
       {
-        "title": "مشرف عمال نظافة",
-        "companyName": "شركة AHC",
-        "location": "MEDINA",
-        "hrEmail": "ahc.hr2@gmail.com",
-        "qualification": "OTHER",
-        "specialization": "OTHER",
-        "category": "إشراف وصيانة",
-        "description": "مطلوب مشرف عمال نظافة للعمل في المدينة المنورة. يشترط وجود خبرة سابقة في نفس المجال وأن يكون المتقدم سعودي الجنسية.",
-        "language": "ar",
-        "postedAt": null,
-        "expiresAt": null,
-        "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046622196370485548"
-      }
-    ]
-  },
-  {
-    "url": "https://x.com/i/web/status/2046615664756945200",
-    "site": "twitter",
-    "response": [
-      {
-        "title": "أخصائي نظام معلومات الموارد البشرية (نظام أوراكل)",
-        "companyName": "شركة إيسوم",
+        "title": "أخصائي رواتب",
+        "companyName": "شركة مقاولات كبرى",
         "location": "RIYADH",
-        "hrEmail": "esomcv-sa@esom.com.sa",
-        "qualification": "BACHELOR",
+        "hrEmail": "manalrecruiter8@gmail.com",
+        "qualification": "OTHER",
         "specialization": "HUMAN_RESOURCES",
-        "category": "الموارد البشرية والتقنية",
-        "description": "المسؤول عن دعم فريق الموارد البشرية في استخدام نظام أوراكل وحل المشاكل التقنية مع مهارات قوية في التقارير وإدارة البيانات. يشترط فهم النظام من الناحية التأسيسية وليس كمستخدم فقط مع خبرة سابقة في التأسيس.",
+        "category": "الموارد البشرية",
+        "description": "أخصائي رواتب لشركة مقاولات كبرى في الرياض بخبرة لا تقل عن سنتين. يشترط وجود خبرة سابقة في قطاع المقاولات والمشاريع ومعرفة شاملة بإجراءات الرواتب.",
         "language": "ar",
         "postedAt": null,
         "expiresAt": null,
         "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046615664756945200"
-      }
-    ]
-  },
-  {
-    "url": "https://x.com/i/web/status/2046613881066233933",
-    "site": "twitter",
-    "response": [
-      {
-        "title": "رئيس باريستا",
-        "companyName": "شركة خليجية",
-        "location": "KHOBAR",
-        "hrEmail": "hr@roastbh.com",
-        "qualification": "OTHER",
-        "specialization": "OTHER",
-        "category": "المطاعم والمقاهي",
-        "description": "مسؤول عن الإشراف على تحضير القهوة والمشروبات وإدارة فريق الباريستا. يتطلب الخبرة في نفس المجال والقدرة على العمل الجماعي.",
-        "language": "ar",
-        "postedAt": null,
-        "expiresAt": null,
-        "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046613881066233933"
-      },
-      {
-        "title": "باريستا",
-        "companyName": "شركة خليجية",
-        "location": "KHOBAR",
-        "hrEmail": "hr@roastbh.com",
-        "qualification": "OTHER",
-        "specialization": "OTHER",
-        "category": "المطاعم والمقاهي",
-        "description": "القيام بتحضير وتقديم أنواع القهوة والمشروبات المختلفة للعملاء. يشترط وجود خبرة سابقة ومهارات تواصل جيدة.",
-        "language": "ar",
-        "postedAt": null,
-        "expiresAt": null,
-        "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046613881066233933"
-      },
-      {
-        "title": "رئيس المطبخ / رئيس المخبز",
-        "companyName": "شركة خليجية",
-        "location": "KHOBAR",
-        "hrEmail": "hr@roastbh.com",
-        "qualification": "OTHER",
-        "specialization": "OTHER",
-        "category": "المطاعم والمقاهي",
-        "description": "الإشراف على عمليات المطبخ أو المخبز وضمان جودة الإنتاج الغذائي. يتطلب مهارات قيادية وخبرة عملية في إدارة المطابخ.",
-        "language": "ar",
-        "postedAt": null,
-        "expiresAt": null,
-        "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046613881066233933"
-      },
-      {
-        "title": "مدير عمليات",
-        "companyName": "شركة خليجية",
-        "location": "KHOBAR",
-        "hrEmail": "hr@roastbh.com",
-        "qualification": "OTHER",
-        "specialization": "BUSINESS_ADMINISTRATION",
-        "category": "الإدارة والعمليات",
-        "description": "إدارة وتوجيه العمليات اليومية لضمان كفاءة سير العمل وتحقيق الأهداف التشغيلية. مخصصة للسعوديين مع اشتراط توفر الخبرة المناسبة.",
-        "language": "ar",
-        "postedAt": null,
-        "expiresAt": null,
-        "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046613881066233933"
-      }
-    ]
-  },
-  {
-    "url": "https://x.com/i/web/status/2046613841266483290",
-    "site": "twitter",
-    "response": [
-      {
-        "title": "رئيس باريستا",
-        "companyName": "شركة خليجية",
-        "location": "KHOBAR",
-        "hrEmail": "hr@roastbh.com",
-        "qualification": "OTHER",
-        "specialization": "OTHER",
-        "category": "المطاعم والمقاهي",
-        "description": "مسؤول عن قيادة فريق الباريستا وتحضير المشروبات باحترافية. تتطلب الوظيفة خبرة سابقة في مجال القهوة ومهارات قيادية.",
-        "language": "ar",
-        "postedAt": null,
-        "expiresAt": null,
-        "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046613841266483290"
-      },
-      {
-        "title": "باريستا",
-        "companyName": "شركة خليجية",
-        "location": "KHOBAR",
-        "hrEmail": "hr@roastbh.com",
-        "qualification": "OTHER",
-        "specialization": "OTHER",
-        "category": "المطاعم والمقاهي",
-        "description": "القيام بتحضير وتقديم القهوة والمشروبات الساخنة والباردة للعملاء. تتطلب الوظيفة مهارات العمل الجماعي والالتزام بمعايير الجودة.",
-        "language": "ar",
-        "postedAt": null,
-        "expiresAt": null,
-        "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046613841266483290"
-      },
-      {
-        "title": "رئيس المطبخ / رئيس المخبز",
-        "companyName": "شركة خليجية",
-        "location": "KHOBAR",
-        "hrEmail": "hr@roastbh.com",
-        "qualification": "OTHER",
-        "specialization": "OTHER",
-        "category": "الضيافة والأغذية",
-        "description": "الإشراف على عمليات المطبخ أو المخبز وضمان جودة المنتجات المقدمة. يشترط توفر خبرة سابقة في إدارة المطابخ والمخابز.",
-        "language": "ar",
-        "postedAt": null,
-        "expiresAt": null,
-        "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046613841266483290"
-      },
-      {
-        "title": "مدير عمليات",
-        "companyName": "شركة خليجية",
-        "location": "KHOBAR",
-        "hrEmail": "hr@roastbh.com",
-        "qualification": "BACHELOR",
-        "specialization": "BUSINESS_ADMINISTRATION",
-        "category": "إدارة العمليات",
-        "description": "إدارة وتنسيق العمليات اليومية للفرع لضمان الكفاءة والإنتاجية. تتطلب الوظيفة مهارات قيادية عالية وخبرة إدارية في نفس المجال.",
-        "language": "ar",
-        "postedAt": null,
-        "expiresAt": null,
-        "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046613841266483290"
-      }
-    ]
-  },
-  {
-    "url": "https://x.com/i/web/status/2046613687566250253",
-    "site": "twitter",
-    "response": [
-      {
-        "title": "رئيس باريستا",
-        "companyName": "شركة خليجية",
-        "location": "KHOBAR",
-        "hrEmail": "hr@roastbh.com",
-        "qualification": "OTHER",
-        "specialization": "OTHER",
-        "category": "الضيافة والمطاعم",
-        "description": "مسؤول عن قيادة فريق الباريستا وضمان جودة إعداد المشروبات وفقاً للمعايير المطلوبة. يتطلب مهارات قيادية وخبرة سابقة في مجال القهوة المختصة.",
-        "language": "ar",
-        "postedAt": null,
-        "expiresAt": null,
-        "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046613687566250253"
-      },
-      {
-        "title": "باريستا",
-        "companyName": "شركة خليجية",
-        "location": "KHOBAR",
-        "hrEmail": "hr@roastbh.com",
-        "qualification": "OTHER",
-        "specialization": "OTHER",
-        "category": "الضيافة والمطاعم",
-        "description": "القيام بإعداد وتقديم القهوة والمشروبات بمهارة عالية للعملاء. يشترط وجود خبرة سابقة في المجال والقدرة على العمل ضمن فريق.",
-        "language": "ar",
-        "postedAt": null,
-        "expiresAt": null,
-        "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046613687566250253"
-      },
-      {
-        "title": "رئيس المطبخ / رئيس المخبز",
-        "companyName": "شركة خليجية",
-        "location": "KHOBAR",
-        "hrEmail": "hr@roastbh.com",
-        "qualification": "OTHER",
-        "specialization": "OTHER",
-        "category": "الضيافة والمطاعم",
-        "description": "الإشراف الكامل على عمليات المطبخ والمخبز لضمان تقديم أعلى جودة من المنتجات. يتطلب خبرة تخصصية في إدارة المطابخ والقيادة.",
-        "language": "ar",
-        "postedAt": null,
-        "expiresAt": null,
-        "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046613687566250253"
-      },
-      {
-        "title": "مدير عمليات",
-        "companyName": "شركة خليجية",
-        "location": "KHOBAR",
-        "hrEmail": "hr@roastbh.com",
-        "qualification": "BACHELOR",
-        "specialization": "BUSINESS_ADMINISTRATION",
-        "category": "إدارة العمليات",
-        "description": "إدارة وتنسيق العمليات اليومية للشركة لضمان سير العمل بكفاءة وفعالية. يتطلب خبرة إدارية قوية ومهارات تنظيمية عالية.",
-        "language": "ar",
-        "postedAt": null,
-        "expiresAt": null,
-        "source": "twitter",
-        "sourceUrl": "https://x.com/i/web/status/2046613687566250253"
+        "sourceUrl": "https://x.com/i/web/status/2047076243766448374"
       }
     ]
   }

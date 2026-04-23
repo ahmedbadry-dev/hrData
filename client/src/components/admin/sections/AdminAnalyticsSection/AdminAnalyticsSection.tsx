@@ -60,7 +60,6 @@ export default function AdminAnalyticsSection({
   const topJobs = topJobsResponse?.data;
 
   const total = useAnimatedCounter(overview?.totalApplicationsSent ?? 0);
-  const openRate = useAnimatedCounter(overview?.emailOpenedPercentage ?? 0, '%');
   const auto = useAnimatedCounter(advanced?.autoSuccessRate ?? 0, '%');
   const active = useAnimatedCounter(overview?.activeUsers ?? 0);
 
@@ -279,8 +278,8 @@ export default function AdminAnalyticsSection({
           className={styles['stat-card']}
           valueClassName={styles['stat-val']}
           titleClassName={styles['stat-tit']}
-          value={openRate}
-          title="معدل الفتح"
+          value={useAnimatedCounter(overview?.totalJobs ?? 0)}
+          title="إجمالي الوظائف"
         />
         <StatCard
           className={styles['stat-card']}

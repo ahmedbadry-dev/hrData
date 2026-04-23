@@ -41,6 +41,22 @@ const QUOTA_COUNTED_STATUSES: ApplicationStatus[] = [
 export class ApplicationsService {
   constructor(private readonly prisma: PrismaClient) {}
 
+  async getApplicationsStats(userId: string): Promise<{ total: number; successful: number }> {
+    const [total, successful] = await Promise.all([
+      this.prisma.application.count({ where: { userId } }),
+      this.prisma.application.count({
+        where: {
+          userId,
+          status: {
+            in: [ApplicationStatus.SENT, ApplicationStatus.EMAIL_SENT, ApplicationStatus.EMAIL_OPENED],
+          },
+        },
+      }),
+    ]);
+
+    return { total, successful };
+  }
+
   async getApplications(
     userId: string,
     query: { page?: number | undefined; limit?: number | undefined; status?: string | undefined }

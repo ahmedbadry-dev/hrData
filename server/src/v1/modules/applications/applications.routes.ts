@@ -40,6 +40,12 @@ export const applicationsRoutes = (applicationsController: ApplicationsControlle
   );
 
   router.get(
+    '/stats',
+    authenticationMiddleware,
+    applicationsController.getStats
+  );
+
+  router.get(
     '/:id',
     authenticationMiddleware,
     validateParamsMiddleware(ApplicationIdParamDtoSchema),

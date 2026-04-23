@@ -22,6 +22,16 @@ export class ApplicationsController {
     );
   };
 
+  getStats = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.applicationsService.getApplicationsStats(req.user!.id);
+    return ResponseHelper.ok(
+      res,
+      data,
+      'Applications stats fetched successfully',
+      req.path
+    );
+  };
+
   getApplicationById = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.applicationsService.getApplicationById(
       req.user!.id,

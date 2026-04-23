@@ -4,7 +4,7 @@ import { EmptyState } from '@/components/common';
 import { UserHomeSection } from '@/components/user/sections';
 import { jobsService } from '@/modules/jobs/api/jobs.service';
 import { jobsQueryKeys } from '@/modules/jobs/api/jobs.query-keys';
-import { fetchApplicationsList } from '@/modules/applications/api/applications.service';
+import { fetchApplicationsList, fetchApplicationsStats } from '@/modules/applications/api/applications.service';
 import { applicationsQueryKeys } from '@/modules/applications/api/applications.query-keys';
 import type { Application } from '@/modules/applications/types';
 
@@ -70,7 +70,7 @@ const buildCurrentWeekActivity = (applications: Application[]): number[] => {
 };
 
 export default function DashboardHomePage() {
-  const [totalJobsQuery, savedJobsQuery, applicationsCountQuery] = useQueries({
+  const [totalJobsQuery, savedJobsQuery, applicationsCountQuery, statsQuery] = useQueries({
     queries: [
       {
         queryKey: jobsQueryKeys.list({ page: 1, limit: 1 }),
@@ -87,6 +87,11 @@ export default function DashboardHomePage() {
         queryFn: () => fetchApplicationsList({ page: 1, limit: 1 }),
         ...STATS_QUERY_OPTIONS,
       },
+      {
+        queryKey: [...applicationsQueryKeys.all, 'stats'],
+        queryFn: () => fetchApplicationsStats(),
+        ...STATS_QUERY_OPTIONS,
+      },
     ],
   });
 
@@ -100,6 +105,7 @@ export default function DashboardHomePage() {
     totalJobsQuery.isError ||
     savedJobsQuery.isError ||
     applicationsCountQuery.isError ||
+    statsQuery.isError ||
     weeklyActivityQuery.isError;
 
   const totalJobs =
@@ -113,6 +119,10 @@ export default function DashboardHomePage() {
     applicationsCountQuery.data?.data?.pagination?.total ??
     0;
 
+  const stats = statsQuery.data?.data;
+  const successRate =
+    stats && stats.total > 0 ? Math.round((stats.successful / stats.total) * 100) : 0;
+
   const weeklyData = useMemo(
     () => buildCurrentWeekActivity(weeklyActivityQuery.data?.data?.applications ?? []),
     [weeklyActivityQuery.data?.data?.applications]
@@ -124,7 +134,9 @@ export default function DashboardHomePage() {
     savedJobsQuery.isLoading ||
     savedJobsQuery.isFetching ||
     applicationsCountQuery.isLoading ||
-    applicationsCountQuery.isFetching;
+    applicationsCountQuery.isFetching ||
+    statsQuery.isLoading ||
+    statsQuery.isFetching;
 
   const isWeeklyLoading = weeklyActivityQuery.isLoading || weeklyActivityQuery.isFetching;
 
@@ -144,7 +156,7 @@ export default function DashboardHomePage() {
     <UserHomeSection
       savedCount={savedJobsCount}
       applicationsCount={applicationsCount}
-      repliesCount={0}
+      repliesCount={successRate}
       totalJobs={totalJobs}
       weeklyData={weeklyData}
       isStatsLoading={isStatsLoading}

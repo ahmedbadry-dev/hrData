@@ -46,61 +46,21 @@ export class AnalyticsService {
       totalApplicationsSent,
       totalApplications,
       applicationsThisWeek,
-      emailOpenedCount,
-      emailSentCount,
+      totalEmailsOpened,
     ] = await Promise.all([
       this.prisma.user.count(),
-      this.prisma.user.count({
-        where: {
-          status: UserStatus.ACTIVE,
-        },
-      }),
-      this.prisma.user.count({
-        where: {
-          createdAt: {
-            gte: this.getStartOfDay(0),
-          },
-        },
-      }),
+      this.prisma.user.count({ where: { status: UserStatus.ACTIVE } }),
+      this.prisma.user.count({ where: { createdAt: { gte: this.getStartOfDay(0) } } }),
       this.prisma.job.count(),
-      this.prisma.job.count({
-        where: {
-          createdAt: {
-            gte: this.getStartOfDay(0),
-          },
-        },
-      }),
-      this.prisma.application.count({
-        where: {
-          status: {
-            in: applicationSentStatuses,
-          },
-        },
-      }),
+      this.prisma.job.count({ where: { createdAt: { gte: this.getStartOfDay(0) } } }),
+      this.prisma.application.count({ where: { status: { in: applicationSentStatuses } } }),
       this.prisma.application.count(),
-      this.prisma.application.count({
-        where: {
-          createdAt: {
-            gte: this.getStartOfDay(6),
-          },
-        },
-      }),
-      this.prisma.application.count({
-        where: {
-          status: ApplicationStatus.EMAIL_OPENED,
-        },
-      }),
-      this.prisma.application.count({
-        where: {
-          status: {
-            in: [ApplicationStatus.EMAIL_SENT, ApplicationStatus.EMAIL_OPENED],
-          },
-        },
-      }),
+      this.prisma.application.count({ where: { createdAt: { gte: this.getStartOfDay(6) } } }),
+      this.prisma.application.count({ where: { status: ApplicationStatus.EMAIL_OPENED } }),
     ]);
 
     const emailOpenedPercentage =
-      emailSentCount > 0 ? parseFloat(((emailOpenedCount / emailSentCount) * 100).toFixed(2)) : 0;
+      totalApplicationsSent > 0 ? (totalEmailsOpened / totalApplicationsSent) * 100 : 0;
 
     return {
       totalUsers,
@@ -111,7 +71,7 @@ export class AnalyticsService {
       totalApplicationsSent,
       totalApplications,
       applicationsThisWeek,
-      emailOpenedPercentage,
+      emailOpenedPercentage: Math.round(emailOpenedPercentage),
     };
   }
 
@@ -127,7 +87,7 @@ export class AnalyticsService {
     ];
 
     const [
-      activeUsers,
+      activeUsersLogs,
       totalApplications,
       successfulApplications,
       nonPendingApplications,
@@ -176,17 +136,14 @@ export class AnalyticsService {
     ]);
 
     const autoSuccessRate =
-      nonPendingApplications > 0
-        ? parseFloat(((successfulApplications / nonPendingApplications) * 100).toFixed(2))
-        : 0;
+      nonPendingApplications > 0 ? (successfulApplications / nonPendingApplications) * 100 : 0;
 
-    const emailOpenRate =
-      emailSentCount > 0 ? parseFloat(((emailOpenedCount / emailSentCount) * 100).toFixed(2)) : 0;
+    const emailOpenRate = emailSentCount > 0 ? (emailOpenedCount / emailSentCount) * 100 : 0;
 
     return {
-      activeUsers: activeUsers.length,
-      autoSuccessRate,
-      emailOpenRate,
+      activeUsers: activeUsersLogs.length,
+      autoSuccessRate: Math.round(autoSuccessRate),
+      emailOpenRate: Math.round(emailOpenRate),
       totalApplications,
     };
   }

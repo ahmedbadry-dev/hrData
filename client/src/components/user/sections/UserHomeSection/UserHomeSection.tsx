@@ -144,9 +144,9 @@ export default function UserHomeSection({
           className={styles['stat-card']}
           valueClassName={styles['stat-val']}
           titleClassName={styles['stat-tit']}
-          value={repliesCount}
+          value={`${repliesCount}%`}
           isLoading={isStatsLoading}
-          title="الردود"
+          title="نسبة نجاح التقديم الآلي"
         />
         <StatCard
           className={styles['stat-card']}

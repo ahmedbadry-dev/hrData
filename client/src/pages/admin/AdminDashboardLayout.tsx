@@ -24,7 +24,6 @@ export default function AdminDashboardLayout() {
   else if (location.pathname.includes('/admin/analysis')) activePage = 'analytics';
   else if (location.pathname.includes('/admin/notifications')) activePage = 'announcements';
   else if (location.pathname.includes('/admin/scrap')) activePage = 'scraper';
-  else if (location.pathname.includes('/admin/settings')) activePage = 'settings';
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [savedToken, setSavedToken] = useState('');
@@ -75,9 +74,6 @@ export default function AdminDashboardLayout() {
         break;
       case 'scraper':
         navigate('/admin/scrap');
-        break;
-      case 'settings':
-        navigate('/admin/settings');
         break;
     }
   };
