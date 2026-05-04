@@ -33,17 +33,9 @@ export const applicationsRoutes = (applicationsController: ApplicationsControlle
     applicationsController.getApplications
   );
 
-  router.get(
-    '/quota',
-    authenticationMiddleware,
-    applicationsController.getEmailQuota
-  );
+  router.get('/quota', authenticationMiddleware, applicationsController.getEmailQuota);
 
-  router.get(
-    '/stats',
-    authenticationMiddleware,
-    applicationsController.getStats
-  );
+  router.get('/stats', authenticationMiddleware, applicationsController.getStats);
 
   router.get(
     '/:id',

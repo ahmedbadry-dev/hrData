@@ -40,9 +40,7 @@ export class ResponseHelper {
     path: string
   ): Response {
     const paginationMeta =
-      data &&
-      typeof data === 'object' &&
-      'pagination' in (data as Record<string, unknown>)
+      data && typeof data === 'object' && 'pagination' in (data as Record<string, unknown>)
         ? ((data as { pagination?: PaginationMeta }).pagination ?? undefined)
         : undefined;
 

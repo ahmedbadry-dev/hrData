@@ -28,6 +28,9 @@ import { notificationsRoutes } from './modules/notifications/notifications.route
 import { scraperRoutes } from './modules/scraper/scraper.routes';
 import { ScraperService } from './modules/scraper/scraper.service';
 import { ScraperController } from './modules/scraper/scraper.controller';
+import { SettingsService } from './modules/settings/settings.service';
+import { SettingsController } from './modules/settings/settings.controller';
+import { settingsRoutes } from './modules/settings/settings.routes';
 
 export const v1Routes = () => {
   const router = Router();
@@ -52,6 +55,9 @@ export const v1Routes = () => {
   const scraperService = new ScraperService(prisma);
   const scraperController = new ScraperController(scraperService);
 
+  const settingsService = new SettingsService(prisma);
+  const settingsController = new SettingsController(settingsService);
+
   const { adminRouter: adminNotificationsRouter, userRouter: userNotificationsRouter } =
     notificationsRoutes(notificationsController);
 
@@ -65,6 +71,7 @@ export const v1Routes = () => {
   router.use('/applications', applicationsRoutes(applicationsController));
   router.use('/gmail', gmailRoutes(gmailController));
   router.use('/admin/scraper', scraperRoutes(scraperController));
+  router.use('/admin/settings', settingsRoutes(settingsController));
 
   return router;
 };

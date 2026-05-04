@@ -50,7 +50,7 @@ export const mapErrorToArabic = (message: string): string => {
     'jwt malformed': 'جلسة غير صالحة',
     'token expired': 'انتهت صلاحية الجلسة',
     'token invalid': 'جلسة غير صالحة',
-    'required': 'هذا الحقل مطلوب',
+    required: 'هذا الحقل مطلوب',
     'bad request': 'طلب غير صالح',
     'not found': 'المورد المطلوب غير موجود',
     'access denied': 'الدخول مرفوض',

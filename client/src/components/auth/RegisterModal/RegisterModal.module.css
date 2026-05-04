@@ -87,6 +87,12 @@
   font-style: normal;
 }
 
+.logoImg {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
 .subtitle {
   font-size: 12px;
   letter-spacing: 3px;

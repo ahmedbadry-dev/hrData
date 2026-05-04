@@ -35,6 +35,12 @@
   font-style: normal;
 }
 
+.logoImg {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+
 .container {
   flex: 1;
   display: flex;

@@ -1,0 +1,20 @@
+import { useLogo } from '@/hooks/useLogo';
+
+interface LogoProps {
+  fallback?: string;
+  className?: string;
+}
+
+export function Logo({ fallback = 'HR Data', className }: LogoProps) {
+  const { logoPath, isLoading } = useLogo();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (logoPath) {
+    return <img src={logoPath} alt="Logo" className={className} />;
+  }
+
+  return <span className={className}>{fallback}</span>;
+}

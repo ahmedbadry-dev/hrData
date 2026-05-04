@@ -427,6 +427,7 @@ export interface ExtractedJob {
   expiresAt: string | null;
 }
 ```
+
 in src/scraper/scraper.service.ts
 
 ```ts
@@ -551,7 +552,7 @@ export async function runScraperForAllSites(): Promise<void> {
 
 in server/src/scraper/scraper.constants
 
-```ts 
+```ts
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // src/scraper/scraper.constants.ts
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -586,12 +587,11 @@ export const SCRAPER_INTERNAL_CONSTANTS = {
     LOCK_ERROR: (error: any) => `[Scraper] Critical Redis error while handling lock: ${error}`,
   },
 } as const;
-
 ```
 
 in src/scraper/scraper.schedule.ts
 
-```ts 
+```ts
 import { scraperQueue } from '@/config/bullmq';
 import logger from '@/shared/utils/logger.util';
 
@@ -636,12 +636,11 @@ export async function clearScraperSchedule(): Promise<void> {
   }
   logger.info(`[Scraper] 🗑️ Cleared ${repeatableJobs.length} scheduled jobs`);
 }
-
 ```
 
 in server/src/v1/scraper/scraper.controller.ts
 
-```ts 
+```ts
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // src/v1/modules/scraper/scraper.controller.ts
 
@@ -679,12 +678,11 @@ export class ScraperController {
     return ResponseHelper.ok(res, {}, SCRAPER_CONSTANTS.MESSAGES.MANUAL_RUN_QUEUED, req.path);
   };
 }
-
 ```
 
 in server/src/v1/scraper/scraper.routes.ts
 
-```ts 
+```ts
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // src/v1/modules/scraper/scraper.routes.ts
 
@@ -717,13 +715,11 @@ export const scraperRoutes = (scraperController: ScraperController): Router => {
 
   return router;
 };
-
 ```
-
 
 in server/src/v1/scraper/scraper.service.ts
 
-```ts 
+```ts
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // src/v1/modules/scraper/scraper.service.ts
 
@@ -807,13 +803,11 @@ export class ScraperService {
     await scraperQueue.add('run-scraper-manual', {}, { priority: 1 });
   }
 }
-
 ```
 
 in server/src/v1/scraper/scraper.constatns.ts
 
-```ts 
-
+```ts
 export const SCRAPER_CONSTANTS = {
   MESSAGES: {
     STATUS_FETCHED: 'Scraper status fetched successfully',
@@ -824,12 +818,11 @@ export const SCRAPER_CONSTANTS = {
     MANUAL_RUN_QUEUED: 'Scraper job queued for immediate execution',
   },
 } as const;
-
 ```
 
 in server/src/workers/scraper.worker.ts
 
-```ts 
+```ts
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // src/workers/scraper.worker.ts
 
@@ -877,6 +870,7 @@ scraperWorker.on('active', (job: Job) => {
 ```
 
 in server/src/config/bullmq.ts
+
 ```ts
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // src/config/bullmq.ts
@@ -908,6 +902,7 @@ export const jobApplicationsScheduleQueue = new Queue('job-applications-schedule
 ```
 
 in server/src/config/bull-board.ts
+
 ```ts
 import { createBullBoard } from '@bull-board/api';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
@@ -925,10 +920,10 @@ const bullBoard = createBullBoard({
 });
 
 export const bullBoardRouter = serverAdapter.getRouter();
-
 ```
 
 in server/src/config/redis/redis.ts
+
 ```ts
 import IORedis from 'ioredis';
 import { redisConfig } from './env.config';
@@ -950,8 +945,8 @@ export default redis;
 ```
 
 in server/src/config/llm.ts
-```ts
 
+```ts
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // src/config/llm.ts
 
@@ -983,5 +978,4 @@ if (!geminiApiKey) {
 } else {
   logger.info('[Gemini] ✅ Client initialized');
 }
-
 ```

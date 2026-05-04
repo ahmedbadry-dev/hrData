@@ -33,6 +33,12 @@
   color: var(--accent);
 }
 
+.logoImg {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
 .errorBox {
   width: 100%;
   border: 1px solid var(--accent);

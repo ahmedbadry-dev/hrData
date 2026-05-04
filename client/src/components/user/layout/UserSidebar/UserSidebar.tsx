@@ -164,8 +164,6 @@ export default function UserSidebar({
             </li>
           </ul>
         </nav>
-
-        
       </div>
     </aside>
   );

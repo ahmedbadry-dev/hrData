@@ -391,12 +391,7 @@ export class JobsService {
     query: Partial<
       Pick<
         SearchJobsDto['query'],
-        | 'keyword'
-        | 'location'
-        | 'qualification'
-        | 'specialization'
-        | 'dateFilter'
-        | 'isExpired'
+        'keyword' | 'location' | 'qualification' | 'specialization' | 'dateFilter' | 'isExpired'
       >
     >
   ): Prisma.JobWhereInput {

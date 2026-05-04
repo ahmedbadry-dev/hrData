@@ -69,13 +69,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const gmailConnected = Boolean(gmailStatusResponse?.data?.connected);
   const gmailEmail = gmailStatusResponse?.data?.email ?? null;
 
-  const setSession = useCallback((session: { user: User; accessToken: string }) => {
-    setAccessTokenInMemory(session.accessToken);
-    setAccessToken(session.accessToken);
-    setUser(session.user);
-    queryClient.removeQueries({ queryKey: GMAIL_STATUS_QUERY_KEY });
-    setIsLoading(false);
-  }, [queryClient]);
+  const setSession = useCallback(
+    (session: { user: User; accessToken: string }) => {
+      setAccessTokenInMemory(session.accessToken);
+      setAccessToken(session.accessToken);
+      setUser(session.user);
+      queryClient.removeQueries({ queryKey: GMAIL_STATUS_QUERY_KEY });
+      setIsLoading(false);
+    },
+    [queryClient]
+  );
 
   const clearSession = useCallback(() => {
     removeAccessToken();

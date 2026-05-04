@@ -1,3 +1,4 @@
+import { Logo } from '@/components/ui/Logo/Logo';
 import styles from './NotFoundPage.module.css';
 
 export default function NotFoundPage() {
@@ -5,7 +6,7 @@ export default function NotFoundPage() {
     <div className={styles.page}>
       <nav className={styles.navbar}>
         <a href="/" className={styles.logo}>
-          كُفُ<span className={styles.logoAccent}>ـ</span>ؤ
+          <Logo fallback="HR Data." className={styles.logoImg} />
         </a>
       </nav>
 

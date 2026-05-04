@@ -10,7 +10,7 @@ export const resetPasswordTemplate = (name: string, resetUrl: string): string =>
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>إعادة تعيين كلمة المرور - كُفُؤ</title>
+      <title>إعادة تعيين كلمة المرور - HR Data</title>
     </head>
     <body style="margin:0;padding:0;background:#f5f0e8;font-family:'Cairo',Tahoma,Arial,sans-serif;color:#0d0d0d;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 12px;">
@@ -19,7 +19,7 @@ export const resetPasswordTemplate = (name: string, resetUrl: string): string =>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#f5f0e8;border:2px solid #0d0d0d;border-radius:4px;overflow:hidden;">
               <tr>
                 <td style="padding:30px 28px;border-bottom:2px solid #0d0d0d;background:#ede8dc;text-align:center;">
-                  <div style="font-size:34px;font-weight:900;letter-spacing:-0.8px;text-align:center;">كُفُـؤ<span style="color:#c0392b;">.</span></div>
+                  <div style="font-size:34px;font-weight:900;letter-spacing:-0.8px;text-align:center;">HR Data<span style="color:#c0392b;">.</span></div>
                   <p style="margin:8px 0 0;font-size:12px;color:#a89880;font-weight:700;text-align:center;">أمان الحساب</p>
                 </td>
               </tr>
@@ -50,7 +50,7 @@ export const resetPasswordTemplate = (name: string, resetUrl: string): string =>
 
               <tr>
                 <td style="padding:20px 28px;border-top:1px solid #c8b89a;background:#ede8dc;text-align:center;">
-                  <p style="margin:0;font-size:12px;color:#a89880;line-height:1.8;text-align:right;">© 2026 كُفُؤ - جميع الحقوق محفوظة</p>
+                  <p style="margin:0;font-size:12px;color:#a89880;line-height:1.8;text-align:right;">© 2026 HR Data - جميع الحقوق محفوظة</p>
                 </td>
               </tr>
             </table>

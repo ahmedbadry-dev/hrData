@@ -309,7 +309,9 @@ export default function DashboardSavedJobsPage() {
       onRemoveAll={handleRemoveAll}
       currentPage={page}
       totalPages={totalPages}
-      isLoading={isLoading || isFetching || unsaveOneMutation.isPending || unsaveAllMutation.isPending}
+      isLoading={
+        isLoading || isFetching || unsaveOneMutation.isPending || unsaveAllMutation.isPending
+      }
       onPageChange={setPage}
     />
   );

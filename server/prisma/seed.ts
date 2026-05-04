@@ -2,7 +2,7 @@ import { PrismaClient } from '../generated/prisma';
 import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
-const HR_EMAIL = process.env.TEST_HR_EMAIL || 'test@kafoo.test';
+const HR_EMAIL = process.env.TEST_HR_EMAIL || 'test@hrdata.test';
 
 const count = parseInt(process.argv[2] || '1', 10);
 

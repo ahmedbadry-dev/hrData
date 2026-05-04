@@ -33,6 +33,12 @@
   color: var(--accent);
 }
 
+.logoImg {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
 .subtitle {
   color: var(--warm);
   font-size: 0.85rem;

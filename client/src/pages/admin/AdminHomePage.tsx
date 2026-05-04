@@ -1,7 +1,5 @@
 import { AdminHomeSection } from '@/components/admin/sections';
-import {
-  useAdminDashboard,
-} from '@/modules/admin/analytics/api/hooks';
+import { useAdminDashboard } from '@/modules/admin/analytics/api/hooks';
 import type { AdminLog } from '@/components/admin/sections/adminData';
 
 const ACTION_COLORS: Record<string, { color: string; typeLabel: string; type: AdminLog['type'] }> =
@@ -22,9 +20,7 @@ function toAdminLog(log: {
     typeLabel: 'نظام',
     type: 'info' as const,
   };
-  const userName = log.user
-    ? `${log.user.firstName} ${log.user.lastName}`
-    : 'النظام';
+  const userName = log.user ? `${log.user.firstName} ${log.user.lastName}` : 'النظام';
   const time = new Date(log.createdAt).toLocaleString('ar-SA');
 
   const actionText: Record<string, string> = {
@@ -53,11 +49,5 @@ export default function AdminHomePage() {
 
   const logs: AdminLog[] = (activityLogs ?? []).map(toAdminLog);
 
-  return (
-    <AdminHomeSection
-      stats={overview}
-      loginsData={logins}
-      logs={logs}
-    />
-  );
+  return <AdminHomeSection stats={overview} loginsData={logins} logs={logs} />;
 }

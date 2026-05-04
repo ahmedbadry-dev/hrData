@@ -31,10 +31,9 @@ export const useLoginMutation = () => {
 
         const defaultPath = ALLOWED_ADMIN_ROLES.includes(user.role) ? '/admin' : '/dashboard';
 
-        navigate(
-          redirectPath && redirectPath.startsWith('/') ? redirectPath : defaultPath,
-          { replace: true }
-        );
+        navigate(redirectPath && redirectPath.startsWith('/') ? redirectPath : defaultPath, {
+          replace: true,
+        });
       }
     },
   });

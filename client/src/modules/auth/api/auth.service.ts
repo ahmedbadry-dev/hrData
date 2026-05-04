@@ -110,9 +110,7 @@ const resetPassword = async (
   return data;
 };
 
-const validateResetToken = async (
-  token: string
-): Promise<ApiResponse<{ valid: boolean }>> => {
+const validateResetToken = async (token: string): Promise<ApiResponse<{ valid: boolean }>> => {
   const { data } = await axiosClient.get<ApiResponse<{ valid: boolean }>>(
     `/auth/validate-reset-token?token=${encodeURIComponent(token)}`
   );

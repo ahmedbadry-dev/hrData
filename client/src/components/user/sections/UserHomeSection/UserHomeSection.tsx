@@ -26,10 +26,7 @@ export default function UserHomeSection({
   const chartInstanceRef = useRef<Chart | null>(null);
   const [chartLoaded, setChartLoaded] = useState(false);
 
-  const chartValues = useMemo(
-    () => weeklyData ?? [0, 0, 0, 0, 0, 0, 0],
-    [weeklyData]
-  );
+  const chartValues = useMemo(() => weeklyData ?? [0, 0, 0, 0, 0, 0, 0], [weeklyData]);
   const chartDataKey = useMemo(() => chartValues.join('-'), [chartValues]);
 
   useEffect(() => {
@@ -158,9 +155,7 @@ export default function UserHomeSection({
         />
       </div>
 
-      <div
-        className={`${styles['chart-container']} ${chartLoaded ? styles.loaded : ''}`.trim()}
-      >
+      <div className={`${styles['chart-container']} ${chartLoaded ? styles.loaded : ''}`.trim()}>
         <div className={styles['chart-header']}>
           <div className={styles['chart-title']}>نشاط الإرسال خلال الأسبوع</div>
         </div>

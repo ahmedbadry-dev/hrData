@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLoginMutation, useForgotPasswordMutation } from '@/modules/auth/api/mutations';
 import { getErrorStatus, mapError } from '@/lib/error-mapper';
+import { Logo } from '@/components/ui/Logo/Logo';
 import styles from './LoginModal.module.css';
 
 interface LoginModalProps {
@@ -12,11 +13,7 @@ interface LoginModalProps {
 
 type ModalView = 'login' | 'forgot' | 'forgotSuccess';
 
-export default function LoginModal({
-  isOpen,
-  onClose,
-  onRegisterClick,
-}: LoginModalProps) {
+export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginModalProps) {
   const loginMutation = useLoginMutation();
   const forgotMutation = useForgotPasswordMutation();
 
@@ -126,7 +123,9 @@ export default function LoginModal({
     <div
       className={`${styles.overlay} ${isOpen ? styles.overlayOpen : ''}`}
       dir="rtl"
-      onClick={() => { if (!isPending) onClose(); }}
+      onClick={() => {
+        if (!isPending) onClose();
+      }}
     >
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button
@@ -140,7 +139,7 @@ export default function LoginModal({
 
         <div className={styles.logoWrap}>
           <div className={styles.logo}>
-            كُفُـؤ<em>.</em>
+            <Logo fallback="HR Data." className={styles.logoImg} />
           </div>
           <div className={styles.subtitle}>
             {view === 'login' && 'تسجيل الدخول'}
@@ -324,8 +323,8 @@ export default function LoginModal({
               <div className={styles.successIcon}>✅</div>
               <h3 className={styles.successTitle}>تم الإرسال!</h3>
               <p className={styles.successBody}>
-                تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.
-                تحقق من مجلد البريد العشوائي إذا لم تجد الرسالة.
+                تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني. تحقق من مجلد البريد
+                العشوائي إذا لم تجد الرسالة.
               </p>
               <button className={styles.submitButton} onClick={onClose}>
                 حسناً

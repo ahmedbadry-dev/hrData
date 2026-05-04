@@ -3,6 +3,7 @@ import cors, { type CorsOptions } from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 import { appConfig, corsConfig } from './config/env.config';
 import v1Router from './router';
 import { errorHandler } from './http/middlewares/error-handler';
@@ -46,6 +47,15 @@ app.use(requestLogger);
 app.use(csrfProtectionMiddleware);
 
 app.use('/admin/queues', bullBoardRouter);
+
+app.use(
+  '/uploads',
+  (_req, _res, next) => {
+    _res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  },
+  express.static(path.join(process.cwd(), 'uploads'))
+);
 
 app.use('/api', apiRateLimitMiddleware, v1Router);
 

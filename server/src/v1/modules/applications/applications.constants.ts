@@ -26,7 +26,6 @@ export const APPLICATIONS_CONSTANTS = {
     NO_VALID_HR_EMAILS: 'No valid HR email addresses found for selected jobs.',
     JOB_NOT_SAVED: 'One or more jobs are not saved by the user',
     INVALID_SEND_TIME: 'Invalid send time. Use "immediately" or an ISO date string.',
-    DAILY_EMAIL_LIMIT_REACHED:
-      'لقد وصلت إلى الحد اليومي لإرسال الإيميلات. يمكنك الإرسال مجدداً في',
+    DAILY_EMAIL_LIMIT_REACHED: 'لقد وصلت إلى الحد اليومي لإرسال الإيميلات. يمكنك الإرسال مجدداً في',
   },
 } as const;

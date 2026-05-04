@@ -235,9 +235,13 @@ export default function AdminHomeSection({
               key={log.text}
             >
               <span className={styles['log-icon']}>
-                {log.action === 'LOGIN' ? '🔑' : 
-                 log.action === 'VERIFY_EMAIL' ? '✅' : 
-                 log.action === 'RESET_PASSWORD' ? '🔄' : '🔒'}
+                {log.action === 'LOGIN'
+                  ? '🔑'
+                  : log.action === 'VERIFY_EMAIL'
+                    ? '✅'
+                    : log.action === 'RESET_PASSWORD'
+                      ? '🔄'
+                      : '🔒'}
               </span>
               <span className={styles['log-text']}>{log.text}</span>
               <span

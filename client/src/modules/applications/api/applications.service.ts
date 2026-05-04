@@ -67,7 +67,12 @@ export const cancelApplication = async (id: string): Promise<void> => {
   await axiosClient.delete(`/applications/${id}`);
 };
 
-export const fetchApplicationsStats = async (): Promise<ApiResponse<{ total: number; successful: number }>> => {
-  const { data } = await axiosClient.get<ApiResponse<{ total: number; successful: number }>>('/applications/stats');
+export const fetchApplicationsStats = async (): Promise<
+  ApiResponse<{ total: number; successful: number }>
+> => {
+  const { data } =
+    await axiosClient.get<ApiResponse<{ total: number; successful: number }>>(
+      '/applications/stats'
+    );
   return data;
 };

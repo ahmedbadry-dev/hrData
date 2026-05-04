@@ -90,7 +90,7 @@ export default function UserSettingsSection({
         <div className={styles['control-row']}>
           <div>
             <div className={styles['row-title']}>إصدار المنصة</div>
-            <div className={styles['row-sub']}>كُفُـؤ 2026</div>
+            <div className={styles['row-sub']}>HR Data 2026</div>
           </div>
         </div>
       </div>

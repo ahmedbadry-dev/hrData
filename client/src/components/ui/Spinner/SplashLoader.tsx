@@ -10,11 +10,11 @@ export function SplashLoader({ message }: SplashLoaderProps) {
       <div className={styles.splashContent}>
         <div className={styles.logoContainer}>
           <div className={styles.logoRing}></div>
-          <div className={styles.logoSymbol}>كُـفُـؤ</div>
+          <div className={styles.logoSymbol}>HR Data</div>
         </div>
-        
-        <h1 className={styles.wordKafu}>كُـفُـؤ</h1>
-        
+
+        <h1 className={styles.wordKafu}>HR Data</h1>
+
         {message && <p className={styles.message}>{message}</p>}
       </div>
     </div>

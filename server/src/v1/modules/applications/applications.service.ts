@@ -48,7 +48,11 @@ export class ApplicationsService {
         where: {
           userId,
           status: {
-            in: [ApplicationStatus.SENT, ApplicationStatus.EMAIL_SENT, ApplicationStatus.EMAIL_OPENED],
+            in: [
+              ApplicationStatus.SENT,
+              ApplicationStatus.EMAIL_SENT,
+              ApplicationStatus.EMAIL_OPENED,
+            ],
           },
         },
       }),
