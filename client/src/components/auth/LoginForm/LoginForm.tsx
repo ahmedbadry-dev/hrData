@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Input } from '@/components/ui';
+import { Logo } from '@/components/ui/Logo/Logo';
 import { useLoginMutation } from '@/modules/auth/api/mutations';
 import { mapErrorToArabic } from '@/lib/error-mapper';
 import styles from './LoginForm.module.css';
@@ -53,7 +54,7 @@ export default function LoginForm({ onRegisterClick }: LoginFormProps) {
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.logo}>
-          <span className={styles.logoPoint}>.</span> كُفُـؤ
+          <Logo fallback="HR Data" className={styles.logoImg} />
         </div>
         <div>تسجيل الدخول</div>
       </div>

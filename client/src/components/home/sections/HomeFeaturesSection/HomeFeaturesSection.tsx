@@ -4,7 +4,7 @@ export default function HomeFeaturesSection() {
   return (
     <section className={`${styles.section} ${styles['features-section']}`} id="features">
       <div className={`${styles['section-tag']} ${styles['features-tag']}`}>المميزات</div>
-      <div className={styles['section-title']}>لماذا كُفُـؤ؟</div>
+      <div className={styles['section-title']}>لماذا HR Data؟</div>
 
       <div className={styles['features-layout']}>
         <div className={`${styles['feature-block']} ${styles.reveal}`}>
@@ -56,7 +56,7 @@ export default function HomeFeaturesSection() {
           </div>
           <div className={styles['feature-title']}>مجاني تماماً</div>
           <div className={styles['feature-body']}>
-            كُفُـؤ مجانية للباحثين عن عمل بالكامل — لا اشتراكات، لا رسوم خفية، لا إعلانات. فقط فرصة
+            HR Data مجانية للباحثين عن عمل بالكامل — لا اشتراكات، لا رسوم خفية، لا إعلانات. فقط فرصة
             حقيقية.
           </div>
         </div>

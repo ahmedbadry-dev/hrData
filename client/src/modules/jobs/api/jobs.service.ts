@@ -43,7 +43,8 @@ export const fetchJobs = async (params?: GetJobsParams): Promise<ApiResponse<Pag
   if (params?.keyword) searchParams.set('keyword', params.keyword);
   if (params?.location) searchParams.set('location', params.location.toUpperCase());
   if (params?.qualification) searchParams.set('qualification', params.qualification.toUpperCase());
-  if (params?.specialization) searchParams.set('specialization', params.specialization.toUpperCase());
+  if (params?.specialization)
+    searchParams.set('specialization', params.specialization.toUpperCase());
   if (params?.dateFilter) searchParams.set('dateFilter', params.dateFilter.toUpperCase());
 
   const { data } = await axiosClient.get<ApiResponse<PaginatedJobs>>(
@@ -92,7 +93,8 @@ export const fetchSavedJobs = async (
   if (params?.keyword) searchParams.set('keyword', params.keyword);
   if (params?.location) searchParams.set('location', params.location.toUpperCase());
   if (params?.qualification) searchParams.set('qualification', params.qualification.toUpperCase());
-  if (params?.specialization) searchParams.set('specialization', params.specialization.toUpperCase());
+  if (params?.specialization)
+    searchParams.set('specialization', params.specialization.toUpperCase());
   if (params?.dateFilter) searchParams.set('dateFilter', params.dateFilter.toUpperCase());
 
   const { data } = await axiosClient.get<ApiResponse<PaginatedJobs>>(

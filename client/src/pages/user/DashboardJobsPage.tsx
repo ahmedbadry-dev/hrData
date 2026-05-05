@@ -141,6 +141,7 @@ export default function DashboardJobsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedAll });
+      queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedEligibleAll });
     },
   });
 
@@ -168,6 +169,7 @@ export default function DashboardJobsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedAll });
+      queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedEligibleAll });
     },
   });
 
@@ -196,6 +198,7 @@ export default function DashboardJobsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedAll });
+      queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedEligibleAll });
     },
   });
 
@@ -224,6 +227,7 @@ export default function DashboardJobsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedAll });
+      queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedEligibleAll });
     },
   });
 

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { UnauthorizedException } from '../../shared/errors/UnauthorizedException';
 import { verifyAccessToken } from '@/shared/utils/jwt.util';
 import prisma from '@/config/db.config';
+import redis from '@/config/redis';
 import { PrismaClient, UserRole, UserStatus } from '@prisma/client';
 
 import { ForbiddenException } from '@/shared/errors/ForbiddenException';
@@ -22,6 +23,13 @@ export const createAuthenticationMiddleware = (db: UserLookupClient) => {
 
     if (!verified.valid) {
       throw new UnauthorizedException(verified.error || 'Invalid access token');
+    }
+
+    if (verified.payload.tokenId) {
+      const isBlacklisted = await redis.get(`blacklist:token:${verified.payload.tokenId}`);
+      if (isBlacklisted) {
+        throw new UnauthorizedException('Token has been revoked');
+      }
     }
 
     const user = await db.user.findUnique({

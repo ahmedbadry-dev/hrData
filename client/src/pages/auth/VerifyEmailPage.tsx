@@ -48,8 +48,7 @@ export default function VerifyEmailPage() {
             <div className={`${styles.iconWrap} ${styles.iconSuccess}`}>✓</div>
             <h1 className={styles.title}>تم التحقق بنجاح!</h1>
             <p className={styles.subtitle}>
-              تم تفعيل حسابك بنجاح. يمكنك الآن تسجيل الدخول
-              والاستفادة من جميع مميزات المنصة.
+              تم تفعيل حسابك بنجاح. يمكنك الآن تسجيل الدخول والاستفادة من جميع مميزات المنصة.
             </p>
             <div className={styles.actions}>
               <button
@@ -104,14 +103,11 @@ function VerifyEmailError() {
       <div className={`${styles.iconWrap} ${styles.iconError}`}>❌</div>
       <h1 className={styles.title}>انتهت صلاحية رابط التحقق</h1>
       <p className={styles.subtitle}>
-        رابط التحقق الذي استخدمته غير صالح أو انتهت صلاحيته.
-        يرجى التسجيل مجدداً أو طلب رابط تحقق جديد.
+        رابط التحقق الذي استخدمته غير صالح أو انتهت صلاحيته. يرجى التسجيل مجدداً أو طلب رابط تحقق
+        جديد.
       </p>
       <div className={styles.actions}>
-        <button
-          className={styles.outlineBtn}
-          onClick={() => navigate('/', { replace: true })}
-        >
+        <button className={styles.outlineBtn} onClick={() => navigate('/', { replace: true })}>
           العودة إلى الصفحة الرئيسية
         </button>
       </div>

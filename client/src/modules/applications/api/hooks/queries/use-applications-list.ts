@@ -1,10 +1,7 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { fetchApplicationsList } from '../../applications.service';
 import type { UseQueryOptions as CustomUseQueryOptions } from '@/lib/react-query/types';
-import {
-  applicationsQueryKeys,
-  type ApplicationsListParams,
-} from '../../applications.query-keys';
+import { applicationsQueryKeys, type ApplicationsListParams } from '../../applications.query-keys';
 import { ApplicationStatus } from '../../../types';
 
 export const useApplicationsListQueryOptions = (params?: ApplicationsListParams) => {

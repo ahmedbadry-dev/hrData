@@ -1,3 +1,4 @@
+import { Logo } from '@/components/ui/Logo/Logo';
 import styles from './SplashLoader.module.css';
 
 interface SplashLoaderProps {
@@ -10,11 +11,11 @@ export function SplashLoader({ message }: SplashLoaderProps) {
       <div className={styles.splashContent}>
         <div className={styles.logoContainer}>
           <div className={styles.logoRing}></div>
-          <div className={styles.logoSymbol}>كُـفُـؤ</div>
+          <Logo fallback="HR Data" className={styles.logoSymbol} />
         </div>
-        
-        <h1 className={styles.wordKafu}>كُـفُـؤ</h1>
-        
+
+        <Logo fallback="HR Data" className={styles.wordKafu} />
+
         {message && <p className={styles.message}>{message}</p>}
       </div>
     </div>

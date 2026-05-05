@@ -24,7 +24,7 @@ export interface UserApplication {
   major: string;
   city: string;
   date: string | null;
-  status: 'pending' | 'sent' | 'opened' | 'replied' | 'failed';
+  status: 'pending' | 'sent' | 'opened' | 'replied' | 'failed' | 'cancelled';
   retryCount?: number;
   errorMessage?: string | null;
 }

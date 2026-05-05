@@ -8,7 +8,7 @@ export default function HomeQuoteSection() {
         <p className={styles['quote-text']}>
           السوق السعودي يحتاج منصة تُقرّب الكفاءات من أصحاب العمل — مباشرةً وبدون ضجيج.
         </p>
-        <div className={styles['quote-author']}>فريق كُفُـؤ · ٢٠٢٦</div>
+        <div className={styles['quote-author']}>فريق HR Data · ٢٠٢٦</div>
       </div>
     </section>
   );

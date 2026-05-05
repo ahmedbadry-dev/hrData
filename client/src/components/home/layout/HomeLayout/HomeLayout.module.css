@@ -30,6 +30,12 @@
   font-style: normal;
 }
 
+.nav-logo-img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+
 .nav-links {
   display: flex;
   align-items: center;
@@ -261,7 +267,7 @@
 }
 
 .hero-right::before {
-  content: 'كُفُـؤ';
+  content: 'HR Data';
   position: absolute;
   bottom: -20px;
   left: -10px;
@@ -564,6 +570,12 @@
 .footer-logo em {
   color: var(--accent);
   font-style: normal;
+}
+
+.footer-logo-img {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
 }
 
 .footer-copy {

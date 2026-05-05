@@ -7,10 +7,12 @@ import { NotFoundException } from '@/shared/errors/NotFoundException';
 import { ConflictException } from '@/shared/errors/ConflictException';
 import { ForbiddenException } from '@/shared/errors/ForbiddenException';
 import logger from '@/shared/utils/logger.util';
+import redis from '@/config/redis';
 import { CreateUserDto } from './dto/create-user.dto';
 import { generateHash, compareHash, generateHashedWithSha256 } from '@/shared/utils/hash.util';
 import {
   generateTempToken,
+  verifyAccessToken,
   verifyRefreshToken,
   verifyTempToken,
   generateTokenPair,
@@ -107,14 +109,14 @@ export class AuthService {
       throw new BadRequestException('Invalid verification token');
     }
 
-    if (userExists.emailVerified) {
-      return excludePassword(userExists);
-    }
-
     const hashedToken = generateHashedWithSha256(token);
 
     if (userExists.verificationToken !== hashedToken) {
       throw new BadRequestException('Invalid verification token');
+    }
+
+    if (userExists.emailVerified) {
+      return excludePassword(userExists);
     }
 
     const updatedUser = await this.prisma.user.update({
@@ -159,14 +161,31 @@ export class AuthService {
     return this.createTokenPairAndSession(userExists, deviceInfo);
   }
 
-  async logout(userId: string, refreshToken: string): Promise<void> {
-    // Session-less logout: The controller will clear the cookies.
-    // No database action needed since we removed the Session table.
+  async logout(userId: string, accessToken: string, refreshToken: string): Promise<void> {
+    const verifiedAccess = verifyAccessToken(accessToken);
+    if (verifiedAccess.valid && verifiedAccess.payload.tokenId) {
+      const ttlMs = verifiedAccess.payload.exp
+        ? verifiedAccess.payload.exp * 1000 - Date.now()
+        : 15 * 60 * 1000;
+      if (ttlMs > 0) {
+        await redis.set(`blacklist:token:${verifiedAccess.payload.tokenId}`, '1', 'PX', ttlMs);
+      }
+    }
+
+    const verified = verifyRefreshToken(refreshToken);
+    if (verified.valid && verified.payload.tokenId) {
+      const ttlMs = verified.payload.exp
+        ? verified.payload.exp * 1000 - Date.now()
+        : 7 * 24 * 60 * 60 * 1000;
+      if (ttlMs > 0) {
+        await redis.set(`blacklist:token:${verified.payload.tokenId}`, '1', 'PX', ttlMs);
+      }
+    }
   }
 
   async logoutAll(userId: string): Promise<void> {
-    // Session-less logoutAll: In a stateless system, this would require a blacklist.
-    // For now, we just acknowledge the request.
+    await redis.incr(`user:token-gen:${userId}`);
+    await redis.expire(`user:token-gen:${userId}`, 7 * 24 * 60 * 60);
   }
 
   async refresh(refreshToken: string, deviceInfo: DeviceInfo): Promise<AuthResponseWithTokens> {
@@ -179,6 +198,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
+    const oldTokenId = verifiedToken.payload.tokenId;
+
     const user = await this.prisma.user.findUnique({
       where: { id: verifiedToken.payload.userId },
     });
@@ -188,7 +209,18 @@ export class AuthService {
 
     this.validateUserStatus(user);
 
-    return this.createTokenPairAndSession(user, deviceInfo);
+    const newTokenResult = this.createTokenPairAndSession(user, deviceInfo);
+
+    if (oldTokenId) {
+      const ttlMs = verifiedToken.payload.exp
+        ? verifiedToken.payload.exp * 1000 - Date.now()
+        : 7 * 24 * 60 * 60 * 1000;
+      if (ttlMs > 0) {
+        await redis.set(`blacklist:token:${oldTokenId}`, '1', 'PX', ttlMs);
+      }
+    }
+
+    return newTokenResult;
   }
 
   async forgotPassword(data: ForgotPasswordDto['body']) {
@@ -341,6 +373,13 @@ export class AuthService {
 
     if (currentPassword === newPassword) {
       throw new BadRequestException('New password is same as current password');
+    }
+
+    if (user.passwordHash) {
+      const isSamePassword = await compareHash(newPassword, user.passwordHash);
+      if (isSamePassword) {
+        throw new BadRequestException('New password must differ from current password');
+      }
     }
 
     const hashedPassword = await generateHash(newPassword);

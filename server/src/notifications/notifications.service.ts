@@ -1,41 +1,76 @@
-import { Resend } from 'resend';
+import nodemailer, { Transporter } from 'nodemailer';
+import SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
+import pLimit from 'p-limit';
+
 import { verifyEmailTemplate } from './templates/verify-email.template';
 import { resetPasswordTemplate } from './templates/reset-password.template';
 import { announcementTemplate } from './templates/announcement.template';
 import { notificationEmailTemplate } from './templates/notification-email.template';
-import { appConfig, resendConfig } from '@/config/env.config';
+import { appConfig, emailConfig } from '@/config/env.config';
 import logger from '@/shared/utils/logger.util';
+import { transporterSingleton } from '@/config/mailer.config';
 
 export class NotificationsService {
-  private readonly resend: Resend;
-  private readonly fromAddress: string;
+  private logoCid: string | null = null;
+  private logoMimeType: string | null = null;
+  private logoBuffer: Buffer | null = null;
 
   constructor(
-    resendApiKey: string = resendConfig.resendApiKey,
-    fromAddress: string = resendConfig.from
-  ) {
-    this.resend = new Resend(resendApiKey);
-    this.fromAddress = fromAddress;
+    private readonly transporter: Transporter<SMTPTransport.SentMessageInfo> = transporterSingleton,
+    private readonly fromAddress: string = emailConfig.from
+  ) {}
+
+  setLogo(logoCid: string | null, logoMimeType: string | null, logoBuffer: Buffer | null): void {
+    this.logoCid = logoCid;
+    this.logoMimeType = logoMimeType;
+    this.logoBuffer = logoBuffer;
+  }
+
+  getLogoCid(): { logoCid: string | null; logoMimeType: string | null } {
+    return { logoCid: this.logoCid, logoMimeType: this.logoMimeType };
+  }
+
+  async refreshLogoUrl(): Promise<void> {
+    const { SettingsService } = await import('../v1/modules/settings/settings.service');
+    const { default: prisma } = await import('../config/db.config');
+    const settingsService = new SettingsService(prisma);
+    const logoResult = await settingsService.getLogo();
+    this.logoCid = logoResult.logoCid || null;
+    this.logoMimeType = logoResult.logoMimeType || null;
+    this.logoBuffer = logoResult.logoBuffer ? Buffer.from(logoResult.logoBuffer, 'base64') : null;
   }
 
   private async sendEmail(options: { to: string; subject: string; html: string }) {
     const MAX_RETRIES = 3;
     let attempts = 0;
 
-    logger.info(`📧 Attempting to send email from: ${this.fromAddress}`);
-
     while (attempts < MAX_RETRIES) {
       try {
-        const { data, error } = await this.resend.emails.send({
+        const mailOptions: any = {
           from: this.fromAddress,
           to: options.to,
           subject: options.subject,
           html: options.html,
-        });
+        };
 
-        if (error) throw new Error(error.message);
+        if (this.logoCid && this.logoMimeType && this.logoBuffer) {
+          mailOptions.attachments = [
+            {
+              filename: 'logo.png',
+              content: this.logoBuffer,
+              contentType: this.logoMimeType,
+              cid: this.logoCid,
+            },
+          ];
+        }
 
-        logger.info(`📧 Email sent to ${options.to} — id: ${data?.id}`);
+        const info = await this.transporter.sendMail(mailOptions);
+
+        logger.info(`📧 Email sent to ${options.to} — messageId: ${info.messageId}`);
+        const hasSmtpCredentials = emailConfig.user && emailConfig.password;
+        if (!hasSmtpCredentials) {
+          logger.info(`🔍 Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+        }
         return;
       } catch (error) {
         attempts++;
@@ -60,8 +95,8 @@ export class NotificationsService {
     const url = `${appConfig.appUrl}/verify-email?token=${token}`;
     await this.sendEmail({
       to: email,
-      subject: 'تحقق من بريدك الإلكتروني - كفو',
-      html: verifyEmailTemplate(name, url),
+      subject: 'تحقق من بريدك الإلكتروني - HR Data',
+      html: verifyEmailTemplate(name, url, this.logoCid, this.logoMimeType),
     });
   }
 
@@ -69,8 +104,8 @@ export class NotificationsService {
     const url = `${appConfig.appUrl}/reset-password?token=${token}`;
     await this.sendEmail({
       to: email,
-      subject: 'إعادة تعيين كلمة المرور - كفو',
-      html: resetPasswordTemplate(name, url),
+      subject: 'إعادة تعيين كلمة المرور - HR Data',
+      html: resetPasswordTemplate(name, url, this.logoCid, this.logoMimeType),
     });
   }
 
@@ -83,7 +118,7 @@ export class NotificationsService {
     await this.sendEmail({
       to: recipientEmail,
       subject: `إعلان جديد - ${title}`,
-      html: announcementTemplate(recipientName, title, message),
+      html: announcementTemplate(recipientName, title, message, this.logoCid, this.logoMimeType),
     });
   }
 
@@ -96,7 +131,13 @@ export class NotificationsService {
     await this.sendEmail({
       to: data.to,
       subject: data.title,
-      html: notificationEmailTemplate(data.fullName || data.to, data.title, data.body),
+      html: notificationEmailTemplate(
+        data.fullName || data.to,
+        data.title,
+        data.body,
+        this.logoCid,
+        this.logoMimeType
+      ),
     });
   }
 }

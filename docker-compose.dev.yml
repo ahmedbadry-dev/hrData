@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: kafoo
+      POSTGRES_DB: hrdata
     ports:
       - "5432:5432"
     volumes:
@@ -14,7 +14,7 @@ services:
     networks:
       - app_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d kafoo"]
+      test: ["CMD-SHELL", "pg_isready -U user -d hrdata"]
       interval: 10s
       timeout: 5s
       retries: 5

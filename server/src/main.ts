@@ -8,12 +8,27 @@ import { appConfig, getEnvVarAsNumber } from './config/env.config';
 import logger from '@/shared/utils/logger.util';
 import prisma from './config/db.config';
 import redis from './config/redis';
+import { notificationsService } from './notifications/notifications.service';
+import { SettingsService } from './v1/modules/settings/settings.service';
 
 import '@/workers/job-applications-schedule.worker';
 import '@/workers/scraper.worker';
 import { startMaintenanceSchedule } from '@/workers/maintenance.worker';
 
 import { startScraperSchedule } from './scraper/scraper.scheduler';
+
+process.on('uncaughtException', (err: Error) => {
+  logger.error('💥 UNCAUGHT EXCEPTION — shutting down', {
+    message: err.message,
+    stack: err.stack,
+  });
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason: Error) => {
+  logger.error('💥 UNHANDLED REJECTION — shutting down', { reason });
+  process.exit(1);
+});
 
 const PORT = getEnvVarAsNumber('PORT', 5000);
 
@@ -39,23 +54,18 @@ async function bootstrapScraper(): Promise<void> {
   }
 }
 
-process.on('uncaughtException', (err: Error) => {
-  logger.error('💥 UNCAUGHT EXCEPTION — shutting down', {
-    message: err.message,
-    stack: err.stack,
-  });
-  process.exit(1);
-});
-
 const startServer = async () => {
   try {
     await bootstrapScraper();
     await startMaintenanceSchedule();
 
-    const server = app.listen(PORT, () => {
+    const server = app.listen(PORT, async () => {
       logger.info(`🚀 Server is running on http://localhost:${PORT}`);
       logger.info(`📊 Health check available at http://localhost:${PORT}/api/v1/health`);
       logger.info(`🌍 Environment: ${appConfig.nodeEnv}`);
+
+      await notificationsService.refreshLogoUrl();
+      logger.info(`🖼️ Logo loaded`);
     });
 
     server.on('error', (error: NodeJS.ErrnoException) => {
@@ -66,15 +76,6 @@ const startServer = async () => {
       }
       server.close(async () => {
         logger.info('👋 Server error — shutting down gracefully');
-        await prisma.$disconnect();
-        process.exit(1);
-      });
-    });
-
-    process.on('unhandledRejection', (reason: Error) => {
-      logger.error('💥 UNHANDLED REJECTION — shutting down', { reason });
-      server.close(async () => {
-        logger.info('👋 UNHANDLED REJECTION — shutting down gracefully');
         await prisma.$disconnect();
         process.exit(1);
       });

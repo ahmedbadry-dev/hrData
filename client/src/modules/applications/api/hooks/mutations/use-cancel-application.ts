@@ -13,7 +13,10 @@ export type UseCancelApplicationMutationOptions = CustomUseMutationOptions<
   typeof useCancelApplicationMutationOptions
 >;
 
-export const useCancelApplication = (options?: UseCancelApplicationMutationOptions) => {
+export const useCancelApplication = (
+  options?: UseCancelApplicationMutationOptions,
+  listQueryParams?: { page?: number; limit?: number }
+) => {
   const queryClient = useQueryClient();
   return useMutation({
     ...useCancelApplicationMutationOptions(),
@@ -21,6 +24,11 @@ export const useCancelApplication = (options?: UseCancelApplicationMutationOptio
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: applicationsQueryKeys.all });
       queryClient.invalidateQueries({ queryKey: applicationsQueryKeys.quota });
+      if (listQueryParams) {
+        queryClient.invalidateQueries({
+          queryKey: applicationsQueryKeys.list(listQueryParams),
+        });
+      }
       options?.onSuccess?.(...args);
     },
   });

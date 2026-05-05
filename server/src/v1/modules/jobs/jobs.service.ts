@@ -11,6 +11,7 @@ import {
 } from '@prisma/client';
 import { ConflictException } from '@/shared/errors/ConflictException';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
+import { BadRequestException } from '@/shared/errors/BadRequestException';
 import {
   buildPaginationMeta,
   resolvePagination,
@@ -99,6 +100,7 @@ export class JobsService {
       where: { userId },
       include: { job: true },
       orderBy: JOBS_CONSTANTS.ORDER_BY.CREATED_AT_DESC,
+      take: 500,
     });
 
     if (savedJobs.length === 0) {
@@ -131,6 +133,7 @@ export class JobsService {
     const failedStatuses = new Set<ApplicationStatus>([
       ApplicationStatus.FAILED,
       ApplicationStatus.EMAIL_FAILED,
+      ApplicationStatus.CANCELLED,
     ]);
 
     const eligibleSavedJobs = savedJobs.filter((savedJob) => {
@@ -248,7 +251,10 @@ export class JobsService {
   }
 
   async unsaveJobs(userId: string, jobIds?: string[]): Promise<BulkUnsaveJobsResponse> {
-    const uniqueJobIds = Array.isArray(jobIds) ? [...new Set(jobIds)] : undefined;
+    if (!Array.isArray(jobIds) || jobIds.length === 0) {
+      throw new BadRequestException('jobIds must be a non-empty array');
+    }
+    const uniqueJobIds = [...new Set(jobIds)];
     const existingSavedJobs = await this.prisma.savedJob.findMany({
       where: {
         userId,
@@ -330,10 +336,6 @@ export class JobsService {
     const createdJobs = await this.prisma.$transaction(async (tx) => {
       const result = await tx.job.createMany({ data: createManyData, skipDuplicates: true });
 
-      if (result.count !== jobsData.length) {
-        throw new ConflictException(JOBS_CONSTANTS.MESSAGES.BULK_CREATE_PARTIAL_SUCCESS);
-      }
-
       const uniqueJobWhere: Prisma.JobWhereInput[] = createManyData.map((job) => ({
         title: job.title,
         companyName: job.companyName,
@@ -391,12 +393,7 @@ export class JobsService {
     query: Partial<
       Pick<
         SearchJobsDto['query'],
-        | 'keyword'
-        | 'location'
-        | 'qualification'
-        | 'specialization'
-        | 'dateFilter'
-        | 'isExpired'
+        'keyword' | 'location' | 'qualification' | 'specialization' | 'dateFilter' | 'isExpired'
       >
     >
   ): Prisma.JobWhereInput {

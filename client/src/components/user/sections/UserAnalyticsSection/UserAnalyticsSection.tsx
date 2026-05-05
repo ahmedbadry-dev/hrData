@@ -21,6 +21,7 @@ const statusColors: Record<UserApplication['status'], { color: string; text: str
   opened: { color: '#1a6b4a', text: 'تم الفتح' },
   replied: { color: '#c0392b', text: 'تم الرد' },
   failed: { color: '#c0392b', text: 'فشل' },
+  cancelled: { color: '#6c757d', text: 'ملغي' },
 };
 
 export default function UserAnalyticsSection({

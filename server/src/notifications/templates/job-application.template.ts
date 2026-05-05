@@ -5,11 +5,18 @@ export function jobApplicationTemplate(data: {
   jobTitle: string;
   companyName: string;
   trackingPixelUrl: string;
+  logoCid?: string | null;
+  logoMimeType?: string | null;
 }): string {
   const safeRecipientName = escapeHtml(data.recipientName);
   const safeJobTitle = escapeHtml(data.jobTitle);
   const safeCompanyName = escapeHtml(data.companyName);
   const safeTrackingPixelUrl = escapeHtml(data.trackingPixelUrl);
+
+  const logoInline =
+    data.logoCid && data.logoMimeType
+      ? `<img src="cid:${data.logoCid}" alt="Logo" style="max-height:60px;max-width:200px;margin-bottom:16px;" />`
+      : '';
 
   return `
     <!DOCTYPE html>
@@ -20,6 +27,7 @@ export function jobApplicationTemplate(data: {
       <title>طلب انضمام - ${safeJobTitle}</title>
     </head>
     <body style="direction:ltr;text-align:right;">
+      ${logoInline}
       <h1>طلب انضمام - ${safeJobTitle}</h1>
       <p>${safeCompanyName}</p>
 
@@ -31,7 +39,7 @@ export function jobApplicationTemplate(data: {
         ${safeRecipientName}
       </p>
 
-      <p>تم إرسال هذا البريد عبر منصة كُفُؤ بشكل آلي.</p>
+      <p>تم إرسال هذا البريد عبر منصة HR Data بشكل آلي.</p>
 
       <img src="${safeTrackingPixelUrl}" width="1" height="1" alt="" />
     </body>

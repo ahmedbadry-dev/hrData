@@ -188,7 +188,9 @@ export default function UserSearchSection({
       ) : (
         <>
           <div className={styles['control-bar']}>
-            <span className={styles['count-label']}>عُثر على {totalCount ?? jobs.length} وظيفة</span>
+            <span className={styles['count-label']}>
+              عُثر على {totalCount ?? jobs.length} وظيفة
+            </span>
             {showSaveButtons && (
               <Button
                 className={styles['save-all-btn']}

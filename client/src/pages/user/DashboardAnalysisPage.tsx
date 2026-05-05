@@ -6,6 +6,7 @@ import { useApplicationsList, useCancelApplication } from '@/modules/application
 import type { Application } from '@/modules/applications/types';
 import { ApplicationStatus } from '@/constants/enums';
 import type { UserApplication } from '@/components/user/sections/userData';
+import styles from './DashboardAnalysisPage.module.css';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -22,6 +23,8 @@ const mapStatusToUserApp = (status: ApplicationStatus): UserApplication['status'
     case ApplicationStatus.FAILED:
     case ApplicationStatus.EMAIL_FAILED:
       return 'failed';
+    case ApplicationStatus.CANCELLED:
+      return 'cancelled';
     default:
       return 'pending';
   }
@@ -29,6 +32,7 @@ const mapStatusToUserApp = (status: ApplicationStatus): UserApplication['status'
 
 export default function DashboardAnalysisPage() {
   const [page, setPage] = useState(1);
+  const [pendingCancelId, setPendingCancelId] = useState<string | null>(null);
   const { showToast } = useToast();
 
   const { data, isLoading, isFetching, isError } = useApplicationsList(
@@ -44,11 +48,17 @@ export default function DashboardAnalysisPage() {
     }
   );
 
-  const cancelMutation = useCancelApplication({
-    onError: () => {
-      showToast({ message: 'تعذر إلغاء الطلب حالياً. حاول مرة أخرى.', type: 'error' });
+  const cancelMutation = useCancelApplication(
+    {
+      onSuccess: () => {
+        showToast({ message: 'تم إلغاء الطلب بنجاح', type: 'success' });
+      },
+      onError: () => {
+        showToast({ message: 'تعذر إلغاء الطلب حالياً. حاول مرة أخرى.', type: 'error' });
+      },
     },
-  });
+    { page, limit: ITEMS_PER_PAGE }
+  );
 
   const applications: UserApplication[] = useMemo(
     () =>
@@ -74,9 +84,19 @@ export default function DashboardAnalysisPage() {
   const from = totalApplications === 0 ? 0 : (page - 1) * ITEMS_PER_PAGE + 1;
   const to = totalApplications === 0 ? 0 : Math.min(page * ITEMS_PER_PAGE, totalApplications);
 
-  const handleCancel = (id: string) => {
-    if (!window.confirm('هل أنت متأكد من إلغاء هذه الطلبات؟')) return;
-    cancelMutation.mutate(id);
+  const handleCancelClick = (id: string) => {
+    setPendingCancelId(id);
+  };
+
+  const handleConfirmCancel = () => {
+    if (pendingCancelId) {
+      cancelMutation.mutate(pendingCancelId);
+      setPendingCancelId(null);
+    }
+  };
+
+  const handleCancelClose = () => {
+    setPendingCancelId(null);
   };
 
   if (isError) {
@@ -92,14 +112,31 @@ export default function DashboardAnalysisPage() {
   }
 
   return (
-    <UserAnalyticsSection
-      applications={applications}
-      currentPage={page}
-      totalPages={totalPages}
-      isLoading={isLoading || isFetching}
-      showingLabel={`Showing ${from}-${to} of ${totalApplications} applications`}
-      onPageChange={setPage}
-      onCancel={handleCancel}
-    />
+    <>
+      {pendingCancelId !== null && (
+        <div className={styles['confirm-overlay']} onClick={handleCancelClose}>
+          <div className={styles['confirm-dialog']} onClick={(e) => e.stopPropagation()}>
+            <p className={styles['confirm-text']}>هل أنت متأكد من إلغاء هذا الطلب؟</p>
+            <div className={styles['confirm-actions']}>
+              <button className={styles['confirm-btn-cancel']} onClick={handleCancelClose}>
+                إلغاء
+              </button>
+              <button className={styles['confirm-btn-delete']} onClick={handleConfirmCancel}>
+                نعم، إلغاء
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <UserAnalyticsSection
+        applications={applications}
+        currentPage={page}
+        totalPages={totalPages}
+        isLoading={isLoading || isFetching}
+        showingLabel={`Showing ${from}-${to} of ${totalApplications} applications`}
+        onPageChange={setPage}
+        onCancel={handleCancelClick}
+      />
+    </>
   );
 }

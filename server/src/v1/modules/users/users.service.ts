@@ -108,7 +108,7 @@ export class UsersService {
 
     const activatedUser = await this.prisma.user.update({
       where: { id: userId },
-      data: { status: UserStatus.ACTIVE },
+      data: { status: UserStatus.ACTIVE, emailVerified: true },
       select: this.getUserSelectFields(),
     });
 

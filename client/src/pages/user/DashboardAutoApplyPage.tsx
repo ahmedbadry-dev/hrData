@@ -143,7 +143,10 @@ export default function DashboardAutoApplyPage() {
           const result = response.data;
 
           if (!result) {
-            showToast({ message: 'تمت الجدولة لكن تعذر قراءة تفاصيل الحصة اليومية.', type: 'info' });
+            showToast({
+              message: 'تمت الجدولة لكن تعذر قراءة تفاصيل الحصة اليومية.',
+              type: 'info',
+            });
             onError();
             return;
           }

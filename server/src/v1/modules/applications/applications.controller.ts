@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import ResponseHelper from '@/shared/utils/api-response';
+import { BadRequestException } from '@/shared/errors/BadRequestException';
 import { ApplicationsService } from './applications.service';
 import { APPLICATIONS_CONSTANTS } from './applications.constants';
 import { ScheduleApplicationsDto } from './dto/schedule-applications.dto';
@@ -24,12 +25,7 @@ export class ApplicationsController {
 
   getStats = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.applicationsService.getApplicationsStats(req.user!.id);
-    return ResponseHelper.ok(
-      res,
-      data,
-      'Applications stats fetched successfully',
-      req.path
-    );
+    return ResponseHelper.ok(res, data, 'Applications stats fetched successfully', req.path);
   };
 
   getApplicationById = async (req: Request, res: Response): Promise<Response> => {
@@ -67,13 +63,22 @@ export class ApplicationsController {
     if (!cvFile && cvData && typeof cvData === 'object') {
       const cvObj = cvData as { name?: string; type?: string; size?: number; data?: string };
       const base64Data = cvObj.data?.replace(/^data:[^;]+;base64,/, '') || '';
+      const decoded = Buffer.from(base64Data, 'base64');
+      if (decoded.length > 5 * 1024 * 1024) {
+        throw new BadRequestException('CV file exceeds the 5 MB size limit');
+      }
+      const PDF_MAGIC_BYTES = [0x25, 0x50, 0x44, 0x46];
+      const isPdf = PDF_MAGIC_BYTES.every((byte, i) => decoded[i] === byte);
+      if (!isPdf) {
+        throw new BadRequestException('Only PDF files are allowed');
+      }
       cvFile = {
         fieldname: 'cv',
         originalname: cvObj.name || 'CV.pdf',
         encoding: '7bit',
-        mimetype: cvObj.type || 'application/pdf',
-        size: cvObj.size || 0,
-        buffer: Buffer.from(base64Data, 'base64'),
+        mimetype: 'application/pdf',
+        size: decoded.length,
+        buffer: decoded,
       } as any;
     }
 

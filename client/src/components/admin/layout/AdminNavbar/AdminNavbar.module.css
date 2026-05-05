@@ -1,5 +1,5 @@
 .site-header {
-  padding: 0 24px;
+  padding: 4px 24px;
   border-bottom: 2px solid var(--ink);
   display: flex;
   align-items: center;
@@ -42,6 +42,17 @@
 
 .logo span {
   color: var(--accent);
+}
+
+.logoImg {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  background: #fff !important;
+  padding: 4px 6px;
+  border-radius: 4px;
+  display: block;
+  margin-top: 8px;
 }
 
 .logo-sub {

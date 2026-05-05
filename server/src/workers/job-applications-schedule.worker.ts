@@ -1,6 +1,8 @@
 import { Worker, Job } from 'bullmq';
 import { randomUUID } from 'crypto';
 import { Buffer } from 'buffer';
+import path from 'path';
+import { access, readFile } from 'fs/promises';
 
 import { jobApplicationsScheduleQueue } from '@/config/bullmq';
 import redis from '@/config/redis';
@@ -46,19 +48,70 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
     logger.info(`📧 Processing email job ${job.id} for application ${applicationId}`);
 
     try {
-      await prismaClient.application.update({
+      let statusChanged = false;
+      try {
+        const updated = await prismaClient.application.update({
+          where: {
+            id: applicationId,
+            status: ApplicationStatus.SCHEDULED,
+          },
+          data: { status: ApplicationStatus.SENDING },
+        });
+        statusChanged = !!updated;
+      } catch (updateError: unknown) {
+        const err = updateError as { code?: string; message?: string; meta?: { cause?: string } };
+        const isNotFound =
+          err?.code === 'P2025' ||
+          err?.code === 'P2015' ||
+          (err?.message?.includes('no record found') ?? false) ||
+          (err?.message?.includes('Record to update') ?? false);
+
+        if (isNotFound) {
+          logger.info(`⏭️ Application ${applicationId} not SCHEDULED — skipping`);
+          return;
+        }
+        throw updateError;
+      }
+
+      const app = await prismaClient.application.findUnique({
         where: { id: applicationId },
-        data: { status: ApplicationStatus.SENDING },
+        select: { status: true },
       });
 
       const token = randomUUID();
       const trackingPixelUrl = generateTrackingPixelUrl(token);
+
+      const logoSetting = await prismaClient.systemSetting.findUnique({
+        where: { key: 'app_logo' },
+      });
+      let logoCid: string | null = null;
+      let logoMimeType: string | null = null;
+      let logoBuffer: Buffer | null = null;
+      if (logoSetting?.value) {
+        const fullPath = path.join(process.cwd(), logoSetting.value.replace(/^\//, ''));
+        try {
+          await access(fullPath);
+          logoBuffer = await readFile(fullPath);
+          logoCid = 'companylogo';
+          const ALLOWED_IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp']);
+          const ext = path.extname(logoSetting.value).replace('.', '').toLowerCase();
+          if (ALLOWED_IMAGE_EXTS.has(ext)) {
+            logoMimeType = `image/${ext}`;
+          } else {
+            logoCid = null;
+          }
+        } catch {
+          logoBuffer = null;
+        }
+      }
 
       const html = jobApplicationTemplate({
         recipientName: userName,
         jobTitle,
         companyName,
         trackingPixelUrl,
+        logoCid,
+        logoMimeType,
       });
 
       const gmailSender = new GmailSender(prismaClient);
@@ -68,6 +121,8 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
         htmlBody: html,
         replyTo: userEmail,
         attachments: attachments.length > 0 ? attachments : undefined,
+        logoBuffer,
+        logoMimeType,
       });
 
       logger.info(`✅ Email sent to ${hrEmail} — messageId: ${messageId}`);

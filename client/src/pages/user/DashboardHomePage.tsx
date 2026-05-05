@@ -4,7 +4,10 @@ import { EmptyState } from '@/components/common';
 import { UserHomeSection } from '@/components/user/sections';
 import { jobsService } from '@/modules/jobs/api/jobs.service';
 import { jobsQueryKeys } from '@/modules/jobs/api/jobs.query-keys';
-import { fetchApplicationsList, fetchApplicationsStats } from '@/modules/applications/api/applications.service';
+import {
+  fetchApplicationsList,
+  fetchApplicationsStats,
+} from '@/modules/applications/api/applications.service';
 import { applicationsQueryKeys } from '@/modules/applications/api/applications.query-keys';
 import type { Application } from '@/modules/applications/types';
 

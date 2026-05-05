@@ -38,7 +38,8 @@ export interface PaginatedApplicationsResponse {
   };
 }
 
-export interface GetApplicationsResponse extends PaginatedApplicationsResponse, EmailQuotaResponse {}
+export interface GetApplicationsResponse
+  extends PaginatedApplicationsResponse, EmailQuotaResponse {}
 
 export interface GetApplicationByIdResponse extends ApplicationResponse, EmailQuotaResponse {}
 

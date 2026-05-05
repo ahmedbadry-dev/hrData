@@ -69,7 +69,12 @@ export default function AdminAnalyticsSection({
   const dailyApplyRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    if (!topJobsRef.current && !usersActivityRef.current && !autoSuccessRef.current && !dailyApplyRef.current) {
+    if (
+      !topJobsRef.current &&
+      !usersActivityRef.current &&
+      !autoSuccessRef.current &&
+      !dailyApplyRef.current
+    ) {
       return;
     }
 
@@ -200,7 +205,7 @@ export default function AdminAnalyticsSection({
                 titleFont: { family: 'Cairo' },
                 bodyFont: { family: 'Cairo' },
                 callbacks: {
-                  label: (context) => ` ${context.label}: ${context.parsed}%`,
+                  label: (context) => ` ${context.label}: ${context.parsed}`,
                 },
               },
             },
@@ -327,7 +332,9 @@ export default function AdminAnalyticsSection({
             {userActivity && userActivity.length > 0 ? (
               <canvas ref={usersActivityRef} />
             ) : (
-              <div className={styles['chart-empty']}>لا يوجد نشاط مسجل للمستخدمين خلال هذه الفترة</div>
+              <div className={styles['chart-empty']}>
+                لا يوجد نشاط مسجل للمستخدمين خلال هذه الفترة
+              </div>
             )}
           </div>
         </div>
@@ -339,7 +346,10 @@ export default function AdminAnalyticsSection({
             <div className={styles['chart-title']}>نسبة نجاح التقديم الآلي</div>
           </div>
           <div className={styles['chart-wrap-small']}>
-            {statusDistribution && (statusDistribution.success > 0 || statusDistribution.failed > 0 || statusDistribution.pending > 0) ? (
+            {statusDistribution &&
+            (statusDistribution.success > 0 ||
+              statusDistribution.failed > 0 ||
+              statusDistribution.pending > 0) ? (
               <canvas ref={autoSuccessRef} />
             ) : (
               <div className={styles['chart-empty']}>لم يتم رصد أي محاولات تقديم آلي بعد</div>

@@ -22,15 +22,12 @@ export class AuthController {
   };
 
   login = async (req: Request, res: Response): Promise<Response> => {
-    console.log('[Auth] Login request received for:', req.body.email);
     const data = await this.authService.login(req.body, this.getDeviceInfo(req));
     if ('requestTwoFactor' in data) {
       return ResponseHelper.ok(res, data, 'Two factor authentication required', req.path);
     }
     const rememberMe = Boolean(req.body.rememberMe);
-    console.log('[Auth] Setting refresh token cookie. RememberMe:', rememberMe);
     this.setRefreshTokenCookie(res, data.tokens.refreshToken, rememberMe);
-    console.log('[Auth] Cookie set successfully. Sending response.');
     return ResponseHelper.ok(
       res,
       {
@@ -43,7 +40,8 @@ export class AuthController {
   };
 
   logout = async (req: Request, res: Response): Promise<Response> => {
-    await this.authService.logout(req.user!.id, req.cookies.refreshToken);
+    const accessToken = req.headers.authorization?.split(' ')[1] || '';
+    await this.authService.logout(req.user!.id, accessToken, req.cookies.refreshToken);
     this.clearRefreshTokenCookie(res);
     return ResponseHelper.ok(res, {}, 'User logged out successfully', req.path);
   };
@@ -84,6 +82,7 @@ export class AuthController {
 
   validateResetToken = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.authService.validateResetToken(req.query.token as string);
+
     return ResponseHelper.ok(res, data, 'Token is valid', req.path);
   };
 
@@ -124,7 +123,6 @@ export class AuthController {
       cookieOptions.maxAge = AUTH_CONSTANTS.REMEMBER_ME_MAX_AGE;
     }
 
-    console.log('[Auth] Cookie Options:', JSON.stringify(cookieOptions));
     res.cookie(AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_NAME, token, cookieOptions);
 
     res.cookie(AUTH_CONSTANTS.SESSION_HINT_COOKIE_NAME, '1', {

@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/modules/auth/api/hooks';
+import { Logo } from '@/components/ui/Logo/Logo';
 import styles from './UserNavbar.module.css';
 
 interface UserNavbarProps {
@@ -32,7 +33,7 @@ export default function UserNavbar({ onToggleSidebar }: UserNavbarProps) {
 
         <div className={styles['logo-sub']}>
           <Link className={styles.logo} to="/">
-            كُـفُـؤ<span>.</span>
+            <Logo fallback="HR Data" className={styles.logoImg} />
           </Link>
 
           <span className={styles['logo-tagline']}>منصة التوظيف المباشر</span>

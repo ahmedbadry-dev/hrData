@@ -81,7 +81,7 @@ export default function AdminUsersPage() {
 
     if (user.status === 'active') {
       suspendMutation.mutate(String(id), { onSuccess: () => refetch() });
-    } else {
+    } else if (user.status === 'suspended') {
       activateMutation.mutate(String(id), { onSuccess: () => refetch() });
     }
   };

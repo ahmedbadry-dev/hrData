@@ -24,7 +24,8 @@ export class NotificationsController {
 
   listAdminAllNotifications = async (req: Request, res: Response): Promise<Response> => {
     const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
+    let limit = parseInt(req.query.limit as string) || 20;
+    if (limit > 100) limit = 100;
     const data = await this.notificationsService.listAdminAllNotifications(page, limit);
     return ResponseHelper.ok(res, data, NOTIFICATIONS_MESSAGES.LIST, req.path);
   };
