@@ -12,6 +12,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { generateHash, compareHash, generateHashedWithSha256 } from '@/shared/utils/hash.util';
 import {
   generateTempToken,
+  verifyAccessToken,
   verifyRefreshToken,
   verifyTempToken,
   generateTokenPair,
@@ -108,14 +109,14 @@ export class AuthService {
       throw new BadRequestException('Invalid verification token');
     }
 
-    if (userExists.emailVerified) {
-      return excludePassword(userExists);
-    }
-
     const hashedToken = generateHashedWithSha256(token);
 
     if (userExists.verificationToken !== hashedToken) {
       throw new BadRequestException('Invalid verification token');
+    }
+
+    if (userExists.emailVerified) {
+      return excludePassword(userExists);
     }
 
     const updatedUser = await this.prisma.user.update({
@@ -160,7 +161,17 @@ export class AuthService {
     return this.createTokenPairAndSession(userExists, deviceInfo);
   }
 
-  async logout(userId: string, refreshToken: string): Promise<void> {
+  async logout(userId: string, accessToken: string, refreshToken: string): Promise<void> {
+    const verifiedAccess = verifyAccessToken(accessToken);
+    if (verifiedAccess.valid && verifiedAccess.payload.tokenId) {
+      const ttlMs = verifiedAccess.payload.exp
+        ? verifiedAccess.payload.exp * 1000 - Date.now()
+        : 15 * 60 * 1000;
+      if (ttlMs > 0) {
+        await redis.set(`blacklist:token:${verifiedAccess.payload.tokenId}`, '1', 'PX', ttlMs);
+      }
+    }
+
     const verified = verifyRefreshToken(refreshToken);
     if (verified.valid && verified.payload.tokenId) {
       const ttlMs = verified.payload.exp

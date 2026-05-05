@@ -67,11 +67,16 @@ export class ApplicationsController {
       if (decoded.length > 5 * 1024 * 1024) {
         throw new BadRequestException('CV file exceeds the 5 MB size limit');
       }
+      const PDF_MAGIC_BYTES = [0x25, 0x50, 0x44, 0x46];
+      const isPdf = PDF_MAGIC_BYTES.every((byte, i) => decoded[i] === byte);
+      if (!isPdf) {
+        throw new BadRequestException('Only PDF files are allowed');
+      }
       cvFile = {
         fieldname: 'cv',
         originalname: cvObj.name || 'CV.pdf',
         encoding: '7bit',
-        mimetype: cvObj.type || 'application/pdf',
+        mimetype: 'application/pdf',
         size: decoded.length,
         buffer: decoded,
       } as any;

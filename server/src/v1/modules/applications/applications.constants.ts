@@ -8,7 +8,10 @@ export const APPLICATIONS_CONSTANTS = {
   },
   ORDER_BY: {
     CREATED_AT_DESC: { createdAt: 'desc' as const },
-    STATUS_PENDING_FIRST: [{ status: 'asc' }, { createdAt: 'desc' }] as any,
+    STATUS_PENDING_FIRST: [{ status: 'asc' as const }, { createdAt: 'desc' as const }] as [
+      { status: 'asc' },
+      { createdAt: 'desc' }
+    ],
   },
   DEFAULT_DELAY_BETWEEN_EMAILS_MS: 30000,
   DEFAULT_DAILY_EMAIL_LIMIT: 50,

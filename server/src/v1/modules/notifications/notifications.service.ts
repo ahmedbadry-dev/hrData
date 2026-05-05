@@ -206,17 +206,19 @@ export class NotificationsService {
       return;
     }
 
-    for (const user of users) {
-      await notificationEmailService
-        .sendNotificationEmail({
-          to: user.email,
-          fullName: `${user.firstName} ${user.lastName}`,
-          title: notificationData.title,
-          body: notificationData.body,
-        })
-        .catch((error) => {
-          logger.error(`Failed to send notification email to ${user.email}`, { error });
-        });
-    }
+    await Promise.all(
+      users.map((user) =>
+        notificationEmailService
+          .sendNotificationEmail({
+            to: user.email,
+            fullName: `${user.firstName} ${user.lastName}`,
+            title: notificationData.title,
+            body: notificationData.body,
+          })
+          .catch((error) => {
+            logger.error(`Failed to send notification email to ${user.email}`, { error });
+          })
+      )
+    );
   }
 }

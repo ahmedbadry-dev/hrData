@@ -198,6 +198,10 @@ export class ApplicationsService {
     const isImmediate = sendTime === 'immediately';
     const scheduledAt = isImmediate ? null : new Date(sendTime);
 
+    if (!isImmediate && scheduledAt && isNaN(scheduledAt.getTime())) {
+      throw new BadRequestException(APPLICATIONS_CONSTANTS.MESSAGES.INVALID_SEND_TIME);
+    }
+
     const savedJobById = new Map(savedJobs.map((savedJob) => [savedJob.jobId, savedJob]));
     const orderedSavedJobs = uniqueJobIds
       .map((jobId) => savedJobById.get(jobId))
@@ -285,9 +289,6 @@ export class ApplicationsService {
       });
 
       const cancelledJobIds = new Set(existingCancelledApplications.map((a) => a.jobId));
-      const newJobIds = jobsWithinLimitResult
-        .filter((savedJob) => !cancelledJobIds.has(savedJob.jobId))
-        .map((savedJob) => savedJob.jobId);
 
       if (cancelledJobIds.size > 0) {
         await tx.application.updateMany({
@@ -388,9 +389,9 @@ export class ApplicationsService {
           removeOnComplete: true,
           removeOnFail: { count: 100 },
         });
-      } else {
+      } else if (scheduledAt) {
         await jobApplicationsScheduleQueue.add(jobApplicationsScheduleQueue.name, jobData, {
-          delay: scheduledAt!.getTime() - Date.now() + index * delay,
+          delay: scheduledAt.getTime() - Date.now() + index * delay,
           attempts: 3,
           backoff: {
             type: 'exponential',
@@ -442,6 +443,14 @@ export class ApplicationsService {
       where: { id: applicationId },
       data: { status: ApplicationStatus.CANCELLED },
     });
+
+    try {
+      const jobs = await jobApplicationsScheduleQueue.getJobs();
+      const appJobs = jobs.filter((job) => job.data.applicationId === applicationId);
+      await Promise.all(appJobs.map((job) => job.remove()));
+    } catch (error) {
+      logger.error(`Failed to remove BullMQ jobs for application ${applicationId}`, { error });
+    }
   }
 
   async checkAndEnforceEmailLimit(

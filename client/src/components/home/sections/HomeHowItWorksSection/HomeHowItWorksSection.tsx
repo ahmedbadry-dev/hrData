@@ -3,7 +3,7 @@ import styles from '@/components/home/layout/HomeLayout/HomeLayout.module.css';
 
 export default function HomeHowItWorksSection() {
   return (
-    <section className={styles.section} id="how">
+    <section className={styles.section} id="how-it-works">
       <div className={styles['section-tag']}>كيف يعمل</div>
       <div className={styles['section-title']}>ثلاث خطوات وانتهينا</div>
 

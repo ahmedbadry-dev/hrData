@@ -16,10 +16,6 @@ const upload = multer({
   fileFilter: (_req, file, cb) => {
     const PDF_MAGIC_BYTES = [0x25, 0x50, 0x44, 0x46];
     const buffer = Buffer.alloc(4);
-    if (file.stream && typeof file.stream.read === 'function') {
-      cb(new Error('Streaming not supported'));
-      return;
-    }
     if (file.buffer) {
       for (let i = 0; i < 4; i++) {
         buffer[i] = file.buffer[i];
