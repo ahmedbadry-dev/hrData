@@ -205,7 +205,7 @@ export default function AdminAnalyticsSection({
                 titleFont: { family: 'Cairo' },
                 bodyFont: { family: 'Cairo' },
                 callbacks: {
-                  label: (context) => ` ${context.label}: ${context.parsed}%`,
+                  label: (context) => ` ${context.label}: ${context.parsed}`,
                 },
               },
             },
