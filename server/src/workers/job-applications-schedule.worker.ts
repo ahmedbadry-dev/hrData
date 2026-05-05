@@ -78,11 +78,6 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
         select: { status: true },
       });
 
-      if (app?.status === ApplicationStatus.CANCELLED) {
-        logger.info(`⏭️ Application ${applicationId} was cancelled — skipping`);
-        return;
-      }
-
       const token = randomUUID();
       const trackingPixelUrl = generateTrackingPixelUrl(token);
 

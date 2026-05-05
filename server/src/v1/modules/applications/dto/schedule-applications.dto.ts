@@ -27,6 +27,7 @@ const cvObjectSchema = z
   })
   .passthrough();
 
+const sendTimeRegex = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}|\d{4}-\d{2}-\d{2})$/;
 export const ScheduleApplicationsDtoSchema = z.object({
   body: z.object({
     jobIds: jobIdsSchema,
@@ -35,10 +36,7 @@ export const ScheduleApplicationsDtoSchema = z.object({
       .refine(
         (val) =>
           val === 'immediately' ||
-          val === 'now' ||
-          /^\d{1,2}(am|pm)$/.test(val) ||
-          val === 'tomorrow8am' ||
-          val.startsWith('test') ||
+          sendTimeRegex.test(val) ||
           !isNaN(Date.parse(val)),
         APPLICATIONS_CONSTANTS.MESSAGES.INVALID_SEND_TIME
       ),

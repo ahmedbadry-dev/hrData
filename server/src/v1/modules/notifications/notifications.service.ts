@@ -2,6 +2,7 @@ import logger from '@/shared/utils/logger.util';
 import { notificationsService as notificationEmailService } from '@/notifications/notifications.service';
 import { NotFoundException } from '@/shared/errors/NotFoundException';
 import { buildPaginationMeta } from '@/shared/utils/paginate.util';
+import pLimit from 'p-limit';
 import {
   Notification,
   NotificationTarget,
@@ -206,18 +207,21 @@ export class NotificationsService {
       return;
     }
 
+    const limit = pLimit(5);
     await Promise.all(
       users.map((user) =>
-        notificationEmailService
-          .sendNotificationEmail({
-            to: user.email,
-            fullName: `${user.firstName} ${user.lastName}`,
-            title: notificationData.title,
-            body: notificationData.body,
-          })
-          .catch((error) => {
-            logger.error(`Failed to send notification email to ${user.email}`, { error });
-          })
+        limit(() =>
+          notificationEmailService
+            .sendNotificationEmail({
+              to: user.email,
+              fullName: `${user.firstName} ${user.lastName}`,
+              title: notificationData.title,
+              body: notificationData.body,
+            })
+            .catch((error) => {
+              logger.error(`Failed to send notification email to ${user.email}`, { error });
+            })
+        )
       )
     );
   }

@@ -198,6 +198,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
+    const oldTokenId = verifiedToken.payload.tokenId;
+
     const user = await this.prisma.user.findUnique({
       where: { id: verifiedToken.payload.userId },
     });
@@ -207,7 +209,18 @@ export class AuthService {
 
     this.validateUserStatus(user);
 
-    return this.createTokenPairAndSession(user, deviceInfo);
+    const newTokenResult = this.createTokenPairAndSession(user, deviceInfo);
+
+    if (oldTokenId) {
+      const ttlMs = verifiedToken.payload.exp
+        ? verifiedToken.payload.exp * 1000 - Date.now()
+        : 7 * 24 * 60 * 60 * 1000;
+      if (ttlMs > 0) {
+        await redis.set(`blacklist:token:${oldTokenId}`, '1', 'PX', ttlMs);
+      }
+    }
+
+    return newTokenResult;
   }
 
   async forgotPassword(data: ForgotPasswordDto['body']) {

@@ -1,5 +1,6 @@
 import nodemailer, { Transporter } from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
+import pLimit from 'p-limit';
 
 import { verifyEmailTemplate } from './templates/verify-email.template';
 import { resetPasswordTemplate } from './templates/reset-password.template';

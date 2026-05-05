@@ -54,14 +54,6 @@ async function bootstrapScraper(): Promise<void> {
   }
 }
 
-process.on('uncaughtException', (err: Error) => {
-  logger.error('💥 UNCAUGHT EXCEPTION — shutting down', {
-    message: err.message,
-    stack: err.stack,
-  });
-  process.exit(1);
-});
-
 const startServer = async () => {
   try {
     await bootstrapScraper();

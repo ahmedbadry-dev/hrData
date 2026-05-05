@@ -48,14 +48,17 @@ export default function DashboardAnalysisPage() {
     }
   );
 
-  const cancelMutation = useCancelApplication({
-    onSuccess: () => {
-      showToast({ message: 'تم إلغاء الطلب بنجاح', type: 'success' });
+  const cancelMutation = useCancelApplication(
+    {
+      onSuccess: () => {
+        showToast({ message: 'تم إلغاء الطلب بنجاح', type: 'success' });
+      },
+      onError: () => {
+        showToast({ message: 'تعذر إلغاء الطلب حالياً. حاول مرة أخرى.', type: 'error' });
+      },
     },
-    onError: () => {
-      showToast({ message: 'تعذر إلغاء الطلب حالياً. حاول مرة أخرى.', type: 'error' });
-    },
-  });
+    { page, limit: ITEMS_PER_PAGE }
+  );
 
   const applications: UserApplication[] = useMemo(
     () =>
