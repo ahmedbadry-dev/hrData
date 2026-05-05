@@ -275,28 +275,71 @@ export class ApplicationsService {
         );
       }
 
-      const applicationsToCreate = jobsWithinLimitResult.map((savedJob) => ({
-        userId,
-        jobId: savedJob.jobId,
-        status: ApplicationStatus.SCHEDULED,
-        scheduledAt,
-      }));
+      const existingCancelledApplications = await tx.application.findMany({
+        where: {
+          userId,
+          jobId: { in: jobsWithinLimitResult.map((savedJob) => savedJob.jobId) },
+          status: ApplicationStatus.CANCELLED,
+        },
+        select: { jobId: true },
+      });
 
-      const createdApplicationsResult = await tx.application.createManyAndReturn({
-        data: applicationsToCreate,
+      const cancelledJobIds = new Set(existingCancelledApplications.map((a) => a.jobId));
+      const newJobIds = jobsWithinLimitResult
+        .filter((savedJob) => !cancelledJobIds.has(savedJob.jobId))
+        .map((savedJob) => savedJob.jobId);
+
+      if (cancelledJobIds.size > 0) {
+        await tx.application.updateMany({
+          where: {
+            userId,
+            jobId: { in: [...cancelledJobIds] },
+            status: ApplicationStatus.CANCELLED,
+          },
+          data: {
+            status: ApplicationStatus.SCHEDULED,
+            scheduledAt,
+            errorMessage: null,
+            retryCount: 0,
+          },
+        });
+      }
+
+      const applicationsToCreate = jobsWithinLimitResult
+        .filter((savedJob) => !cancelledJobIds.has(savedJob.jobId))
+        .map((savedJob) => ({
+          userId,
+          jobId: savedJob.jobId,
+          status: ApplicationStatus.SCHEDULED,
+          scheduledAt,
+        }));
+
+      let createdApplicationsResult: Application[] = [];
+      if (applicationsToCreate.length > 0) {
+        createdApplicationsResult = await tx.application.createManyAndReturn({
+          data: applicationsToCreate,
+        });
+      }
+
+      const allApplications = await tx.application.findMany({
+        where: {
+          userId,
+          jobId: { in: jobsWithinLimitResult.map((savedJob) => savedJob.jobId) },
+          status: ApplicationStatus.SCHEDULED,
+        },
       });
 
       const quotaAfterScheduling = await this.finalizeEmailQuotaAfterScheduling(
         tx,
         userId,
         limitCheck,
-        createdApplicationsResult.length,
+        allApplications.length,
         now
       );
 
       return {
         user: userResult,
-        createdApplications: createdApplicationsResult,
+        createdApplications: allApplications,
         jobsWithinLimit: jobsWithinLimitResult,
         requestedCount: validSavedJobs.length,
         skippedCount: skippedByLimitCount,
@@ -343,7 +386,7 @@ export class ApplicationsService {
             delay: 5000,
           },
           removeOnComplete: true,
-          removeOnFail: true,
+          removeOnFail: { count: 100 },
         });
       } else {
         await jobApplicationsScheduleQueue.add(jobApplicationsScheduleQueue.name, jobData, {
@@ -354,7 +397,7 @@ export class ApplicationsService {
             delay: 5000,
           },
           removeOnComplete: true,
-          removeOnFail: true,
+          removeOnFail: { count: 100 },
         });
       }
     }
@@ -395,8 +438,9 @@ export class ApplicationsService {
       throw new BadRequestException('Only scheduled applications can be cancelled');
     }
 
-    await this.prisma.application.delete({
+    await this.prisma.application.update({
       where: { id: applicationId },
+      data: { status: ApplicationStatus.CANCELLED },
     });
   }
 

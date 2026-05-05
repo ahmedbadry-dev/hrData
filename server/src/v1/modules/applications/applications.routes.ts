@@ -14,8 +14,22 @@ import { ApplicationsController } from './applications.controller';
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (_req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
-      cb(null, true);
+    const PDF_MAGIC_BYTES = [0x25, 0x50, 0x44, 0x46];
+    const buffer = Buffer.alloc(4);
+    if (file.stream && typeof file.stream.read === 'function') {
+      cb(new Error('Streaming not supported'));
+      return;
+    }
+    if (file.buffer) {
+      for (let i = 0; i < 4; i++) {
+        buffer[i] = file.buffer[i];
+      }
+      const isPdf = PDF_MAGIC_BYTES.every((byte, i) => buffer[i] === byte);
+      if (isPdf) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only PDF files are allowed'));
+      }
     } else {
       cb(new Error('Only PDF files are allowed'));
     }

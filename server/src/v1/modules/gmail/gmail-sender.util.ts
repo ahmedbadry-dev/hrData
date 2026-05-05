@@ -1,8 +1,9 @@
 import { google } from 'googleapis';
 import { PrismaClient } from '@prisma/client';
 import MailComposer from 'nodemailer/lib/mail-composer/index.js';
+import { createDecipheriv, createCipheriv, randomBytes } from 'node:crypto';
 
-import { gmailOAuthConfig } from '@/config/env.config';
+import { gmailOAuthConfig, encryptionConfig } from '@/config/env.config';
 import logger from '@/shared/utils/logger.util';
 
 export class GmailSender {
@@ -33,16 +34,19 @@ export class GmailSender {
       throw new Error('User has not connected Gmail account');
     }
 
+    const accessToken = this.decryptToken(token.accessToken);
+    let refreshToken = this.decryptToken(token.refreshToken);
+
     if (token.tokenExpiry && new Date() >= new Date(token.tokenExpiry)) {
-      const newToken = await this.refreshAccessToken(token.refreshToken);
+      const newToken = await this.refreshAccessToken(refreshToken);
       await this.prisma.gmailToken.update({
         where: { userId },
         data: {
-          accessToken: newToken,
+          accessToken: this.encryptToken(newToken),
           tokenExpiry: new Date(Date.now() + 3600 * 1000),
         },
       });
-      token.accessToken = newToken;
+      refreshToken = newToken;
     }
 
     const auth = new google.auth.OAuth2(
@@ -51,8 +55,8 @@ export class GmailSender {
       gmailOAuthConfig.redirectUri
     );
     auth.setCredentials({
-      access_token: token.accessToken,
-      refresh_token: token.refreshToken,
+      access_token: accessToken,
+      refresh_token: refreshToken,
     });
 
     const gmail = google.gmail({ version: 'v1', auth });
@@ -128,6 +132,29 @@ export class GmailSender {
     });
 
     const credentials = await auth.getAccessToken();
-    return credentials.token || '';
+    if (!credentials.token) {
+      throw new Error('Gmail token refresh failed — user must reconnect Gmail account');
+    }
+    return credentials.token;
+  }
+
+  private decryptToken(encryptedValue: string): string {
+    const buffer = Buffer.from(encryptedValue, 'base64');
+    const iv = buffer.subarray(0, 16);
+    const tag = buffer.subarray(16, 32);
+    const encrypted = buffer.subarray(32);
+    const key = Buffer.from(encryptionConfig.encryptionKey, 'hex');
+    const decipher = createDecipheriv('aes-256-gcm', key, iv);
+    decipher.setAuthTag(tag);
+    return decipher.update(encrypted) + decipher.final('utf8');
+  }
+
+  private encryptToken(value: string): string {
+    const iv = randomBytes(16);
+    const key = Buffer.from(encryptionConfig.encryptionKey, 'hex');
+    const cipher = createCipheriv('aes-256-gcm', key, iv);
+    const encrypted = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
+    const tag = cipher.getAuthTag();
+    return Buffer.concat([iv, tag, encrypted]).toString('base64');
   }
 }

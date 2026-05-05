@@ -2,7 +2,7 @@ import { Worker, Job } from 'bullmq';
 import { randomUUID } from 'crypto';
 import { Buffer } from 'buffer';
 import path from 'path';
-import fs from 'fs';
+import { access, readFile } from 'fs/promises';
 
 import { jobApplicationsScheduleQueue } from '@/config/bullmq';
 import redis from '@/config/redis';
@@ -48,10 +48,40 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
     logger.info(`📧 Processing email job ${job.id} for application ${applicationId}`);
 
     try {
-      await prismaClient.application.update({
+      let statusChanged = false;
+      try {
+        const updated = await prismaClient.application.update({
+          where: {
+            id: applicationId,
+            status: ApplicationStatus.SCHEDULED,
+          },
+          data: { status: ApplicationStatus.SENDING },
+        });
+        statusChanged = !!updated;
+      } catch (updateError: unknown) {
+        const err = updateError as { code?: string; message?: string; meta?: { cause?: string } };
+        const isNotFound =
+          err?.code === 'P2025' ||
+          err?.code === 'P2015' ||
+          (err?.message?.includes('no record found') ?? false) ||
+          (err?.message?.includes('Record to update') ?? false);
+
+        if (isNotFound) {
+          logger.info(`⏭️ Application ${applicationId} not SCHEDULED — skipping`);
+          return;
+        }
+        throw updateError;
+      }
+
+      const app = await prismaClient.application.findUnique({
         where: { id: applicationId },
-        data: { status: ApplicationStatus.SENDING },
+        select: { status: true },
       });
+
+      if (app?.status === ApplicationStatus.CANCELLED) {
+        logger.info(`⏭️ Application ${applicationId} was cancelled — skipping`);
+        return;
+      }
 
       const token = randomUUID();
       const trackingPixelUrl = generateTrackingPixelUrl(token);
@@ -64,10 +94,19 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
       let logoBuffer: Buffer | null = null;
       if (logoSetting?.value) {
         const fullPath = path.join(process.cwd(), logoSetting.value.replace(/^\//, ''));
-        if (fs.existsSync(fullPath)) {
-          logoBuffer = fs.readFileSync(fullPath);
+        try {
+          await access(fullPath);
+          logoBuffer = await readFile(fullPath);
           logoCid = 'companylogo';
-          logoMimeType = `image/${path.extname(logoSetting.value).replace('.', '')}`;
+          const ALLOWED_IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp']);
+          const ext = path.extname(logoSetting.value).replace('.', '').toLowerCase();
+          if (ALLOWED_IMAGE_EXTS.has(ext)) {
+            logoMimeType = `image/${ext}`;
+          } else {
+            logoCid = null;
+          }
+        } catch {
+          logoBuffer = null;
         }
       }
 

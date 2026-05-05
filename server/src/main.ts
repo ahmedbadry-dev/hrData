@@ -17,6 +17,19 @@ import { startMaintenanceSchedule } from '@/workers/maintenance.worker';
 
 import { startScraperSchedule } from './scraper/scraper.scheduler';
 
+process.on('uncaughtException', (err: Error) => {
+  logger.error('💥 UNCAUGHT EXCEPTION — shutting down', {
+    message: err.message,
+    stack: err.stack,
+  });
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason: Error) => {
+  logger.error('💥 UNHANDLED REJECTION — shutting down', { reason });
+  process.exit(1);
+});
+
 const PORT = getEnvVarAsNumber('PORT', 5000);
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -71,15 +84,6 @@ const startServer = async () => {
       }
       server.close(async () => {
         logger.info('👋 Server error — shutting down gracefully');
-        await prisma.$disconnect();
-        process.exit(1);
-      });
-    });
-
-    process.on('unhandledRejection', (reason: Error) => {
-      logger.error('💥 UNHANDLED REJECTION — shutting down', { reason });
-      server.close(async () => {
-        logger.info('👋 UNHANDLED REJECTION — shutting down gracefully');
         await prisma.$disconnect();
         process.exit(1);
       });

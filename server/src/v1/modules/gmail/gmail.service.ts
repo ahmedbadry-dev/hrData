@@ -1,7 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { PrismaClient } from '@prisma/client';
+import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 
-import { gmailOAuthConfig, jwtConfig } from '@/config/env.config';
+import { gmailOAuthConfig, encryptionConfig } from '@/config/env.config';
 import { UnauthorizedException } from '@/shared/errors/UnauthorizedException';
 import { BadRequestException } from '@/shared/errors/BadRequestException';
 import logger from '@/shared/utils/logger.util';
@@ -85,15 +86,15 @@ export class GmailService {
     await this.prisma.gmailToken.upsert({
       where: { userId: decodedState.userId },
       update: {
-        accessToken,
-        refreshToken,
+        accessToken: this.encryptToken(accessToken),
+        refreshToken: this.encryptToken(refreshToken),
         tokenExpiry,
         email: profile.email,
       },
       create: {
         userId: decodedState.userId,
-        accessToken,
-        refreshToken,
+        accessToken: this.encryptToken(accessToken),
+        refreshToken: this.encryptToken(refreshToken),
         tokenExpiry,
         email: profile.email,
       },
@@ -161,7 +162,7 @@ export class GmailService {
   }
 
   private signStatePayload(payloadBase64: string): string {
-    return createHmac('sha256', jwtConfig.accessSecret).update(payloadBase64).digest('base64url');
+    return createHmac('sha256', gmailOAuthConfig.stateSecret).update(payloadBase64).digest('base64url');
   }
 
   private async exchangeAuthorizationCode(code: string): Promise<GoogleTokenResponse> {
@@ -204,5 +205,25 @@ export class GmailService {
     if (!gmailOAuthConfig.clientId || !gmailOAuthConfig.clientSecret) {
       throw new BadRequestException('Gmail OAuth is not configured');
     }
+  }
+
+  private encryptToken(value: string): string {
+    const iv = randomBytes(16);
+    const key = Buffer.from(encryptionConfig.encryptionKey, 'hex');
+    const cipher = createCipheriv('aes-256-gcm', key, iv);
+    const encrypted = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
+    const tag = cipher.getAuthTag();
+    return Buffer.concat([iv, tag, encrypted]).toString('base64');
+  }
+
+  private decryptToken(encryptedValue: string): string {
+    const buffer = Buffer.from(encryptedValue, 'base64');
+    const iv = buffer.subarray(0, 16);
+    const tag = buffer.subarray(16, 32);
+    const encrypted = buffer.subarray(32);
+    const key = Buffer.from(encryptionConfig.encryptionKey, 'hex');
+    const decipher = createDecipheriv('aes-256-gcm', key, iv);
+    decipher.setAuthTag(tag);
+    return decipher.update(encrypted) + decipher.final('utf8');
   }
 }

@@ -7,6 +7,7 @@ import { NotFoundException } from '@/shared/errors/NotFoundException';
 import { ConflictException } from '@/shared/errors/ConflictException';
 import { ForbiddenException } from '@/shared/errors/ForbiddenException';
 import logger from '@/shared/utils/logger.util';
+import redis from '@/config/redis';
 import { CreateUserDto } from './dto/create-user.dto';
 import { generateHash, compareHash, generateHashedWithSha256 } from '@/shared/utils/hash.util';
 import {
@@ -160,13 +161,20 @@ export class AuthService {
   }
 
   async logout(userId: string, refreshToken: string): Promise<void> {
-    // Session-less logout: The controller will clear the cookies.
-    // No database action needed since we removed the Session table.
+    const verified = verifyRefreshToken(refreshToken);
+    if (verified.valid && verified.payload.tokenId) {
+      const ttlMs = verified.payload.exp
+        ? verified.payload.exp * 1000 - Date.now()
+        : 7 * 24 * 60 * 60 * 1000;
+      if (ttlMs > 0) {
+        await redis.set(`blacklist:token:${verified.payload.tokenId}`, '1', 'PX', ttlMs);
+      }
+    }
   }
 
   async logoutAll(userId: string): Promise<void> {
-    // Session-less logoutAll: In a stateless system, this would require a blacklist.
-    // For now, we just acknowledge the request.
+    await redis.incr(`user:token-gen:${userId}`);
+    await redis.expire(`user:token-gen:${userId}`, 7 * 24 * 60 * 60);
   }
 
   async refresh(refreshToken: string, deviceInfo: DeviceInfo): Promise<AuthResponseWithTokens> {
@@ -341,6 +349,13 @@ export class AuthService {
 
     if (currentPassword === newPassword) {
       throw new BadRequestException('New password is same as current password');
+    }
+
+    if (user.passwordHash) {
+      const isSamePassword = await compareHash(newPassword, user.passwordHash);
+      if (isSamePassword) {
+        throw new BadRequestException('New password must differ from current password');
+      }
     }
 
     const hashedPassword = await generateHash(newPassword);

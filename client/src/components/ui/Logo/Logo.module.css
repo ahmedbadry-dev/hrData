@@ -1,0 +1,20 @@
+.logoImg {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  background: #fff !important;
+  padding: 4px 6px;
+  border-radius: 4px;
+  display: block;
+}
+
+.fallback {
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 26px;
+  letter-spacing: -1px;
+  color: inherit;
+  white-space: nowrap;
+  display: inline-block;
+  line-height: 1.2;
+}

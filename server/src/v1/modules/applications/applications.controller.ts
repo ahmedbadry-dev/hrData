@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import ResponseHelper from '@/shared/utils/api-response';
+import { BadRequestException } from '@/shared/errors/BadRequestException';
 import { ApplicationsService } from './applications.service';
 import { APPLICATIONS_CONSTANTS } from './applications.constants';
 import { ScheduleApplicationsDto } from './dto/schedule-applications.dto';
@@ -62,13 +63,17 @@ export class ApplicationsController {
     if (!cvFile && cvData && typeof cvData === 'object') {
       const cvObj = cvData as { name?: string; type?: string; size?: number; data?: string };
       const base64Data = cvObj.data?.replace(/^data:[^;]+;base64,/, '') || '';
+      const decoded = Buffer.from(base64Data, 'base64');
+      if (decoded.length > 5 * 1024 * 1024) {
+        throw new BadRequestException('CV file exceeds the 5 MB size limit');
+      }
       cvFile = {
         fieldname: 'cv',
         originalname: cvObj.name || 'CV.pdf',
         encoding: '7bit',
         mimetype: cvObj.type || 'application/pdf',
-        size: cvObj.size || 0,
-        buffer: Buffer.from(base64Data, 'base64'),
+        size: decoded.length,
+        buffer: decoded,
       } as any;
     }
 

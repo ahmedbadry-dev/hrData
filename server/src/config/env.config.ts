@@ -123,8 +123,12 @@ export const corsConfig = {
 export const emailConfig = {
   host: getEnvVariable('SMTP_HOST', 'smtp.ethereal.email'),
   port: getEnvVarAsNumber('SMTP_PORT', 587),
-  user: getEnvVariable('SMTP_USER', ''),
-  password: getEnvVariable('SMTP_PASSWORD', ''),
+  user: appConfig.isProduction
+    ? getEnvVariable('SMTP_USER')
+    : getEnvVariable('SMTP_USER', ''),
+  password: appConfig.isProduction
+    ? getEnvVariable('SMTP_PASSWORD')
+    : getEnvVariable('SMTP_PASSWORD', ''),
   secure:
     process.env.SMTP_SECURE !== undefined
       ? getEnvVarAsBoolean('SMTP_SECURE')
@@ -144,6 +148,11 @@ export const gmailOAuthConfig = {
   scope: getEnvVariable(
     'GMAIL_OAUTH_SCOPE',
     'openid email https://www.googleapis.com/auth/gmail.send'
+  ),
+  stateSecret: ensureMinLength(
+    'GMAIL_OAUTH_STATE_SECRET',
+    getEnvVariable('GMAIL_OAUTH_STATE_SECRET', ''),
+    32
   ),
 };
 
