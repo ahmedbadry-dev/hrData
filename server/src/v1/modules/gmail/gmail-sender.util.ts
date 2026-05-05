@@ -21,6 +21,8 @@ export class GmailSender {
       from?: string | undefined;
       replyTo?: string | undefined;
       attachments?: Array<{ filename: string; path?: string; content?: Buffer }> | undefined;
+      logoBuffer?: Buffer | null;
+      logoMimeType?: string | null;
     }
   ): Promise<{ messageId: string }> {
     const token = await this.prisma.gmailToken.findUnique({
@@ -80,6 +82,16 @@ export class GmailSender {
           contentType: 'application/pdf',
         });
       }
+    }
+
+    if (options.logoBuffer && options.logoMimeType) {
+      mailOptions.attachments = mailOptions.attachments || [];
+      mailOptions.attachments.push({
+        filename: 'logo.png',
+        content: options.logoBuffer,
+        contentType: options.logoMimeType,
+        cid: 'companylogo',
+      });
     }
 
     const mailComposer = new MailComposer(mailOptions);

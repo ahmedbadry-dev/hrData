@@ -214,6 +214,7 @@ export default function DashboardSavedJobsPage() {
       if (context?.wasLastItemOnPage && context.previousPage > 1) {
         setPage(context.previousPage - 1);
         void queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedAll });
+        void queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedEligibleAll });
       }
     },
   });
@@ -244,6 +245,7 @@ export default function DashboardSavedJobsPage() {
       const context = onMutateResult as UnsaveManyContext | undefined;
 
       void queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedAll });
+      void queryClient.invalidateQueries({ queryKey: jobsQueryKeys.savedEligibleAll });
       void queryClient.invalidateQueries({ queryKey: jobsQueryKeys.all });
 
       if (context?.shouldGoPrevPage) {

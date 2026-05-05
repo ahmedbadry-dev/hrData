@@ -6,7 +6,7 @@ export default function NotFoundPage() {
     <div className={styles.page}>
       <nav className={styles.navbar}>
         <a href="/" className={styles.logo}>
-          <Logo fallback="HR Data." className={styles.logoImg} />
+          <Logo fallback="HR Data" className={styles.logoImg} />
         </a>
       </nav>
 

@@ -123,7 +123,7 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
 
         <div className={styles.logoWrap}>
           <div className={styles.logo}>
-            <Logo fallback="HR Data." className={styles.logoImg} />
+            <Logo fallback="HR Data" className={styles.logoImg} />
           </div>
           <div className={styles.subtitle}>{isRegistered ? 'تم بنجاح' : 'إنشاء حساب جديد'}</div>
         </div>

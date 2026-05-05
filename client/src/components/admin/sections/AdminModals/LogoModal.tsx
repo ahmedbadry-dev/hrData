@@ -1,13 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useDropzone } from 'react-dropzone';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui';
-import { axiosClient, type ApiResponse } from '@/services/api';
+import { axiosClient } from '@/services/api';
+import { Logo } from '@/components/ui/Logo/Logo';
+import { logoKeys } from '@/hooks/useLogo';
 import styles from './AdminModals.module.css';
-
-interface LogoData {
-  logoPath: string | null;
-}
 
 interface LogoModalProps {
   open: boolean;
@@ -15,27 +14,10 @@ interface LogoModalProps {
 }
 
 export default function LogoModal({ open, onClose }: LogoModalProps) {
-  const [logoPath, setLogoPath] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-
-  const fetchLogo = useCallback(async () => {
-    try {
-      const response = await axiosClient.get<ApiResponse<LogoData>>('/admin/settings/logo');
-      setLogoPath(response.data.data?.logoPath || null);
-    } catch (error) {
-      console.error('Failed to fetch logo:', error);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (open) {
-      setSelectedFile(null);
-      setPreview(null);
-      fetchLogo();
-    }
-  }, [open, fetchLogo]);
+  const queryClient = useQueryClient();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -59,16 +41,12 @@ export default function LogoModal({ open, onClose }: LogoModalProps) {
     formData.append('logo', selectedFile);
 
     try {
-      const response = await axiosClient.post<ApiResponse<LogoData>>(
-        '/admin/settings/logo',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-      setLogoPath(response.data.data?.logoPath || null);
+      await axiosClient.post('/admin/settings/logo', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      queryClient.invalidateQueries({ queryKey: logoKeys.all });
       setSelectedFile(null);
       setPreview(null);
       onClose();
@@ -98,11 +76,7 @@ export default function LogoModal({ open, onClose }: LogoModalProps) {
         <div className={styles['modal-field']}>
           <label>شعار التطبيق</label>
           <div className={styles['logo-preview']}>
-            {preview || logoPath ? (
-              <img src={preview || logoPath || ''} alt="Logo" className={styles['logo-image']} />
-            ) : (
-              <div className={styles['logo-placeholder']}>لا يوجد شعار</div>
-            )}
+            <Logo fallback="HR Data" className={styles['logo-image']} />
           </div>
         </div>
 

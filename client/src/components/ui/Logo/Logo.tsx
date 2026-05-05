@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLogo } from '@/hooks/useLogo';
 
 interface LogoProps {
@@ -7,13 +8,14 @@ interface LogoProps {
 
 export function Logo({ fallback = 'HR Data', className }: LogoProps) {
   const { logoPath, isLoading } = useLogo();
+  const [imgError, setImgError] = useState(false);
 
   if (isLoading) {
-    return null;
+    return <span className={className}>{fallback}</span>;
   }
 
-  if (logoPath) {
-    return <img src={logoPath} alt="Logo" className={className} />;
+  if (logoPath && !imgError) {
+    return <img src={logoPath} alt="Logo" className={className} onError={() => setImgError(true)} />;
   }
 
   return <span className={className}>{fallback}</span>;

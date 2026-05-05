@@ -8,6 +8,8 @@ import { appConfig, getEnvVarAsNumber } from './config/env.config';
 import logger from '@/shared/utils/logger.util';
 import prisma from './config/db.config';
 import redis from './config/redis';
+import { notificationsService } from './notifications/notifications.service';
+import { SettingsService } from './v1/modules/settings/settings.service';
 
 import '@/workers/job-applications-schedule.worker';
 import '@/workers/scraper.worker';
@@ -52,10 +54,13 @@ const startServer = async () => {
     await bootstrapScraper();
     await startMaintenanceSchedule();
 
-    const server = app.listen(PORT, () => {
+    const server = app.listen(PORT, async () => {
       logger.info(`🚀 Server is running on http://localhost:${PORT}`);
       logger.info(`📊 Health check available at http://localhost:${PORT}/api/v1/health`);
       logger.info(`🌍 Environment: ${appConfig.nodeEnv}`);
+
+      await notificationsService.refreshLogoUrl();
+      logger.info(`🖼️ Logo loaded`);
     });
 
     server.on('error', (error: NodeJS.ErrnoException) => {

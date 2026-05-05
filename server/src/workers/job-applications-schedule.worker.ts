@@ -1,6 +1,8 @@
 import { Worker, Job } from 'bullmq';
 import { randomUUID } from 'crypto';
 import { Buffer } from 'buffer';
+import path from 'path';
+import fs from 'fs';
 
 import { jobApplicationsScheduleQueue } from '@/config/bullmq';
 import redis from '@/config/redis';
@@ -54,11 +56,28 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
       const token = randomUUID();
       const trackingPixelUrl = generateTrackingPixelUrl(token);
 
+      const logoSetting = await prismaClient.systemSetting.findUnique({
+        where: { key: 'app_logo' },
+      });
+      let logoCid: string | null = null;
+      let logoMimeType: string | null = null;
+      let logoBuffer: Buffer | null = null;
+      if (logoSetting?.value) {
+        const fullPath = path.join(process.cwd(), logoSetting.value.replace(/^\//, ''));
+        if (fs.existsSync(fullPath)) {
+          logoBuffer = fs.readFileSync(fullPath);
+          logoCid = 'companylogo';
+          logoMimeType = `image/${path.extname(logoSetting.value).replace('.', '')}`;
+        }
+      }
+
       const html = jobApplicationTemplate({
         recipientName: userName,
         jobTitle,
         companyName,
         trackingPixelUrl,
+        logoCid,
+        logoMimeType,
       });
 
       const gmailSender = new GmailSender(prismaClient);
@@ -68,6 +87,8 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
         htmlBody: html,
         replyTo: userEmail,
         attachments: attachments.length > 0 ? attachments : undefined,
+        logoBuffer,
+        logoMimeType,
       });
 
       logger.info(`✅ Email sent to ${hrEmail} — messageId: ${messageId}`);

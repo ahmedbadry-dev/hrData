@@ -1,29 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui';
 import { axiosClient } from '@/services/api';
+import { Logo } from '@/components/ui/Logo/Logo';
+import { logoKeys } from '@/hooks/useLogo';
 import styles from './AdminSettingsSection.module.css';
 
-interface LogoResponse {
-  logoPath: string | null;
-}
-
 export default function LogoUploadSection() {
-  const [logoPath, setLogoPath] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-
-  useEffect(() => {
-    fetchLogo();
-  }, []);
-
-  const fetchLogo = async () => {
-    try {
-      const response = await axiosClient.get<LogoResponse>('/admin/settings/logo');
-      setLogoPath(response.data.logoPath);
-    } catch (error) {
-      console.error('Failed to fetch logo:', error);
-    }
-  };
+  const queryClient = useQueryClient();
 
   const handleLogoUpload = async () => {
     if (!selectedFile) return;
@@ -33,12 +19,12 @@ export default function LogoUploadSection() {
     formData.append('logo', selectedFile);
 
     try {
-      const response = await axiosClient.post<LogoResponse>('/admin/settings/logo', formData, {
+      await axiosClient.post('/admin/settings/logo', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      setLogoPath(response.data.logoPath);
+      queryClient.invalidateQueries({ queryKey: logoKeys.all });
       setSelectedFile(null);
     } catch (error) {
       console.error('Failed to upload logo:', error);
@@ -58,11 +44,7 @@ export default function LogoUploadSection() {
     <div className={styles['logo-upload-container']}>
       <div className={styles['settings-input-label']}>شعار التطبيق</div>
       <div className={styles['logo-preview']}>
-        {logoPath ? (
-          <img src={logoPath} alt="Logo" className={styles['logo-image']} />
-        ) : (
-          <div className={styles['logo-placeholder']}>لا يوجد شعار</div>
-        )}
+        <Logo fallback="HR Data" className={styles['logo-image']} />
       </div>
       <div className={styles['logo-upload-row']}>
         <input

@@ -65,10 +65,17 @@ export default function AdminHomeSection({
   useEffect(() => {
     if (!chartRef.current) return;
 
-    const days = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+    const dayLabels = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
     const logins = loginsData?.map((d) => d.count) ?? [];
     const applies = applicationsData?.map((d) => d.count) ?? [];
     const errs = errorsData?.map((d) => d.count) ?? [];
+
+    const days = loginsData?.length
+      ? loginsData.map((d) => {
+          const date = new Date(d.date);
+          return dayLabels[date.getDay()];
+        })
+      : ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
     const chart = new Chart(chartRef.current, {
       type: 'line',

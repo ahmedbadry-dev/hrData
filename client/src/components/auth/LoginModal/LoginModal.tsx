@@ -139,7 +139,7 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
 
         <div className={styles.logoWrap}>
           <div className={styles.logo}>
-            <Logo fallback="HR Data." className={styles.logoImg} />
+            <Logo fallback="HR Data" className={styles.logoImg} />
           </div>
           <div className={styles.subtitle}>
             {view === 'login' && 'تسجيل الدخول'}

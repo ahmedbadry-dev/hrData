@@ -33,14 +33,29 @@ export class SettingsService {
     return settings;
   }
 
-  async getLogo(): Promise<{ logoPath: string | null }> {
+  async getLogo(): Promise<{
+    logoPath: string | null;
+    logoCid?: string | null;
+    logoMimeType?: string | null;
+    logoBuffer?: string | null;
+  }> {
     const setting = await this.prisma.systemSetting.findUnique({
       where: { key: 'app_logo' },
     });
 
     const logoPath = setting?.value || null;
     if (logoPath && logoPath.startsWith('/uploads/')) {
-      return { logoPath: `${emailConfig.serverUrl}${logoPath}` };
+      const fullPath = path.join(process.cwd(), logoPath.replace(/^\//, ''));
+      if (fs.existsSync(fullPath)) {
+        const buffer = fs.readFileSync(fullPath);
+        const mimeType = `image/${path.extname(logoPath).replace('.', '')}`;
+        return {
+          logoPath: `${emailConfig.serverUrl}${logoPath}`,
+          logoCid: 'companylogo',
+          logoMimeType: mimeType,
+          logoBuffer: buffer.toString('base64'),
+        };
+      }
     }
     return { logoPath };
   }

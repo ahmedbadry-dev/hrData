@@ -1,8 +1,18 @@
 import { escapeHtml } from '../../shared/utils/escape-html.utils';
 
-export const resetPasswordTemplate = (name: string, resetUrl: string): string => {
+export const resetPasswordTemplate = (
+  name: string,
+  resetUrl: string,
+  logoCid?: string | null,
+  logoMimeType?: string | null
+): string => {
   const safeName = escapeHtml(name);
   const safeResetUrl = escapeHtml(resetUrl);
+
+  const logoInline =
+    logoCid && logoMimeType
+      ? `<img src="cid:${logoCid}" alt="Logo" style="max-height:60px;max-width:200px;margin-bottom:8px;" />`
+      : `<div style="font-size:34px;font-weight:900;letter-spacing:-0.8px;text-align:center;">HR Data</div>`;
 
   return `
     <!DOCTYPE html>
@@ -19,7 +29,7 @@ export const resetPasswordTemplate = (name: string, resetUrl: string): string =>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#f5f0e8;border:2px solid #0d0d0d;border-radius:4px;overflow:hidden;">
               <tr>
                 <td style="padding:30px 28px;border-bottom:2px solid #0d0d0d;background:#ede8dc;text-align:center;">
-                  <div style="font-size:34px;font-weight:900;letter-spacing:-0.8px;text-align:center;">HR Data<span style="color:#c0392b;">.</span></div>
+                  ${logoInline}
                   <p style="margin:8px 0 0;font-size:12px;color:#a89880;font-weight:700;text-align:center;">أمان الحساب</p>
                 </td>
               </tr>

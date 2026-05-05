@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { SettingsService } from './settings.service';
 import { SETTINGS_MESSAGES } from './settings.constants';
 import ResponseHelper from '@/shared/utils/api-response';
+import { notificationsService } from '@/notifications/notifications.service';
 
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
@@ -23,6 +24,7 @@ export class SettingsController {
 
   uploadLogo = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.settingsService.uploadLogo(req.file);
+    await notificationsService.refreshLogoUrl();
     return ResponseHelper.created(res, data, SETTINGS_MESSAGES.LOGO_UPLOADED, req.path);
   };
 }

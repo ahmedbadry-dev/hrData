@@ -81,6 +81,7 @@ export class AuthController {
 
   validateResetToken = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.authService.validateResetToken(req.query.token as string);
+
     return ResponseHelper.ok(res, data, 'Token is valid', req.path);
   };
 

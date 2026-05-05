@@ -5,3 +5,4 @@ export { Spinner } from './Spinner/Spinner';
 export { FullPageSpinner } from './Spinner/FullPageSpinner';
 export { Avatar } from './Avatar/Avatar';
 export { Toggle } from './Toggle/Toggle';
+export { Logo } from './Logo/Logo';
