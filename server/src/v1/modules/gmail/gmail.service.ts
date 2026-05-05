@@ -162,7 +162,9 @@ export class GmailService {
   }
 
   private signStatePayload(payloadBase64: string): string {
-    return createHmac('sha256', gmailOAuthConfig.stateSecret).update(payloadBase64).digest('base64url');
+    return createHmac('sha256', gmailOAuthConfig.stateSecret)
+      .update(payloadBase64)
+      .digest('base64url');
   }
 
   private async exchangeAuthorizationCode(code: string): Promise<GoogleTokenResponse> {

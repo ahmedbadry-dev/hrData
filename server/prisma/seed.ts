@@ -1478,7 +1478,7 @@ async function main() {
     },
   ];
 
-  const jobsWithHrEmail = jobs.map(job => ({ ...job, hrEmail: HR_EMAIL }));
+  const jobsWithHrEmail = jobs.map((job) => ({ ...job, hrEmail: HR_EMAIL }));
 
   await prisma.job.createMany({ data: jobsWithHrEmail, skipDuplicates: true });
   console.log(`Seeded ${jobsWithHrEmail.length} job records successfully.`);

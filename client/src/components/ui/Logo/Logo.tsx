@@ -16,7 +16,14 @@ export function Logo({ fallback = 'HR Data', className }: LogoProps) {
   }
 
   if (logoPath && !imgError) {
-    return <img src={logoPath} alt="Logo" className={`${styles.logoImg} ${className || ''}`} onError={() => setImgError(true)} />;
+    return (
+      <img
+        src={logoPath}
+        alt="Logo"
+        className={`${styles.logoImg} ${className || ''}`}
+        onError={() => setImgError(true)}
+      />
+    );
   }
 
   return <span className={`${styles.fallback} ${className || ''}`}>{fallback}</span>;

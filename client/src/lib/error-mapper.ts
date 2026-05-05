@@ -56,7 +56,8 @@ export const mapErrorToArabic = (message: string): string => {
     'access denied': 'الدخول مرفوض',
     unauthorized: 'غير مصرح',
     forbidden: 'غير مسموح',
-    'cv file exceeds the 5 mb size limit': 'حجم ملف السيرة الذاتية يتجاوز الحد المسموح (5 ميغابايت)',
+    'cv file exceeds the 5 mb size limit':
+      'حجم ملف السيرة الذاتية يتجاوز الحد المسموح (5 ميغابايت)',
     'cv file size limit': 'حجم ملف السيرة الذاتية يتجاوز الحد المسموح (5 ميغابايت)',
   };
 
@@ -65,7 +66,11 @@ export const mapErrorToArabic = (message: string): string => {
     return `الحساب مغلق مؤقتاً بكثرة المحاولات. حاول مرة أخرى بعد ${minutes} دقيقة`;
   }
 
-  if (lowerMessage.includes('5 mb') || lowerMessage.includes('5mb') || lowerMessage.includes('5 mb size limit')) {
+  if (
+    lowerMessage.includes('5 mb') ||
+    lowerMessage.includes('5mb') ||
+    lowerMessage.includes('5 mb size limit')
+  ) {
     return 'حجم ملف السيرة الذاتية يتجاوز الحد المسموح (5 ميغابايت)';
   }
 

@@ -10,7 +10,7 @@ export const APPLICATIONS_CONSTANTS = {
     CREATED_AT_DESC: { createdAt: 'desc' as const },
     STATUS_PENDING_FIRST: [{ status: 'asc' as const }, { createdAt: 'desc' as const }] as [
       { status: 'asc' },
-      { createdAt: 'desc' }
+      { createdAt: 'desc' },
     ],
   },
   DEFAULT_DELAY_BETWEEN_EMAILS_MS: 30000,

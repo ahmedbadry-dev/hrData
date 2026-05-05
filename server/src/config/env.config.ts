@@ -123,9 +123,7 @@ export const corsConfig = {
 export const emailConfig = {
   host: getEnvVariable('SMTP_HOST', 'smtp.ethereal.email'),
   port: getEnvVarAsNumber('SMTP_PORT', 587),
-  user: appConfig.isProduction
-    ? getEnvVariable('SMTP_USER')
-    : getEnvVariable('SMTP_USER', ''),
+  user: appConfig.isProduction ? getEnvVariable('SMTP_USER') : getEnvVariable('SMTP_USER', ''),
   password: appConfig.isProduction
     ? getEnvVariable('SMTP_PASSWORD')
     : getEnvVariable('SMTP_PASSWORD', ''),
