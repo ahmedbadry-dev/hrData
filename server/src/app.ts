@@ -4,6 +4,10 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import { appConfig, corsConfig } from './config/env.config';
 import v1Router from './router';
 import { errorHandler } from './http/middlewares/error-handler';
@@ -58,6 +62,14 @@ app.use(
 );
 
 app.use('/api', apiRateLimitMiddleware, v1Router);
+
+// Serve React static files
+app.use(express.static(path.join(__dirname, '../../client/dist')));
+
+// Serve React app for any other request
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, '../../client/dist', 'index.html'));
+});
 
 app.use(errorHandler);
 
