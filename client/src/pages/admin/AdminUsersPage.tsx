@@ -75,6 +75,10 @@ export default function AdminUsersPage() {
   const pagination = data?.data?.pagination;
   const totalPages = pagination?.totalPages || 1;
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
+
   const handleToggleStatus = (id: string | number) => {
     const user = users.find((u) => String(u.id) === String(id));
     if (!user) return;

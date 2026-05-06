@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/contexts/ToastContext';
 import { EmptyState } from '@/components/common';
@@ -270,6 +270,10 @@ export default function DashboardSavedJobsPage() {
 
   const paginationMeta = data?.paginationMeta ?? data?.data?.pagination;
   const totalPages = paginationMeta?.totalPages || 1;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
 
   const handleRemoveByIndex = (index: number) => {
     const job = savedJobs[index];

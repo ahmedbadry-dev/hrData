@@ -13,6 +13,9 @@ import { BadRequestException } from '@/shared/errors/BadRequestException';
 import { TooManyRequestsException } from '@/shared/errors/TooManyRequestsException';
 import { JobApplicationsScheduleJobData } from '@/workers/job-applications-schedule.worker';
 import { resolvePagination, buildPaginationMeta } from '@/shared/utils/paginate.util';
+import { mkdir, writeFile } from 'fs/promises';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 import logger from '@/shared/utils/logger.util';
 
 interface MulterFile {
@@ -214,12 +217,21 @@ export class ApplicationsService {
     );
     logger.info(`   delay between emails: ${delay}ms, total jobs: ${validSavedJobs.length}`);
 
-    if (validSavedJobs.length === 0) {
-      throw new BadRequestException(APPLICATIONS_CONSTANTS.MESSAGES.NO_VALID_HR_EMAILS);
-    }
+    // 5. Handle CV file (Save to disk to avoid blocking the event loop with huge base64 strings in the queue)
+    let cvPath: string | null = null;
+    let cvFileName: string | null = null;
 
-    const cvData = cvFile.buffer.toString('base64');
-    const cvFileName = cvFile.originalname;
+    if (cvFile) {
+      const uploadDir = path.join('uploads', 'cvs');
+      await mkdir(uploadDir, { recursive: true });
+
+      cvFileName = cvFile.originalname;
+      const safeFileName = `${uuidv4()}-${cvFile.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      cvPath = path.join(uploadDir, safeFileName);
+
+      await writeFile(path.join(process.cwd(), cvPath), cvFile.buffer);
+      logger.info(`💾 CV saved to disk: ${cvPath}`);
+    }
 
     const now = new Date();
 
@@ -373,12 +385,13 @@ export class ApplicationsService {
         hrEmail: savedJob.job.hrEmail!,
         jobTitle: savedJob.job.title,
         companyName: savedJob.job.companyName,
-        cvData,
+        cvPath,
         cvFileName,
       };
 
       if (isImmediate) {
         const delayMs = index * delay;
+        logger.info(`📤 Adding job to queue: index=${index}, delay=${delayMs}ms`);
         await jobApplicationsScheduleQueue.add(jobApplicationsScheduleQueue.name, jobData, {
           delay: delayMs,
           attempts: 3,
@@ -389,6 +402,7 @@ export class ApplicationsService {
           removeOnComplete: true,
           removeOnFail: { count: 100 },
         });
+        logger.info(`✅ Job added to queue: index=${index}`);
       } else if (scheduledAt) {
         await jobApplicationsScheduleQueue.add(jobApplicationsScheduleQueue.name, jobData, {
           delay: scheduledAt.getTime() - Date.now() + index * delay,
@@ -599,11 +613,13 @@ export class ApplicationsService {
   }
 
   private normalizeDailyEmailLimit(limit: number | null | undefined): number {
+    const defaultLimit = APPLICATIONS_CONSTANTS.DEFAULT_DAILY_EMAIL_LIMIT; // 20
     if (typeof limit !== 'number' || Number.isNaN(limit)) {
-      return APPLICATIONS_CONSTANTS.DEFAULT_DAILY_EMAIL_LIMIT;
+      return defaultLimit;
     }
 
-    return Math.max(APPLICATIONS_CONSTANTS.DAILY_EMAIL_LIMIT_MIN, Math.floor(limit));
+    // Force limit to be at most 20 as requested by the user
+    return Math.min(20, Math.max(APPLICATIONS_CONSTANTS.DAILY_EMAIL_LIMIT_MIN, Math.floor(limit)));
   }
 
   private getStartOfDay(date: Date): Date {

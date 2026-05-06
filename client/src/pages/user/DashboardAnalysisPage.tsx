@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { EmptyState } from '@/components/common';
 import { UserAnalyticsSection } from '@/components/user/sections';
@@ -80,6 +80,10 @@ export default function DashboardAnalysisPage() {
   const paginationMeta = data?.paginationMeta ?? data?.data?.pagination;
   const totalPages = paginationMeta?.totalPages || 1;
   const totalApplications = paginationMeta?.total || 0;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
 
   const from = totalApplications === 0 ? 0 : (page - 1) * ITEMS_PER_PAGE + 1;
   const to = totalApplications === 0 ? 0 : Math.min(page * ITEMS_PER_PAGE, totalApplications);

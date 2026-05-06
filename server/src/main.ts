@@ -11,9 +11,9 @@ import redis from './config/redis';
 import { notificationsService } from './notifications/notifications.service';
 import { SettingsService } from './v1/modules/settings/settings.service';
 
-import '@/workers/job-applications-schedule.worker';
-import '@/workers/scraper.worker';
-import { startMaintenanceSchedule } from '@/workers/maintenance.worker';
+import { jobApplicationsScheduleWorker } from '@/workers/job-applications-schedule.worker';
+import { scraperWorker } from '@/workers/scraper.worker';
+import { maintenanceWorker, startMaintenanceSchedule } from '@/workers/maintenance.worker';
 
 import { startScraperSchedule } from './scraper/scraper.scheduler';
 
@@ -81,23 +81,27 @@ const startServer = async () => {
       });
     });
 
-    process.on('SIGTERM', () => {
-      logger.info('👋 SIGTERM received — shutting down gracefully');
+    const gracefulShutdown = async (signal: string) => {
+      logger.info(`👋 ${signal} received — shutting down gracefully`);
       server.close(async () => {
-        await prisma.$disconnect();
-        logger.info('✅ DB disconnected. Process terminated.');
-        process.exit(0);
+        try {
+          await Promise.all([
+            jobApplicationsScheduleWorker.close(),
+            scraperWorker.close(),
+            maintenanceWorker.close(),
+            prisma.$disconnect(),
+          ]);
+          logger.info('✅ All workers and DB disconnected. Process terminated.');
+          process.exit(0);
+        } catch (err) {
+          logger.error('Error during graceful shutdown:', err);
+          process.exit(1);
+        }
       });
-    });
+    };
 
-    process.on('SIGINT', () => {
-      logger.info('👋 SIGINT received — shutting down gracefully');
-      server.close(async () => {
-        await prisma.$disconnect();
-        logger.info('✅ Process exited cleanly.');
-        process.exit(0);
-      });
-    });
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
   } catch (error) {
     await prisma.$disconnect();
     logger.error('Error starting server:', error);

@@ -20,7 +20,7 @@ export default function HomeNavbar() {
   return (
     <nav className={styles.nav}>
       <Link className={styles['nav-logo']} to="/">
-        <Logo fallback="HR Data" className={styles['nav-logo-img']} />
+        <Logo className={styles['nav-logo-img']} />
       </Link>
       <div className={styles['nav-links']}>
         {isHomePage && (

@@ -35,6 +35,12 @@ export class ScraperController {
     return ResponseHelper.ok(res, {}, SCRAPER_CONSTANTS.MESSAGES.MANUAL_RUN_QUEUED, req.path);
   };
 
+  // POST /api/v1/admin/scraper/reset-queue
+  resetQueue = async (req: Request, res: Response): Promise<Response> => {
+    await this.scraperService.resetQueue();
+    return ResponseHelper.ok(res, {}, 'تم تصفير وإيقاف جميع عمليات السكراب بنجاح', req.path);
+  };
+
   // GET /api/v1/admin/scraper/logs
   getScrapedLogs = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.scraperService.getScrapedLogs();

@@ -63,6 +63,15 @@ export class ScraperStorage {
     }
   }
 
+  static async clearScrapedLogs(): Promise<void> {
+    try {
+      await prisma.scrapedLog.deleteMany({});
+      logger.info('[Scraper] 🗑️ Cleared old scraped logs');
+    } catch (error: any) {
+      logger.error(`[Scraper] Failed to clear ScrapedLogs: ${error.message}`);
+    }
+  }
+
   private static async saveJson(dirName: string, fileName: string, newData: any): Promise<void> {
     try {
       const dirPath = path.join(process.cwd(), dirName);

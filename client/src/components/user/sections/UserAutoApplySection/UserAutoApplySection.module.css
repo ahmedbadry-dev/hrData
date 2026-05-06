@@ -49,6 +49,21 @@
   margin: 0 auto 32px;
 }
 
+.gmail-note-box {
+  background: #fff;
+  border: 1px solid var(--accent);
+  padding: 12px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--accent);
+  text-align: right;
+  border-radius: 4px;
+}
+
+.gmail-note-box strong {
+  font-weight: 900;
+}
+
 .connected-box {
   display: flex;
   align-items: center;

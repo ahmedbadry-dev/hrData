@@ -38,6 +38,10 @@ export default function UserSettingsSection({
         <div className={styles['chart-desc']}>
           ربط حساب Gmail يتيح لك إرسال رسائل التقديم مباشرة من المنصة
         </div>
+        <div className={styles['gmail-warning-note']}>
+          ⚠️ <strong>ملحوظة هامة جداً:</strong> عند تسجيل الدخول بجوجل، يجب عليك تفعيل خيار 
+          <strong> "Send email on your behalf"</strong> في شاشة الأذونات لكي يتمكن النظام من إرسال الإيميلات بنجاح.
+        </div>
 
         <div className={styles['control-row']}>
           <div>

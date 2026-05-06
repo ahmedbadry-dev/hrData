@@ -7,7 +7,7 @@ interface LogoProps {
   className?: string;
 }
 
-export function Logo({ fallback = 'HR Data', className }: LogoProps) {
+export function Logo({ fallback = '', className }: LogoProps) {
   const { logoPath, isLoading } = useLogo();
   const [imgError, setImgError] = useState(false);
 

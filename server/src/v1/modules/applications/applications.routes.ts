@@ -14,25 +14,13 @@ import { ApplicationsController } from './applications.controller';
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (_req, file, cb) => {
-    if (!file.stream || typeof file.stream.read !== 'function') {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
       cb(new Error('Only PDF files are allowed'));
-      return;
     }
-    const chunks: Buffer[] = [];
-    file.stream.on('data', (chunk: Buffer) => chunks.push(chunk));
-    file.stream.on('end', () => {
-      const buffer = Buffer.concat(chunks);
-      const PDF_MAGIC_BYTES = [0x25, 0x50, 0x44, 0x46];
-      const isPdf = PDF_MAGIC_BYTES.every((byte, i) => buffer[i] === byte);
-      if (isPdf) {
-        cb(null, true);
-      } else {
-        cb(new Error('Only PDF files are allowed'));
-      }
-    });
-    file.stream.on('error', () => cb(new Error('Only PDF files are allowed')));
   },
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 }, // Increased to 10MB just in case
 });
 
 export const applicationsRoutes = (applicationsController: ApplicationsController): Router => {

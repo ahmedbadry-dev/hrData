@@ -267,6 +267,10 @@ export default function DashboardJobsPage() {
     });
   }, [data, page, queryClient, queryParams, searchTriggered, totalPages]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
+
   const search = () => {
     setPage(1);
     setSearchTriggered(true);

@@ -76,7 +76,7 @@ export default function LogoModal({ open, onClose }: LogoModalProps) {
         <div className={styles['modal-field']}>
           <label>شعار التطبيق</label>
           <div className={styles['logo-preview']}>
-            <Logo fallback="HR Data" className={styles['logo-image']} />
+            <Logo className={styles['logo-image']} />
           </div>
         </div>
 
@@ -99,6 +99,9 @@ export default function LogoModal({ open, onClose }: LogoModalProps) {
                 <span className={styles['dropzone-icon']}>🖼️</span>
                 <span>{isDragActive ? 'أفلت الملف هنا' : 'اسحب ملف أو انقر للاختيار'}</span>
                 <span className={styles['dropzone-hint']}>PNG, JPG, GIF - الحد الأقصى 5MB</span>
+                <p className={styles['upload-note']}>
+                  * ملحوظة: يفضل رفع الشعار بصيغة <strong>PNG</strong> وبدون خلفية (شفاف) للحصول على أفضل مظهر.
+                </p>
               </div>
             )}
           </div>

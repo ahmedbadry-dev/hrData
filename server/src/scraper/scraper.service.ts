@@ -32,7 +32,6 @@ async function processSingleJob(jobUrl: string, site: WebSiteConfig): Promise<st
     //           );
     //           continue;
     //         }
-
     //         await ScraperStorage.saveJobToDb(normalized);
     //       }
     //     }
@@ -95,6 +94,9 @@ export async function runScraperForAllSites(): Promise<void> {
     return;
   }
   logger.info(SCRAPER_INTERNAL_CONSTANTS.LOGS.START);
+
+  // Clear old logs before starting a new run
+  await ScraperStorage.clearScrapedLogs();
 
   const allLinks: { site: string; url: string }[] = [];
   const scrapedJobs: { site: string; url: string; content: string }[] = [];

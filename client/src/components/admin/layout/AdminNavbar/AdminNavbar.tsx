@@ -33,7 +33,7 @@ export default function AdminNavbar({ onToggleSidebar }: AdminNavbarProps) {
 
         <div className={styles['logo-sub']}>
           <Link className={styles.logo} to="/">
-            <Logo fallback="HR Data" className={styles.logoImg} />
+            <Logo className={styles.logoImg} />
           </Link>
           <span className={styles['logo-tagline']}>لوحة الإدارة</span>
         </div>

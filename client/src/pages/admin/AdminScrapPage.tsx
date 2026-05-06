@@ -4,7 +4,7 @@ import { AdminScraperSection } from '@/components/admin/sections';
 import { useScraperControl } from '@/modules/admin/hooks/useScraperControl';
 
 export default function AdminScrapPage() {
-  const { startMutation, stopMutation, runNowMutation } = useScraperControl();
+  const { startMutation, stopMutation, runNowMutation, resetQueueMutation } = useScraperControl();
 
   const { data: statusResponse } = useQuery({
     queryKey: ['admin', 'scraper-status'],
@@ -33,7 +33,6 @@ export default function AdminScrapPage() {
     'Fu1sa',
     'Alwzifa',
     'Jobhuna',
-    'Awamirtawzif',
     'Twitter',
   ];
 
@@ -52,6 +51,7 @@ export default function AdminScrapPage() {
       onStart={() => startMutation.mutate()}
       onStop={() => stopMutation.mutate()}
       onRunNow={() => runNowMutation.mutate()}
+      onResetQueue={() => resetQueueMutation.mutate()}
       scraperLogs={dbLogsResponse?.data ?? []}
       scraperSources={scraperSources}
     />

@@ -38,10 +38,6 @@ export function jobApplicationTemplate(data: {
         مع خالص التقدير،<br/>
         ${safeRecipientName}
       </p>
-
-      <p>تم إرسال هذا البريد عبر منصة HR Data بشكل آلي.</p>
-
-      <img src="${safeTrackingPixelUrl}" width="1" height="1" alt="" />
     </body>
     </html>
   `;

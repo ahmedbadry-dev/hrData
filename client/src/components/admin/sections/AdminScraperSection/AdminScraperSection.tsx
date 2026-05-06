@@ -2,6 +2,7 @@ import type { ScraperLog } from '@/components/admin/sections/adminData';
 import { PageHeader } from '@/components/common';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/contexts/ToastContext';
 import styles from './AdminScraperSection.module.css';
 
 interface AdminScraperSectionProps {
@@ -12,6 +13,7 @@ interface AdminScraperSectionProps {
   onStart: () => void;
   onStop: () => void;
   onRunNow: () => void;
+  onResetQueue: () => void;
   scraperLogs: ScraperLog[];
   scraperSources: string[];
 }
@@ -24,9 +26,28 @@ export default function AdminScraperSection({
   onStart,
   onStop,
   onRunNow,
+  onResetQueue,
   scraperLogs,
   scraperSources,
 }: AdminScraperSectionProps) {
+  const { showToast } = useToast();
+
+  const handleRunNow = () => {
+    onRunNow();
+    showToast({
+      message: 'تم بدء عملية سحب الوظائف يدوياً بنجاح',
+      type: 'success',
+    });
+  };
+
+  const handleReset = () => {
+    onResetQueue();
+    showToast({
+      message: 'تم تصفير طابور المهام وإيقاف كافة العمليات الجارية',
+      type: 'info',
+    });
+  };
+
   return (
     <section>
       <PageHeader
@@ -68,8 +89,15 @@ export default function AdminScraperSection({
               >
                 {status.isRunning ? 'إيقاف السكراب' : 'تشغيل السكراب'}
               </Button>
-              <Button onClick={onRunNow} variant="secondary">
+              <Button onClick={handleRunNow} variant="secondary">
                 تشغيل الآن
+              </Button>
+              <Button
+                className={styles['reset-btn']}
+                onClick={handleReset}
+                variant="ghost"
+              >
+                إنهاء كافة العمليات
               </Button>
             </div>
 
@@ -147,6 +175,7 @@ export default function AdminScraperSection({
                 {log.status === 'SUCCESS' ? (
                   <>
                     تم العثور على {log.linksFound} رابط واستخراج {log.jobsScraped} وظيفة
+                    {log.jobsScraped > 0 && ' وتم تسجيل في قواعد البيانات'}
                     {log.duration ? ` (${(log.duration / 1000).toFixed(1)} ثانية)` : ''}
                   </>
                 ) : (

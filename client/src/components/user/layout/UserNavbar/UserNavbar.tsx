@@ -33,7 +33,7 @@ export default function UserNavbar({ onToggleSidebar }: UserNavbarProps) {
 
         <div className={styles['logo-sub']}>
           <Link className={styles.logo} to="/">
-            <Logo fallback="HR Data" className={styles.logoImg} />
+            <Logo className={styles.logoImg} />
           </Link>
 
           <span className={styles['logo-tagline']}>منصة التوظيف المباشر</span>

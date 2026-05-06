@@ -216,6 +216,23 @@
   color: var(--muted);
 }
 
+.upload-note {
+  font-size: 11px;
+  color: #c2410c;
+  margin-top: 10px;
+  line-height: 1.5;
+  background: #fff7ed;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border-right: 3px solid #f97316;
+  text-align: right;
+}
+
+.upload-note strong {
+  font-weight: 900;
+  text-decoration: underline;
+}
+
 .dropzone-file {
   display: flex;
   align-items: center;

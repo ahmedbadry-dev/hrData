@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
   AdminAnnouncementsSection,
@@ -44,6 +44,10 @@ export default function AdminNotificationsPage() {
 
   const pagination = data?.data?.pagination;
   const totalPages = pagination?.totalPages ?? 1;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
 
   const handleDelete = (id: string | number) => {
     deleteMutation.mutate(String(id), {

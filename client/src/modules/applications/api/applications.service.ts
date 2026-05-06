@@ -25,26 +25,24 @@ export const fetchApplicationsList = async (params?: {
 export const scheduleApplication = async (
   payload: ScheduleApplicationsRequest
 ): Promise<ApiResponse<ScheduleApplicationsResponse>> => {
-  const cvData = payload.cv ? await fileToBase64(payload.cv) : undefined;
+  const formData = new FormData();
 
-  const body: Record<string, unknown> = {
-    jobIds: payload.jobIds,
-    sendTime: payload.sendTime,
-    delayBetweenEmails: payload.delayBetweenEmails,
-  };
+  formData.append('jobIds', JSON.stringify(payload.jobIds));
+  formData.append('sendTime', payload.sendTime);
+  formData.append('delayBetweenEmails', String(payload.delayBetweenEmails));
 
-  if (payload.cv && cvData) {
-    body.cv = {
-      name: payload.cv.name,
-      type: payload.cv.type,
-      size: payload.cv.size,
-      data: cvData,
-    };
+  if (payload.cv) {
+    formData.append('cv', payload.cv);
   }
 
   const { data } = await axiosClient.post<ApiResponse<ScheduleApplicationsResponse>>(
     '/applications/schedule',
-    body
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
   );
   return data;
 };

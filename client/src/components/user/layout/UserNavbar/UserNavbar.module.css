@@ -8,7 +8,7 @@
   position: sticky;
   top: 0;
   z-index: 200;
-  height: 64px;
+  height: 75px;
   gap: 12px;
 }
 
@@ -45,14 +45,15 @@
 }
 
 .logoImg {
-  height: 36px;
+  height: 48px;
   width: auto;
   object-fit: contain;
-  background: #fff !important;
+  background: #F4F0E8 !important;
   padding: 4px 6px;
   border-radius: 4px;
   display: block;
   margin-top: 8px;
+  margin-bottom: 6px;
 }
 
 .logo-sub {

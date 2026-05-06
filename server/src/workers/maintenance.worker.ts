@@ -3,6 +3,8 @@ import { maintenanceQueue } from '@/config/bullmq';
 import redis from '@/config/redis';
 import prismaClient from '@/config/db.config';
 import logger from '@/shared/utils/logger.util';
+import { readdir, stat, unlink } from 'fs/promises';
+import path from 'path';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // Maintenance Worker
@@ -89,6 +91,35 @@ export const maintenanceWorker = new Worker<Record<string, unknown>>(
         throw error;
       }
     }
+
+    // 4. Clear Old CVs (Older than 24 hours)
+    if (job.name === 'clear-old-cvs') {
+      logger.info(`🧹 Processing maintenance job ${job.id}: Clearing old CV files`);
+      const cvDir = path.join(process.cwd(), 'uploads', 'cvs');
+      const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+
+      try {
+        const files = await readdir(cvDir);
+        let deletedCount = 0;
+
+        for (const file of files) {
+          const filePath = path.join(cvDir, file);
+          const fileStat = await stat(filePath);
+
+          if (fileStat.mtimeMs < twentyFourHoursAgo) {
+            await unlink(filePath);
+            deletedCount++;
+          }
+        }
+
+        logger.info(`✅ Maintenance complete: Deleted ${deletedCount} old CV files`);
+      } catch (error) {
+        // Directory might not exist yet, ignore if so
+        if ((error as any).code !== 'ENOENT') {
+          logger.error(`❌ Maintenance failed for job ${job.id} (CV Cleanup):`, error);
+        }
+      }
+    }
   },
   {
     connection: redis,
@@ -150,9 +181,9 @@ export async function startMaintenanceSchedule() {
       }
     );
 
-    // C. Schedule Scraper Logs Cleanup: Every 12 hours
+    // D. Schedule CV Cleanup: Every 12 hours
     await maintenanceQueue.add(
-      'clear-scraper-logs',
+      'clear-old-cvs',
       {},
       {
         repeat: {
@@ -163,7 +194,7 @@ export async function startMaintenanceSchedule() {
       }
     );
 
-    logger.info('🗓️ System Maintenance (Logs, Jobs, Scraper Logs Cleanup) scheduled successfully');
+    logger.info('🗓️ System Maintenance (Logs, Jobs, CVs Cleanup) scheduled successfully');
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`❌ Failed to schedule maintenance tasks: ${errorMessage}`);

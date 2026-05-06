@@ -1,8 +1,8 @@
 .logoImg {
-  height: 36px;
+  height: 64px;
   width: auto;
   object-fit: contain;
-  background: #fff !important;
+  background: #F4F0E8 !important;
   padding: 4px 6px;
   border-radius: 4px;
   display: block;

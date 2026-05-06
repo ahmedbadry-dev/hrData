@@ -88,4 +88,20 @@ export class ScraperService {
       take: 50,
     });
   }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  async resetQueue(): Promise<void> {
+    // 1. Drain the queue (removes all waiting and delayed jobs)
+    await scraperQueue.drain();
+
+    // 2. Clean various job states
+    const states: any[] = ['completed', 'failed', 'delayed', 'wait', 'paused', 'active'];
+    for (const state of states) {
+      await scraperQueue.clean(0, 1000, state);
+    }
+
+    // 3. Stop global scheduler if running
+    await clearScraperSchedule();
+    await redis.set('scraper:status', 'paused');
+  }
 }

@@ -38,7 +38,23 @@
 .chart-desc {
   font-size: 12px;
   color: var(--muted);
-  margin-bottom: 20px;
+  margin-bottom: 8px;
+}
+
+.gmail-warning-note {
+  font-size: 14px;
+  color: #c2410c;
+  background: #fff7ed;
+  border-right: 3px solid #f97316;
+  padding: 10px 14px;
+  border-radius: 4px;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.gmail-warning-note strong {
+  font-weight: 900;
+  color: #9a3412;
 }
 
 .control-row {

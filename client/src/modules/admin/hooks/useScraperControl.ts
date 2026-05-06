@@ -19,5 +19,10 @@ export function useScraperControl() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'scraper-status'] }),
   });
 
-  return { startMutation, stopMutation, runNowMutation };
+  const resetQueueMutation = useMutation({
+    mutationFn: () => axiosClient.post('/admin/scraper/reset-queue'),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'scraper-status'] }),
+  });
+
+  return { startMutation, stopMutation, runNowMutation, resetQueueMutation };
 }

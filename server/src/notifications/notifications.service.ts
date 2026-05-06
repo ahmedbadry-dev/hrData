@@ -95,7 +95,7 @@ export class NotificationsService {
     const url = `${appConfig.appUrl}/verify-email?token=${token}`;
     await this.sendEmail({
       to: email,
-      subject: 'تحقق من بريدك الإلكتروني - HR Data',
+      subject: 'تحقق من بريدك الإلكتروني',
       html: verifyEmailTemplate(name, url, this.logoCid, this.logoMimeType),
     });
   }
@@ -104,7 +104,7 @@ export class NotificationsService {
     const url = `${appConfig.appUrl}/reset-password?token=${token}`;
     await this.sendEmail({
       to: email,
-      subject: 'إعادة تعيين كلمة المرور - HR Data',
+      subject: 'إعادة تعيين كلمة المرور',
       html: resetPasswordTemplate(name, url, this.logoCid, this.logoMimeType),
     });
   }

@@ -21,7 +21,7 @@ export interface JobApplicationsScheduleJobData {
   hrEmail: string;
   jobTitle: string;
   companyName: string;
-  cvData: string | null;
+  cvPath: string | null;
   cvFileName: string | null;
 }
 
@@ -36,14 +36,21 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
       hrEmail,
       jobTitle,
       companyName,
-      cvData,
+      cvPath,
       cvFileName,
     } = job.data;
 
-    const attachments: Array<{ filename: string; content: Buffer }> =
-      cvData && cvFileName
-        ? [{ filename: cvFileName, content: Buffer.from(cvData, 'base64') }]
-        : [];
+    let attachments: Array<{ filename: string; content: Buffer }> = [];
+    if (cvPath && cvFileName) {
+      try {
+        const fullCvPath = path.join(process.cwd(), cvPath);
+        await access(fullCvPath);
+        const content = await readFile(fullCvPath);
+        attachments = [{ filename: cvFileName, content }];
+      } catch (error) {
+        logger.error(`⚠️ Could not read CV at ${cvPath}:`, error);
+      }
+    }
 
     logger.info(`📧 Processing email job ${job.id} for application ${applicationId}`);
 
