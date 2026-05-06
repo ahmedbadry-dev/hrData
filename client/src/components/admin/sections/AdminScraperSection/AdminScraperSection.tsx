@@ -92,11 +92,7 @@ export default function AdminScraperSection({
               <Button onClick={handleRunNow} variant="secondary">
                 تشغيل الآن
               </Button>
-              <Button
-                className={styles['reset-btn']}
-                onClick={handleReset}
-                variant="ghost"
-              >
+              <Button className={styles['reset-btn']} onClick={handleReset} variant="ghost">
                 إنهاء كافة العمليات
               </Button>
             </div>

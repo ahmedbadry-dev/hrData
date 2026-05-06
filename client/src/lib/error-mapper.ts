@@ -31,7 +31,8 @@ export const mapErrorToArabic = (message: string): string => {
     'account is suspended': 'الحساب معلق حالياً، يرجى التواصل مع الدعم',
     'please verify your email first': 'يرجى التحقق من بريدك الإلكتروني أولاً لتفعيل الحساب',
     'too many requests': 'لقد تجاوزت الحد المسموح به، يرجى المحاولة لاحقاً',
-    'too many authentication attempts': 'لقد تجاوزت الحد المسموح به من محاولات الدخول، يرجى المحاولة لاحقاً',
+    'too many authentication attempts':
+      'لقد تجاوزت الحد المسموح به من محاولات الدخول، يرجى المحاولة لاحقاً',
     'too many tracking requests': 'لقد تجاوزت الحد المسموح به، يرجى المحاولة لاحقاً',
     'rate limit exceeded': 'لقد تجاوزت الحد المسموح به، يرجى المحاولة لاحقاً',
     'لقد وصلت إلى الحد اليومي': 'لقد وصلت إلى الحد اليومي لإرسال الإيميلات',

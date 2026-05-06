@@ -358,8 +358,11 @@ export default function UserAutoApplySection({
             لاستخدام التقديم الآلي وإرسال طلباتك مباشرة من المنصة، يجب ربط حساب Gmail الخاص بك من
             صفحة الإعدادات.
             <div className={styles['gmail-note-box']}>
-              ⚠️ <strong>هام جداً:</strong> عند الربط، تأكد من تفعيل خيار 
-              <span style={{ whiteSpace: 'nowrap', fontWeight: 'bold' }}> (Send email on your behalf) </span>
+              ⚠️ <strong>هام جداً:</strong> عند الربط، تأكد من تفعيل خيار
+              <span style={{ whiteSpace: 'nowrap', fontWeight: 'bold' }}>
+                {' '}
+                (Send email on your behalf){' '}
+              </span>
               لكي يعمل الإرسال بنجاح.
             </div>
           </div>

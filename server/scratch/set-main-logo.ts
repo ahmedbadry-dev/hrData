@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 async function setMainLogo() {
   const prisma = new PrismaClient();
   const logoPath = '/uploads/logo-1778067994825-456904884.png';
-  
+
   try {
     await prisma.systemSetting.upsert({
       where: { key: 'app_logo' },

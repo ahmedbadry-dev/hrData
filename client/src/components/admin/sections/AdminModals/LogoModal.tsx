@@ -100,7 +100,8 @@ export default function LogoModal({ open, onClose }: LogoModalProps) {
                 <span>{isDragActive ? 'أفلت الملف هنا' : 'اسحب ملف أو انقر للاختيار'}</span>
                 <span className={styles['dropzone-hint']}>PNG, JPG, GIF - الحد الأقصى 5MB</span>
                 <p className={styles['upload-note']}>
-                  * ملحوظة: يفضل رفع الشعار بصيغة <strong>PNG</strong> وبدون خلفية (شفاف) للحصول على أفضل مظهر.
+                  * ملحوظة: يفضل رفع الشعار بصيغة <strong>PNG</strong> وبدون خلفية (شفاف) للحصول على
+                  أفضل مظهر.
                 </p>
               </div>
             )}
