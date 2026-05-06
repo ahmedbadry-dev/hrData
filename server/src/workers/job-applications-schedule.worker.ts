@@ -85,40 +85,10 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
         select: { status: true },
       });
 
-      const token = randomUUID();
-      const trackingPixelUrl = generateTrackingPixelUrl(token);
-
-      const logoSetting = await prismaClient.systemSetting.findUnique({
-        where: { key: 'app_logo' },
-      });
-      let logoCid: string | null = null;
-      let logoMimeType: string | null = null;
-      let logoBuffer: Buffer | null = null;
-      if (logoSetting?.value) {
-        const fullPath = path.join(process.cwd(), logoSetting.value.replace(/^\//, ''));
-        try {
-          await access(fullPath);
-          logoBuffer = await readFile(fullPath);
-          logoCid = 'companylogo';
-          const ALLOWED_IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp']);
-          const ext = path.extname(logoSetting.value).replace('.', '').toLowerCase();
-          if (ALLOWED_IMAGE_EXTS.has(ext)) {
-            logoMimeType = `image/${ext}`;
-          } else {
-            logoCid = null;
-          }
-        } catch {
-          logoBuffer = null;
-        }
-      }
-
       const html = jobApplicationTemplate({
         recipientName: userName,
         jobTitle,
         companyName,
-        trackingPixelUrl,
-        logoCid,
-        logoMimeType,
       });
 
       const gmailSender = new GmailSender(prismaClient);
@@ -128,8 +98,6 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
         htmlBody: html,
         replyTo: userEmail,
         attachments: attachments.length > 0 ? attachments : undefined,
-        logoBuffer,
-        logoMimeType,
       });
 
       logger.info(`✅ Email sent to ${hrEmail} — messageId: ${messageId}`);
@@ -139,7 +107,6 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
         data: {
           status: ApplicationStatus.EMAIL_SENT,
           sentAt: new Date(),
-          trackingToken: token,
         },
       });
 

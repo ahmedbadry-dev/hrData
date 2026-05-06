@@ -1,258 +1,177 @@
 # HR Data Project Full Documentation
 
-Last Updated: 2026-04-20
+Last Updated: 2026-05-06
 
 ## 1) Project Overview
 
-HR Data is a high-performance monorepo web application designed to automate job searching and applications. It features a robust scraper system, AI-driven data extraction, and a sophisticated automated email application engine.
+HR Data is a professional, high-performance monorepo web application designed to automate the end-to-end job search and application lifecycle. It combines advanced web scraping, AI-driven data extraction, and a sophisticated automated email engine to help users apply for jobs efficiently.
 
-Current implementation status summary:
+### Current Implementation Status
+- **Core Backend**: Express.js server utilizing Prisma (v6) with PostgreSQL and Redis.
+- **Modular Frontend**: Premium React (Vite) frontend with a **Neo-Brutalist** design and seamless RTL (Arabic) support.
+- **Automation Pipeline**: Robust BullMQ worker system for background processing of scrapes and applications.
+- **AI Normalization**: Integrated Google Gemini 1.5 Flash for high-accuracy extraction from raw job descriptions.
+- **Email System**: Custom-built unified branding system with Gmail API integration for authenticated sending.
+- **Security**: Advanced session rotation, rate limiting, and English-to-Arabic error mapping.
 
-- **Core Backend**: Fully operational Express server with Prisma (v6) and PostgreSQL.
-- **Modular Frontend**: Mature React (Vite) frontend with a premium Neo-Brutalist design and full RTL Arabic support.
-- **Automation Pipeline**: Integrated BullMQ worker system for scheduled scraping and bulk job applications.
-- **AI Integration**: Custom AI extraction logic using Gemini 3 Flash for job normalization.
-- **Security**: Advanced session management, rate limiting, and CSRF protection.
-- **Gmail Integration**: Full Google OAuth2 flow for sending applications directly from user accounts.
+---
 
 ## 2) Monorepo and Workspaces
 
-Root workspace configuration:
+The project is structured as a monorepo using NPM workspaces to share configurations and facilitate concurrent development.
 
-- **Package Name**: pern-monorepo
+- **Package Name**: `pern-monorepo`
 - **Workspaces**:
-  - `client`: React + Vite + TypeScript
-  - `server`: Node.js + Express + TypeScript + Prisma
+  - `client`: React + Vite + TypeScript (Frontend)
+  - `server`: Node.js + Express + TypeScript + Prisma (Backend)
 
-Root scripts:
+### Global Scripts
+- `npm run dev`: Boots both server and client concurrently using `concurrently`.
+- `npm run build`: Compiles both projects for production.
+- `npm run lint`: Enforces code quality across the entire monorepo.
+- `npm run type:check`: Runs full TypeScript validation for both workspaces.
 
-- `npm run dev`: Runs server and client concurrently for development.
-- `npm run build`: Builds both workspaces for production.
-- `npm run lint / format`: Code quality and style enforcement.
-- `npm run type:check`: Full project TypeScript validation.
+---
 
 ## 3) Technology Stack
 
 ### Backend Stack
-
-- **Framework**: Node.js, Express (v5+ compatible)
-- **Language**: TypeScript
-- **Database**: PostgreSQL + Prisma ORM (v6.19+)
-- **Queue System**: BullMQ (v5+) + Redis (ioredis)
-- **Auth**: JWT (Access/Refresh) + bcrypt + Cookie-session rotation
-- **AI/LLM**: Google Gemini SDK (@google/genai), Groq SDK, OpenAI SDK
-- **Scraper**: Cheerio + Axios + Bottleneck (Rate limiting)
-- **Email**: Nodemailer + Gmail API (googleapis)
-- **Monitoring**: @bull-board/express (Queue management)
-- **Validation**: Zod (v4+)
+- **Engine**: Node.js v20+, Express v5 (Router-compatible)
+- **Database**: PostgreSQL with **Prisma ORM v6.19+**
+- **Caching & Queues**: **Redis** (ioredis) + **BullMQ v5+**
+- **Authentication**: 
+  - JWT (Access/Refresh tokens)
+  - Cookie-based session management
+  - Bcrypt for secure password hashing
+- **Email Infrastructure**: 
+  - **Gmail API** (googleapis)
+  - **Nodemailer** for specialized transport
+- **AI/LLM**: `@google/genai` (Gemini 1.5 Flash)
+- **Security**: 
+  - **express-rate-limit** (Custom translation bridge)
+  - **Helmet.js** for secure headers
+  - **CORS** & **CSRF** protection
+- **Validation**: **Zod** for schema-driven validation
 
 ### Frontend Stack
+- **Framework**: **React v18+** with **Vite**
+- **Styling**: **Vanilla CSS Modules** (Primary) + **TailwindCSS 4** (Utilities)
+- **Design Language**: **Neo-Brutalist** (Sharp edges, high contrast, deep shadows)
+- **State Management**:
+  - **TanStack Query v5** (Server state & caching)
+  - **Zustand** (UI state: modals, menus)
+- **i18n**: **i18next** with full RTL mirroring
+- **Routing**: **React Router 7**
+- **Analytics**: Custom integrated dashboard with **Chart.js**
 
-- **Framework**: React (v18+) + Vite
-- **UI Architecture**: TailwindCSS 4 + CSS Modules
-- **Design System**: Neo-Brutalist (Custom tokens)
-- **State Management**: Zustand (UI State) + TanStack Query v5 (Server State)
-- **Routing**: React Router 7
-- **i18n**: i18next + react-i18next (RTL support)
-- **Charts**: Chart.js
-- **Form Handling**: React Hook Form + Zod
+---
 
-## 4) Runtime Architecture
+## 4) Core Backend Services
 
-### Backend Startup Flow
+### 4.1) Scraper Engine (`server/src/scraper`)
+A multi-layered system designed to ingest data from various sources:
+- **`ScraperClient`**: Handles HTTP requests using `axios` and `cheerio` with anti-detection headers.
+- **`ExtractionService`**: Leverages Gemini AI to turn messy HTML into structured JSON (Title, HR Email, Location).
+- **`ScraperStorage`**: Manages atomic database upserts and deduplication logic.
+- **`ScraperConfig`**: Centralized configuration for targets like `awamirtawzif`, `wadifh`, `linkedksa`, etc.
 
-1. `server/src/main.ts` initializes environment and starts the HTTP server.
-2. `server/src/app.ts` configures the middleware stack (Security, Logging, Parsing).
-3. `server/src/router.ts` mounts the `/health` and `/api/v1` routes.
-4. `server/src/v1/routes.ts` registers all functional modules.
+### 4.2) Email Template System (`server/src/notifications/templates`)
+A unified branding system for all outgoing communications:
+- **Unified Style**: Professional background (`#F4F0E8`), official logo, and standardized RTL footer.
+- **Copyright Branding**: `جميع الحقوق محفوظة لدى © 2026 HR Data` (Fixed alignment via LTR spans).
+- **Templates**:
+  - `VerifyEmail`: Multi-language onboarding.
+  - `ResetPassword`: Secure recovery.
+  - `Announcement`: Broadcast formatting.
+  - `JobApplication`: **Clean, personal email format** (No branding/logos) to maximize recruitment response.
 
-### Shared API Response Contract
+### 4.3) Gmail Integration Service (`server/src/lib/email`)
+- **`GmailSender`**: Implements Google OAuth2 to send emails directly from the user's connected account.
+- **Attachment Support**: Handles CV/Resume injection from user profiles.
 
-All endpoints utilize a standard `ResponseHelper` for consistent communication:
+---
 
-- `success`: boolean
-- `statusCode`: number
-- `message`: string
-- `data`: object/array (optional)
-- `paginationMeta`: object (optional, for list endpoints)
+## 5) Database Schema (Prisma)
 
-## 5) Database Schema Documentation (Prisma)
+### Key Models & Lifecycle
+- **`User`**: Profiles, account status (ACTIVE/PENDING), and security metrics.
+- **`Job`**: normalized job listings with unique composite keys `(title, companyName, location)`.
+- **`Application`**: Linked to `User` and `Job`, tracking state from `SCHEDULED` to `EMAIL_OPENED`.
+- **`ScrapedLog`**: Real-time logging for scraper performance (Links found vs Jobs extracted).
+- **`SystemSetting`**: Dynamic configuration (e.g., logos, system maintenance modes).
 
-### Core Enums
+---
 
-- `UserRole`: USER, ADMIN, SUPER_ADMIN
-- `UserStatus`: PENDING_VERIFICATION, ACTIVE, SUSPENDED
-- `ApplicationStatus`: SCHEDULED, SENDING, SENT, FAILED, EMAIL_SENT, EMAIL_OPENED, EMAIL_FAILED
-- `JobLocation`: RIYADH, JEDDAH, DAMMAM, KHOBAR, MECCA, MEDINA, TABUK, OTHER
-- `NotificationType`: INFO, SUCCESS, WARNING, ALERT
+## 6) API Documentation
 
-### Key Models
+### Public & Auth (`/api/v1/auth`)
+Standard authentication flow with email verification and secure password recovery.
 
-#### `User`
+### Jobs Marketplace (`/api/v1/jobs`)
+Full-text search across thousands of Saudi job listings with advanced filters (Location, Date).
 
-- Central identity and profile storage.
-- Tracks account security (failures, lockout) and verification status.
+### User Applications (`/api/v1/applications`)
+Management of automated application schedules. Supports manual CV uploads per application.
 
-#### `Job`
+### Tracking (`/api/v1/track`)
+- `GET /open/:token`: Transparently records when an employer opens an application email using a 1x1 pixel.
 
-- Normalized job listings.
-- Unique constraint on `(title, companyName, location)` to prevent duplicates.
-- Includes metadata like `sourceUrl`, `hrEmail`, and `postedAt`.
+### Admin Scraper Control (`/api/v1/admin/scraper`)
+- `GET /status`: Live worker metrics.
+- `POST /run-now`: Immediate manual trigger.
+- `POST /reset-queue`: **Critical Admin Action** to clear and reset the extraction queue.
 
-#### `Application`
+---
 
-- Bridges `User` and `Job`.
-- Tracks the lifecycle of an automated application.
-- Stores `trackingToken` for pixel analytics.
+## 7) Frontend Features & Logic
 
-#### `GmailToken`
+### 7.1) Neo-Brutalist UI
+The application uses a unique design system defined by:
+- **High Contrast**: Pure whites, deep blacks (`var(--ink)`), and vibrant accent reds.
+- **Elevation**: Hard shadows (`box-shadow: 4px 4px 0 var(--ink)`).
+- **Responsiveness**: Fully fluid layout for mobile and desktop.
 
-- Securely stores OAuth2 tokens for Gmail integration.
-- Encrypted at rest.
+### 7.2) Error Mapping System (`client/src/lib/error-mapper.ts`)
+A sophisticated bridge between backend and user:
+- Backend returns technical English errors (e.g., "Too many requests").
+- Frontend maps these via a centralized library to user-friendly Arabic (e.g., "لقد تجاوزت الحد المسموح به").
 
-#### `ActivityLog`
+### 7.3) Admin Dashboard
+- **Analytics**: Real-time charts showing login activity and application success.
+- **Scraper Monitoring**: Log stream visualization for tracking site-by-site extraction health.
 
-- High-resolution audit trail of system and user events.
+---
 
-## 6) Backend API Endpoints Documentation
+## 8) Background Workers (BullMQ)
 
-### Auth (/api/v1/auth)
+- **`ScraperWorker`**: Recurring job to run the extraction engine every 2 hours.
+- **`JobApplicationWorker`**: Processes the application queue, managing email rate limits to protect user's Gmail accounts.
+- **`MaintenanceWorker`**: Daily cleanup of old logs and temporary tracking tokens.
 
-| Method | Endpoint                | Description                        |
-| :----- | :---------------------- | :--------------------------------- |
-| POST   | `/register`             | User sign-up + verification email  |
-| POST   | `/verify-email`         | Validate token from email          |
-| POST   | `/login`                | Credentials login + Refresh cookie |
-| POST   | `/refresh`              | Rotate Access/Refresh tokens       |
-| POST   | `/logout`               | Invalidate current session         |
-| POST   | `/logout-all`           | Invalidate all active sessions     |
-| POST   | `/forgot-password`      | Send reset link                    |
-| POST   | `/reset-password`       | Update password via token          |
-| GET    | `/validate-reset-token` | Check token validity               |
-| PATCH  | `/change-password`      | Update password (Authenticated)    |
+---
 
-### Jobs (/api/v1/jobs)
+## 9) Security & Performance
 
-| Method | Endpoint          | Description                        |
-| :----- | :---------------- | :--------------------------------- |
-| GET    | `/`               | Paginated job list with filters    |
-| GET    | `/search`         | Full-text search with date filters |
-| GET    | `/saved`          | List user's bookmarked jobs        |
-| GET    | `/saved/eligible` | Jobs ready for application         |
-| GET    | `/:id`            | Single job details                 |
-| POST   | `/:id/save`       | Bookmark a job                     |
-| DELETE | `/:id/save`       | Unsave a job                       |
-| POST   | `/bulk-save`      | Bulk bookmarking                   |
-| POST   | `/bulk-unsave`    | Bulk unsaving                      |
-| POST   | `/`               | Create job (Admin only)            |
-| POST   | `/bulk`           | Create multiple jobs (Admin only)  |
+- **Rate Limiting**: Intelligent limiting on sensitive endpoints (Login, Register, Scraper Start).
+- **Session Security**: Double-token pattern (HttpOnly Refresh + Memory Access) prevents XSS/CSRF.
+- **Encryption**: sensitive data like OAuth tokens are encrypted before storage.
+- **Optimized Caching**: Redis caches the job marketplace results for sub-100ms response times.
 
-### Applications (/api/v1/applications)
+---
 
-| Method | Endpoint    | Description                             |
-| :----- | :---------- | :-------------------------------------- |
-| GET    | `/`         | List user applications                  |
-| GET    | `/:id`      | Application audit trail                 |
-| POST   | `/schedule` | Queue applications (supports CV upload) |
-| DELETE | `/:id`      | Cancel scheduled application            |
-
-### Analytics (Admin - /api/v1/admin/analytics)
-
-| Method | Endpoint                | Description           |
-| :----- | :---------------------- | :-------------------- |
-| GET    | `/overview`             | Core system stats     |
-| GET    | `/advanced-overview`    | Deep-dive metrics     |
-| GET    | `/logins-per-day`       | User retention data   |
-| GET    | `/applications-per-day` | Engine performance    |
-| GET    | `/top-jobs`             | Most popular listings |
-| GET    | `/recent-activity-logs` | System audit trail    |
-
-### Notifications (/api/v1/notifications)
-
-| Method | Endpoint        | Description                   |
-| :----- | :-------------- | :---------------------------- |
-| GET    | `/me`           | User's notifications          |
-| PATCH  | `/read-all`     | Mark all as read              |
-| PATCH  | `/:id/read`     | Mark specific as read         |
-| POST   | `/admin/create` | Broadcast system-wide (Admin) |
-
-### Scraper Control (Admin - /api/v1/admin/scraper)
-
-| Method | Endpoint   | Description                  |
-| :----- | :--------- | :--------------------------- |
-| GET    | `/status`  | Active workers & queue depth |
-| POST   | `/start`   | Resume recurring schedule    |
-| POST   | `/stop`    | Pause worker system          |
-| POST   | `/run-now` | Trigger manual sync          |
-
-## 7) Frontend Documentation
-
-### 7.1) Architecture & Design System
-
-- **Style**: **Neo-Brutalist** (High contrast, bold shadows, raw typography, and "cards with depth").
-- **State Strategy**:
-  - `react-query` for all server-side data fetching and optimistic updates.
-  - `zustand` for high-frequency UI switches (sidebar, theme, modals).
-- **RTL**: Fully mirrored layout with Arabic language support by default.
-
-### 7.2) Main Pages
-
-- **Home**: Marketing site with interactive feature showcase.
-- **Jobs Marketplace**: High-speed search interface with multi-filter support.
-- **Saved Jobs**: Management hub for building application queues.
-- **Auto-Apply Dashboard**: Mission control for scheduling and monitoring AI-sent emails.
-- **Analytics View**: Visualizing application success rates and tracking pixel data.
-- **Admin Users**: Full CRUD and moderation tools for user accounts.
-- **Admin Scraper**: Real-time log streaming and control center for the job engine.
-
-### 7.3) Core Components
-
-- **UI Primitives**: Buttons, Inputs, Badges, and Modals with unified Neo-Brutalist styling.
-- **Data Display**: Custom `DataTable` with server-side sorting and pagination.
-- **Feedback**: Animated Loading screens, Pulse indicators for background tasks, and Toast notifications.
-- **Sections**: Modularized dashboard blocks (e.g., `UserSearchSection`, `UserAnalyticsSection`).
-
-## 8) Detailed Scraper System Documentation
-
-### 8.1) Extraction Workflow
-
-1. **Source Discovery**: Scans pre-configured job boards (Jobhuna, etc.).
-2. **AI Normalization**: Gemini 3 Flash processes raw HTML/Text to extract:
-   - `hrEmail`: Targeted extraction for application delivery.
-   - `category`: Automatic classification of job type.
-   - `location`: Mapping to internal `JobLocation` enum.
-3. **Storage**: Atomic upsert to PostgreSQL using unique identifiers.
-
-### 8.2) Management
-
-- Managed via **BullMQ** with specific "Concurrency" and "Backoff" strategies to prevent IP blocking.
-- Real-time status reporting available in the Admin Scraper Dashboard.
-
-## 9) Email Tracking & Analytics
-
-- **Pixel-Based Tracking**: Every application includes a unique tracking GIF.
-- **Real-Time Integration**: Opening an email triggers a callback to `/api/v1/track/open/:token`.
-- **UI Reflection**: Dashboard updates in real-time to show "Email Opened" status to the user.
-
-## 10) Security & Performance
-
-- **CSRF**: Double-submit cookie pattern.
-- **Session**: Advanced "Refresh Token" rotation with session blacklisting.
-- **Encryption**: AES-256-GCM for user integrations (Google OAuth).
-- **Speed**: Heavy use of Redis for caching frequently accessed jobs and session data.
-
-## 11) Monorepo Layout
+## 10) Monorepo Layout
 
 ```text
 .
-â”œâ”€â”€ client                  # React Application
-â”‚   â”œâ”€â”€ src/components      # UI Components (Reusable)
-â”‚   â”œâ”€â”€ src/modules         # Feature-based logic (Hooks, API, Types)
-â”‚   â””â”€â”€ src/pages           # Routable Page Views
-â”œâ”€â”€ server                  # Express API
-â”‚   â”œâ”€â”€ prisma/schema.prisma# Database Definition
-â”‚   â”œâ”€â”€ src/v1/modules      # Domain-driven backend modules
-â”‚   â”œâ”€â”€ src/workers         # BullMQ Background Workers
-â”‚   â””â”€â”€ src/scraper         # Core Engine Extraction Logic
-â””â”€â”€ PROJECT_FULL_DOCUMENTATION.md
+├── client                      # React Frontend
+│   ├── src/components/auth     # Modals (Login/Signup with centered logos)
+│   ├── src/components/home     # Landing page sections
+│   ├── src/lib/error-mapper.ts # Technical error translation
+│   └── src/pages               # Dashboard, Marketplace, Admin
+├── server                      # Node.js Backend
+│   ├── src/v1/modules          # Domain-driven API modules
+│   ├── src/scraper             # Job extraction services
+│   ├── src/workers             # BullMQ background processing
+│   └── src/notifications       # Unified Email Templates
+└── PROJECT_FULL_DOCUMENTATION.md
 ```

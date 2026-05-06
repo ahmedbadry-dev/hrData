@@ -58,9 +58,12 @@ export const verifyEmailTemplate = (
                 </td>
               </tr>
 
-              <tr>
+                 <tr>
                 <td style="padding:20px 28px;border-top:1px solid #c8b89a;background:#F4F0E8;text-align:center;">
-                  <p style="margin:0;font-size:12px;color:#a89880;line-height:1.8;text-align:right;">© 2026 جميع الحقوق محفوظة لدى HR Data</p>
+                  <p style="margin:0;font-size:12px;color:#a89880;line-height:1.8;text-align:right;">
+                    <span>جميع الحقوق محفوظة لدى</span>
+                    <span style="display:inline-block; direction:ltr;">© 2026 HR Data  </span>
+                  </p>
                 </td>
               </tr>
             </table>

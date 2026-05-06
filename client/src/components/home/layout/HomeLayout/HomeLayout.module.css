@@ -34,6 +34,7 @@
   height: 48px;
   width: auto;
   object-fit: contain;
+  padding-top: 12px;
 }
 
 .nav-links {

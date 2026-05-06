@@ -4,19 +4,10 @@ export function jobApplicationTemplate(data: {
   recipientName: string;
   jobTitle: string;
   companyName: string;
-  trackingPixelUrl: string;
-  logoCid?: string | null;
-  logoMimeType?: string | null;
 }): string {
   const safeRecipientName = escapeHtml(data.recipientName);
   const safeJobTitle = escapeHtml(data.jobTitle);
   const safeCompanyName = escapeHtml(data.companyName);
-  const safeTrackingPixelUrl = escapeHtml(data.trackingPixelUrl);
-
-  const logoInline =
-    data.logoCid && data.logoMimeType
-      ? `<img src="cid:${data.logoCid}" alt="Logo" style="max-height:60px;max-width:200px;margin-bottom:16px;" />`
-      : '';
 
   return `
     <!DOCTYPE html>
@@ -26,18 +17,17 @@ export function jobApplicationTemplate(data: {
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>طلب انضمام - ${safeJobTitle}</title>
     </head>
-    <body style="direction:ltr;text-align:right;">
-      ${logoInline}
-      <h1>طلب انضمام - ${safeJobTitle}</h1>
-      <p>${safeCompanyName}</p>
+    <body style="font-family:Arial, sans-serif; line-height:1.6; color:#000; text-align:right; direction:rtl; padding:20px;">
+      <h1 style="font-size:20px;">طلب انضمام - ${safeJobTitle}</h1>
+      <p style="font-weight:bold;">${safeCompanyName}</p>
 
-      <p style="direction:ltr;">
+      <div style="margin-top:20px;">
         السلام عليكم ورحمة الله وبركاته،<br/><br/>
         أتقدم لكم بطلب الانضمام إلى الوظيفة المعلن عنها، وأرفقت سيرتي الذاتية للاطلاع على خبراتي ومهاراتي.<br/>
         يشرفني التواصل معكم في حال مناسبة ملفي لاحتياجكم الحالي.<br/><br/>
         مع خالص التقدير،<br/>
         ${safeRecipientName}
-      </p>
+      </div>
     </body>
     </html>
   `;

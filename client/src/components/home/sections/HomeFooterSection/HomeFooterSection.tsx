@@ -7,7 +7,24 @@ export default function HomeFooterSection() {
       <div className={styles['footer-logo']}>
         <Logo fallback="HR Data" className={styles['footer-logo-img']} />
       </div>
-      <div className={styles['footer-copy']}>© ٢٠٢٦ HR Data — جميع الحقوق محفوظة</div>
+      <div
+        style={{
+          textAlign: 'center',
+        }}
+      >
+        <p
+          style={{
+            margin: 0,
+            fontSize: '12px',
+            color: '#a89880',
+            lineHeight: '1.8',
+            textAlign: 'right',
+          }}
+        >
+          <span>جميع الحقوق محفوظة لدى </span>
+          <span style={{ display: 'inline-block', direction: 'ltr' }}>© 2026 HR Data </span>
+        </p>
+      </div>
       <div className={styles['footer-links']}>
         <a className={styles['footer-link']} href="#">
           سياسة الخصوصية
