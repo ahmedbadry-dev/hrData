@@ -52,15 +52,6 @@ export const fetchApplicationsQuota = async (): Promise<ApiResponse<Applications
   return data;
 };
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 export const cancelApplication = async (id: string): Promise<void> => {
   await axiosClient.delete(`/applications/${id}`);
 };
