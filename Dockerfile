@@ -9,7 +9,7 @@ RUN npm install --legacy-peer-deps
 
 COPY . .
 
-RUN cd server && npx prisma generate
+RUN cd server && ./node_modules/.bin/prisma generate
 
 RUN npm run build
 
