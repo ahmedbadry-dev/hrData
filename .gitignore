@@ -8,6 +8,7 @@ client/.env.development
 client/.env.production
 client/.env.test
 client/.env.local
+.env.container
 *.log
 .DS_Store
 

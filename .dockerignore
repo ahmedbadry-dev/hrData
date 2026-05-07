@@ -1,0 +1,13 @@
+.git
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose*.yml
+*.md
+.prettierrc
+.prettierignore
+node_modules
+.env*
+!.env.container
+!server/.env.container
+!client/.env.container
