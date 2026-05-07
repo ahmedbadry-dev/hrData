@@ -14,7 +14,6 @@
     "type:check": "npm run type:check --workspace=server && npm run type:check --workspace=client"
   },
   "devDependencies": {
-    "@types/jsonwebtoken": "^9.0.10",
     "concurrently": "latest",
     "cross-env": "^10.1.0",
     "prettier": "latest"
