@@ -1,38 +1,26 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Install root dependencies
+# الحل هنا بالظبط ← اضبط NODE_ENV على development في الـ build فقط
+ENV NODE_ENV=development
+
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
-# Install server dependencies
 COPY server/package*.json ./server/
 RUN cd server && npm install --legacy-peer-deps
 
-# Install client dependencies
 COPY client/package*.json ./client/
 RUN cd client && npm install --legacy-peer-deps
 
-# Copy all source files
 COPY . .
 
-# Generate Prisma client using server's local binary
-RUN cd server && ./node_modules/.bin/prisma generate
+RUN cd server && npx prisma generate
 
-# Build everything
 RUN npm run build
 
 # ====== Production Stage ======
 FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-
-COPY --from=builder /app/server/dist ./server/dist
-COPY --from=builder /app/client/dist ./client/dist
-COPY --from=builder /app/server/node_modules ./server/node_modules
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/server/prisma ./server/prisma
-COPY --from=builder /app/package*.json ./
-
-EXPOSE 3000
-CMD ["node", "server/dist/index.js"]
+...
