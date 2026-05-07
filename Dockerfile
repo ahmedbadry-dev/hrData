@@ -1,34 +1,38 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
+# Install root dependencies
 COPY package*.json ./
-COPY client/package*.json ./client/
-COPY server/package*.json ./server/
-
 RUN npm install --legacy-peer-deps
 
+# Install server dependencies
+COPY server/package*.json ./server/
+RUN cd server && npm install --legacy-peer-deps
+
+# Install client dependencies
+COPY client/package*.json ./client/
+RUN cd client && npm install --legacy-peer-deps
+
+# Copy all source files
 COPY . .
 
+# Generate Prisma client using server's local binary
 RUN cd server && ./node_modules/.bin/prisma generate
 
+# Build everything
 RUN npm run build
 
+# ====== Production Stage ======
 FROM node:22-alpine AS runner
 WORKDIR /app
-
 ENV NODE_ENV=production
 
 COPY --from=builder /app/server/dist ./server/dist
 COPY --from=builder /app/client/dist ./client/dist
+COPY --from=builder /app/server/node_modules ./server/node_modules
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/server/prisma ./server/prisma
-COPY --from=builder /app/package.json ./package.json
-
-COPY --from=builder /app/server/generated ./server/generated
-
-RUN mkdir -p node_modules/@generated && \
-    ln -sf /app/server/generated /app/node_modules/@generated
+COPY --from=builder /app/package*.json ./
 
 EXPOSE 3000
-
-CMD ["sh", "-c", "cd server && npx prisma migrate deploy && cd /app && node server/dist/main.js"]
+CMD ["node", "server/dist/index.js"]
