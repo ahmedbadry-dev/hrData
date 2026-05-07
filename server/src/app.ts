@@ -63,13 +63,13 @@ app.use(
 
 app.use('/api', apiRateLimitMiddleware, v1Router);
 
-// Serve React static files
-app.use(express.static(path.join(__dirname, '../../client/dist')));
+// // Serve React static files
+// app.use(express.static(path.join(__dirname, '../../client/dist')));
 
-// Serve React app for any other request
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, '../../client/dist', 'index.html'));
-});
+// // Serve React app for any other request
+// app.use((req, res) => {
+//   res.sendFile(path.join(__dirname, '../../client/dist', 'index.html'));
+// });
 
 app.use(errorHandler);
 

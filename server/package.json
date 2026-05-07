@@ -7,8 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "build": "rimraf dist && tsc && tsc-alias -f",
-    "prestart": "node -e \"const fs=require('fs'); if (!fs.existsSync('node_modules')) fs.mkdirSync('node_modules'); try{ fs.symlinkSync('../generated', 'node_modules/@generated', 'junction') } catch(e){ if(e.code !== 'EEXIST') throw e; }\"",
-    "start": "node dist/main.js",
+    "start": "node .",
     "type:check": "tsc --noEmit",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:generate": "npx prisma generate",
@@ -24,7 +23,6 @@
   },
   "dependencies": {
     "@google/genai": "^1.50.1",
-    "@prisma/adapter-pg": "^6.19.3",
     "@prisma/client": "^6.19.3",
     "axios": "^1.15.0",
     "bcrypt": "^6.0.0",
