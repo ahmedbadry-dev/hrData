@@ -22,7 +22,7 @@ export default function HomeFooterSection() {
           }}
         >
           <span>جميع الحقوق محفوظة لدى </span>
-          <span style={{ display: 'inline-block', direction: 'ltr' }}>© 2026 HR Data </span>
+          <span style={{ display: 'inline-block', direction: 'ltr' }}>© 2026 HR Mohamed </span>
         </p>
       </div>
       <div className={styles['footer-links']}>
