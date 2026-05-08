@@ -1,33 +1,22 @@
-FROM node:24-alpine AS deps
-
-WORKDIR /app
-
-COPY package.json package-lock.json ./
-COPY client ./client
-
-RUN npm ci
-
 FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY client .
+COPY package.json package-lock.json ./
+COPY client ./
+
+RUN npm ci
 
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 RUN npm run build
 
-FROM node:24-alpine AS runner
+FROM nginx:alpine
 
-WORKDIR /app
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
-ENV NODE_ENV=production
+EXPOSE 80
 
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./package.json
-
-EXPOSE 4173
-
-CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "4173"]
+CMD ["nginx", "-g", "daemon off;"]
