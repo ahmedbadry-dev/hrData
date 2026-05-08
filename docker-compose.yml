@@ -14,7 +14,7 @@ services:
     networks:
       - app_network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user -d hrdata" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,7 +31,7 @@ services:
     networks:
       - app_network
     healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -47,8 +47,8 @@ services:
       - server/.env.container
     environment:
       NODE_ENV: production
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -69,8 +69,23 @@ services:
       - client/.env.container
     environment:
       NODE_ENV: production
+    expose:
+      - "4173"
+    networks:
+      - app_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_prod
+    restart: unless-stopped
     ports:
-      - "4173:4173"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - client
+      - server
     networks:
       - app_network
 
