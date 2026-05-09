@@ -69,13 +69,19 @@ jobs:
               cd $APP_DIR
               git checkout main
             else
-              echo "📥 Pulling latest code..."
+              echo "� Pulling latest code..."
 
               cd $APP_DIR
 
               git fetch origin
               git reset --hard origin/main
             fi
+
+            echo "🔐 Restoring SSL certificates..."
+            mkdir -p $APP_DIR/nginx/certs
+            echo "${{ secrets.ORIGIN_CERT }}" > $APP_DIR/nginx/certs/origin.crt
+            echo "${{ secrets.ORIGIN_KEY }}" > $APP_DIR/nginx/certs/origin.key
+            chmod 600 $APP_DIR/nginx/certs/origin.key
 
             echo "📦 Installing Docker Compose services..."
             docker compose --env-file .env.container pull || true
