@@ -9,7 +9,7 @@
   background: var(--paper);
   border-bottom: 2px solid var(--ink);
   padding: 0 48px;
-  height: 64px;
+  min-height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -684,8 +684,19 @@
 }
 
 @media (max-width: 600px) {
+  .nav {
+    padding: 12px 20px;
+    justify-content: center;
+    gap: 16px;
+  }
+
   .nav-logo {
     font-size: 20px;
+  }
+
+  .nav-logo-img {
+    height: 36px;
+    padding-top: 0;
   }
 
   .nav-link {
@@ -693,22 +704,29 @@
   }
 
   .nav-links {
-    gap: 12px;
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
   }
 
   .nav-welcome {
     display: none;
   }
 
-  .btn-login {
-    padding: 8px 16px;
-    font-size: 12px;
+  .btn-login-navbar,
+  .btn-register {
+    padding: 8px 12px;
+    font-size: 11px;
+    flex: 1;
+    justify-content: center;
+    text-align: center;
   }
 
   .hero-headline {
     font-size: 36px;
     line-height: 1.1;
   }
+
 
   .hero-body {
     font-size: 14px;

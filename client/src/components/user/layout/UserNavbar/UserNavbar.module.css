@@ -141,7 +141,35 @@
   }
 
   .admin-user,
-  .header-stamp {
+  .header-stamp,
+  .logo-tagline {
     display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .site-header {
+    padding: 4px 12px;
+    height: 64px;
+    gap: 8px;
+  }
+
+  .logoImg {
+    height: 32px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+
+  .user-badge {
+    display: none;
+  }
+
+  .btn-logout {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+
+  .header-left {
+    gap: 6px;
   }
 }
