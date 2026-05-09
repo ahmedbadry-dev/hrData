@@ -33,6 +33,9 @@ async function processSingleJob(jobUrl: string, site: WebSiteConfig): Promise<st
               continue;
             }
             await ScraperStorage.saveJobToDb(normalized);
+            console.log(
+              `[Scraper] ✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅ Saved: ${normalized.title} at ${normalized.companyName} (${normalized.sourceUrl})`
+            );
           }
         }
       }
