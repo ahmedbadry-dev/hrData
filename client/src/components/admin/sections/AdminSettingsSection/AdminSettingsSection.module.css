@@ -208,8 +208,9 @@
 }
 
 .logo-preview {
-  width: 120px;
-  height: 120px;
+  width: 100%;
+  max-width: 320px;
+  height: 100px;
   border: 2px dashed var(--cream);
   border-radius: 8px;
   display: flex;

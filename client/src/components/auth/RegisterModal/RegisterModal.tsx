@@ -24,7 +24,12 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
   const [serverError, setServerError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      document.body.style.overflow = 'unset';
+      return;
+    }
+    
+    document.body.style.overflow = 'hidden';
     setIsRegistered(false);
     setFirstName('');
     setLastName('');
@@ -34,6 +39,10 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
     setConfirmPassword('');
     setErrors({});
     setServerError(null);
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen]);
 
   const validate = (): boolean => {

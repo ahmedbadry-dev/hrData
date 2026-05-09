@@ -43,7 +43,7 @@ export class SettingsService {
       where: { key: 'app_logo' },
     });
 
-    const defaultLogoPath = '/uploads/logo-1778073506601-127812631.png';
+    const defaultLogoPath = '/uploads/logologo.png';
     const logoPath = setting?.value || defaultLogoPath;
 
     if (logoPath && logoPath.startsWith('/uploads/')) {
@@ -79,10 +79,10 @@ export class SettingsService {
       where: { key: 'app_logo' },
     });
 
-    const defaultLogoPath = '/uploads/logo-1778073506601-127812631.png';
-    const oldLogoPath = existingLogo?.value || defaultLogoPath;
+    const defaultLogoPath = '/uploads/logologo.png';
+    const oldLogoPath = existingLogo?.value;
 
-    if (oldLogoPath) {
+    if (oldLogoPath && oldLogoPath !== defaultLogoPath) {
       const oldPath = oldLogoPath.replace(/^\//, '');
       const fullPath = path.join(process.cwd(), oldPath);
       if (fs.existsSync(fullPath)) {

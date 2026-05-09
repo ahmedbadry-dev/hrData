@@ -6,7 +6,7 @@ export default function HomeQuoteSection() {
       <div className={`${styles['quote-inner']} ${styles.reveal}`}>
         <span className={styles['quote-mark']}>"</span>
         <p className={styles['quote-text']}>
-          السوق السعودي يحتاج منصة تُقرّب الكفاءات من أصحاب العمل — مباشرةً وبدون ضجيج.
+          السوق السعودي يحتاج منصة تُقرّب الكفاءات من أصحاب العمل — مباشرةً وبضغط زر.
         </p>
         <div className={styles['quote-author']}>فريق HR Data · ٢٠٢٦</div>
       </div>

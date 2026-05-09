@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { UserLayout, type UserPageKey } from '@/components/user/layout';
 import { useLogoutMutation } from '@/modules/auth/api/mutations';
@@ -7,6 +7,10 @@ export default function UserDashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const logoutMutation = useLogoutMutation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   let activePage: UserPageKey = 'home';
   if (location.pathname.includes('/dashboard/jobs')) activePage = 'search';

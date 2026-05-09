@@ -29,7 +29,7 @@ export default function HomeFeaturesSection() {
           </div>
           <div className={styles['feature-title']}>حفظ ومتابعة ذكية</div>
           <div className={styles['feature-body']}>
-            احفظ الوظائف التي تهمك وارجع لها في أي وقت. قائمتك الشخصية محفوظة في جهازك ومتاحة
+            احفظ الوظائف التي تهمك وارجع لها في أي وقت. قائمتك الشخصية محفوظة في حسابك ومتاحة
             دائماً.
           </div>
         </div>
@@ -56,7 +56,7 @@ export default function HomeFeaturesSection() {
           </div>
           <div className={styles['feature-title']}>مجاني تماماً</div>
           <div className={styles['feature-body']}>
-            HR Data مجانية للباحثين عن عمل بالكامل — لا اشتراكات، لا رسوم خفية، لا إعلانات. فقط فرصة
+            HR Data مجانية للباحثين عن عمل بالكامل — لا اشتراكات، لا إعلانات. فقط فرصة
             حقيقية.
           </div>
         </div>

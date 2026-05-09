@@ -1,11 +1,10 @@
-import { Logo } from '@/components/ui/Logo/Logo';
 import styles from '@/components/home/layout/HomeLayout/HomeLayout.module.css';
 
 export default function HomeFooterSection() {
   return (
     <footer className={styles.footer}>
       <div className={styles['footer-logo']}>
-        <Logo fallback="HR Data" className={styles['footer-logo-img']} />
+        HR Data
       </div>
       <div
         style={{
@@ -16,7 +15,7 @@ export default function HomeFooterSection() {
           style={{
             margin: 0,
             fontSize: '12px',
-            color: '#a89880',
+            color: 'var(--paper)',
             lineHeight: '1.8',
             textAlign: 'right',
           }}

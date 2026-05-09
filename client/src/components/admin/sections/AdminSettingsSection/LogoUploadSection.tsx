@@ -44,7 +44,15 @@ export default function LogoUploadSection() {
     <div className={styles['logo-upload-container']}>
       <div className={styles['settings-input-label']}>شعار التطبيق</div>
       <div className={styles['logo-preview']}>
-        <Logo fallback="HR Data" className={styles['logo-image']} />
+        {selectedFile ? (
+          <img
+            src={URL.createObjectURL(selectedFile)}
+            alt="Preview"
+            className={styles['logo-image']}
+          />
+        ) : (
+          <Logo fallback="لا يوجد شعار" className={styles['logo-image']} />
+        )}
       </div>
       <div className={styles['logo-upload-row']}>
         <input

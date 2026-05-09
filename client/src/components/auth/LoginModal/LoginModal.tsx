@@ -28,7 +28,12 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
 
   // Reset state when modal opens/closes
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      document.body.style.overflow = 'unset';
+      return;
+    }
+    
+    document.body.style.overflow = 'hidden';
     setView('login');
     setEmail('');
     setPassword('');
@@ -37,6 +42,10 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
     setServerError(null);
     setForgotServerError(null);
     setRememberMe(false);
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen]);
 
   const isPending = loginMutation.isPending || forgotMutation.isPending;
