@@ -24,11 +24,11 @@ export default function HomeHeroSection() {
       <div className={styles['hero-left']}>
         <div className={styles['hero-eyebrow']}>منصة التوظيف المباشر</div>
         <h1 className={styles['hero-headline']}>
-          وظّف
+          مستقبلك
           <br />
-          <em>الكفاءات</em>
+          <em>يبدأ</em>
           <br />
-          مباشرةً
+          هنا
         </h1>
         <p className={styles['hero-body']}>
           HR Data تربطك بأصحاب العمل مباشرةً عبر البريد الإلكتروني — بدون وسيط، بدون رسوم، بدون

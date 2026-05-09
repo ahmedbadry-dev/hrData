@@ -33,7 +33,7 @@ export default function HomeCtaSection() {
       </div>
       <div className={styles['cta-buttons']}>
         <button className={styles['btn-primary']} onClick={handleCtaClick}>
-          دخول لوحة التحكم ←
+          ابدأ الآن ←
         </button>
         <a className={styles['btn-ghost']} href="#how">
           اعرف أكثر

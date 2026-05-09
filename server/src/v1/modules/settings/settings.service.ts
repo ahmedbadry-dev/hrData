@@ -43,7 +43,9 @@ export class SettingsService {
       where: { key: 'app_logo' },
     });
 
-    const logoPath = setting?.value || null;
+    const defaultLogoPath = '/uploads/logo-1778073506601-127812631.png';
+    const logoPath = setting?.value || defaultLogoPath;
+
     if (logoPath && logoPath.startsWith('/uploads/')) {
       const fullPath = path.join(process.cwd(), logoPath.replace(/^\//, ''));
       if (fs.existsSync(fullPath)) {
@@ -55,6 +57,18 @@ export class SettingsService {
           logoMimeType: mimeType,
           logoBuffer: buffer.toString('base64'),
         };
+      } else if (logoPath !== defaultLogoPath) {
+        const fallbackPath = path.join(process.cwd(), defaultLogoPath.replace(/^\//, ''));
+        if (fs.existsSync(fallbackPath)) {
+          const buffer = fs.readFileSync(fallbackPath);
+          const mimeType = `image/${path.extname(defaultLogoPath).replace('.', '')}`;
+          return {
+            logoPath: `${emailConfig.serverUrl}${defaultLogoPath}`,
+            logoCid: 'companylogo',
+            logoMimeType: mimeType,
+            logoBuffer: buffer.toString('base64'),
+          };
+        }
       }
     }
     return { logoPath };
@@ -65,8 +79,11 @@ export class SettingsService {
       where: { key: 'app_logo' },
     });
 
-    if (existingLogo?.value) {
-      const oldPath = existingLogo.value.replace(/^\//, '');
+    const defaultLogoPath = '/uploads/logo-1778073506601-127812631.png';
+    const oldLogoPath = existingLogo?.value || defaultLogoPath;
+
+    if (oldLogoPath) {
+      const oldPath = oldLogoPath.replace(/^\//, '');
       const fullPath = path.join(process.cwd(), oldPath);
       if (fs.existsSync(fullPath)) {
         fs.unlinkSync(fullPath);
