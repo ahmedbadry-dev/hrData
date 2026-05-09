@@ -17,26 +17,26 @@ async function processSingleJob(jobUrl: string, site: WebSiteConfig): Promise<st
     const content = await ScraperClient.getJobContent(jobUrl, site);
     if (!content) return null;
 
-    // if (content.includes('@')) {
-    //   const extractedList = await ScraperClient.extractWithAI(content, jobUrl, site.name);
-    //   if (extractedList && extractedList.length > 0) {
-    //     for (const extracted of extractedList) {
-    //       const normalized = ScraperStorage.validateAndNormalize(extracted);
-    //       if (normalized) {
-    //         const isDuplicate = await ScraperStorage.isCompanyRecentlyPosted(
-    //           normalized.companyName
-    //         );
-    //         if (isDuplicate) {
-    //           logger.info(
-    //             `[Scraper] ⏭️ Skipping: ${normalized.companyName} already has a post in the last 24h`
-    //           );
-    //           continue;
-    //         }
-    //         await ScraperStorage.saveJobToDb(normalized);
-    //       }
-    //     }
-    //   }
-    // }
+    if (content.includes('@')) {
+      const extractedList = await ScraperClient.extractWithAI(content, jobUrl, site.name);
+      if (extractedList && extractedList.length > 0) {
+        for (const extracted of extractedList) {
+          const normalized = ScraperStorage.validateAndNormalize(extracted);
+          if (normalized) {
+            const isDuplicate = await ScraperStorage.isCompanyRecentlyPosted(
+              normalized.companyName
+            );
+            if (isDuplicate) {
+              logger.info(
+                `[Scraper] ⏭️ Skipping: ${normalized.companyName} already has a post in the last 24h`
+              );
+              continue;
+            }
+            await ScraperStorage.saveJobToDb(normalized);
+          }
+        }
+      }
+    }
 
     return content;
   } catch (error) {
