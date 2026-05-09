@@ -27,7 +27,6 @@ export interface HomeFeature {
 
 export const homeHeroStats: HomeHeroStat[] = [
   { value: '٢٠+', label: 'وظيفة متاحة' },
-  { value: '١٠', label: 'شركة مشاركة' },
   { value: '١٠٠٪', label: 'تواصل مباشر' },
 ];
 

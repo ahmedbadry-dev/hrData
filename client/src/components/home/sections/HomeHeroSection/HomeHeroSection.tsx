@@ -48,10 +48,6 @@ export default function HomeHeroSection() {
             <div className={styles['hero-stat-label']}>وظيفة متاحة</div>
           </div>
           <div>
-            <div className={styles['hero-stat-num']}>١٠</div>
-            <div className={styles['hero-stat-label']}>شركة مشاركة</div>
-          </div>
-          <div>
             <div className={styles['hero-stat-num']}>١٠٠٪</div>
             <div className={styles['hero-stat-label']}>تواصل مباشر</div>
           </div>
