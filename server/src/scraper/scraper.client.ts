@@ -103,7 +103,7 @@ export class ScraperClient {
     try {
       const response = await this.aiLimiter.schedule(() =>
         geminiClient.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model: 'gemini-1.5-flash',
           contents: `Extract the following structured JSON from this job posting. Return ONLY valid JSON, no markdown, no explanation.\n\nRules:\n- All values must be strings\n- title, companyName, category, and description MUST be extracted in Arabic language\n- location must be exactly one of: RIYADH, JEDDAH, DAMMAM, KHOBAR, MECCA, MEDINA, TABUK, OTHER\n- qualification must be exactly one of: HIGH_SCHOOL, DIPLOMA, BACHELOR, MASTER, PHD, OTHER\n- specialization must be exactly one of: ENGINEERING, INFORMATION_TECHNOLOGY, BUSINESS_ADMINISTRATION, ACCOUNTING_FINANCE, MARKETING_SALES, HEALTHCARE, EDUCATION, HUMAN_RESOURCES, OTHER\n- If a field cannot be determined, use "OTHER"\n- Return ONLY the JSON object (or array if multiple jobs found)\n\nContent:\n${content}`,
           config: {
             responseMimeType: 'application/json',
