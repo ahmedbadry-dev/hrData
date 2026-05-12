@@ -21,8 +21,12 @@ if (!groqApiKey) {
 }
 
 const geminiApiKey = getEnvVariable('GEMINI_API_KEY', '');
+const geminiBaseUrl = getEnvVariable('GEMINI_BASE_URL', '');
 
-export const geminiClient = new GoogleGenAI({ apiKey: geminiApiKey });
+export const geminiClient = new GoogleGenAI({
+  apiKey: geminiApiKey,
+  ...(geminiBaseUrl ? { baseUrl: geminiBaseUrl } : {}),
+});
 
 if (!geminiApiKey) {
   logger.warn('[Gemini] API key not configured — Scraper AI features will be unavailable');
