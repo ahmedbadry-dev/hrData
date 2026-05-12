@@ -25,7 +25,13 @@ const geminiBaseUrl = getEnvVariable('GEMINI_BASE_URL', '');
 
 export const geminiClient = new GoogleGenAI({
   apiKey: geminiApiKey,
-  ...(geminiBaseUrl ? { baseUrl: geminiBaseUrl } : {}),
+  ...(geminiBaseUrl
+    ? {
+        httpOptions: {
+          baseUrl: geminiBaseUrl,
+        },
+      }
+    : {}),
 });
 
 if (!geminiApiKey) {
