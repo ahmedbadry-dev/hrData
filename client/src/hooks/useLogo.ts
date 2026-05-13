@@ -14,7 +14,7 @@ export function useLogo() {
       const response = await axiosClient.get<ApiResponse<LogoData>>('/admin/settings/logo');
       const rawPath = response.data.data?.logoPath ?? null;
       if (!rawPath) return null;
-      if (rawPath.startsWith('http')) return rawPath;
+      if (rawPath.startsWith('http') || rawPath.startsWith('data:')) return rawPath;
 
       const base = API_BASE_URL.replace(/\/$/, '');
       const pathCleaned = rawPath.replace(/^\//, '');

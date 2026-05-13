@@ -47,26 +47,31 @@ export class SettingsService {
     const logoPath = setting?.value || defaultLogoPath;
 
     if (logoPath && logoPath.startsWith('/uploads/')) {
-      const fullPath = path.join(process.cwd(), logoPath.replace(/^\//, ''));
+      const isServerCwd = process.cwd().endsWith('server') || process.cwd().endsWith('server\\');
+      const baseDir = isServerCwd ? process.cwd() : path.join(process.cwd(), 'server');
+
+      const fullPath = path.join(baseDir, logoPath);
       if (fs.existsSync(fullPath)) {
         const buffer = fs.readFileSync(fullPath);
         const mimeType = `image/${path.extname(logoPath).replace('.', '')}`;
+        const base64Str = buffer.toString('base64');
         return {
-          logoPath,
+          logoPath: `data:${mimeType};base64,${base64Str}`,
           logoCid: 'companylogo',
           logoMimeType: mimeType,
-          logoBuffer: buffer.toString('base64'),
+          logoBuffer: base64Str,
         };
       } else if (logoPath !== defaultLogoPath) {
-        const fallbackPath = path.join(process.cwd(), defaultLogoPath.replace(/^\//, ''));
+        const fallbackPath = path.join(baseDir, defaultLogoPath);
         if (fs.existsSync(fallbackPath)) {
           const buffer = fs.readFileSync(fallbackPath);
           const mimeType = `image/${path.extname(defaultLogoPath).replace('.', '')}`;
+          const base64Str = buffer.toString('base64');
           return {
-            logoPath: defaultLogoPath,
+            logoPath: `data:${mimeType};base64,${base64Str}`,
             logoCid: 'companylogo',
             logoMimeType: mimeType,
-            logoBuffer: buffer.toString('base64'),
+            logoBuffer: base64Str,
           };
         }
       }
@@ -83,8 +88,9 @@ export class SettingsService {
     const oldLogoPath = existingLogo?.value;
 
     if (oldLogoPath && oldLogoPath !== defaultLogoPath) {
-      const oldPath = oldLogoPath.replace(/^\//, '');
-      const fullPath = path.join(process.cwd(), oldPath);
+      const isServerCwd = process.cwd().endsWith('server') || process.cwd().endsWith('server\\');
+      const baseDir = isServerCwd ? process.cwd() : path.join(process.cwd(), 'server');
+      const fullPath = path.join(baseDir, oldLogoPath);
       if (fs.existsSync(fullPath)) {
         fs.unlinkSync(fullPath);
       }
