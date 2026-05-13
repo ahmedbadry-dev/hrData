@@ -116,8 +116,8 @@ export default function AdminSettingsSection({
             {selectedFile && (
               <>
                 <span className={styles['logo-filename']}>{selectedFile.name}</span>
-                <Button onClick={handleLogoUpload} disabled={isUploading}>
-                  {isUploading ? 'جاري الرفع...' : 'رفع الشعار'}
+                <Button onClick={handleLogoUpload} disabled={isUploading} isLoading={isUploading}>
+                  رفع الشعار
                 </Button>
               </>
             )}

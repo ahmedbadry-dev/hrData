@@ -53,7 +53,7 @@ app.use(csrfProtectionMiddleware);
 app.use('/admin/queues', bullBoardRouter);
 
 app.use(
-  '/uploads',
+  ['/uploads', '/api/uploads', '/api/v1/uploads'],
   (_req, _res, next) => {
     _res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     next();

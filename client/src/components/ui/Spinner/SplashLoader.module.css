@@ -31,12 +31,13 @@
 
 .logoContainer {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: clamp(140px, 35vw, 160px);
+  height: clamp(140px, 35vw, 160px);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: -20px; /* Overlap with the large text slightly */
+  margin-bottom: 20px; /* Lifted up perfectly above the large background text */
+  max-width: 90vw;
 }
 
 .logoRing {
@@ -49,14 +50,18 @@
 }
 
 .logoSymbol {
-  font-size: 32px;
+  font-size: clamp(24px, 6vw, 34px);
   font-weight: 900;
   color: var(--ink);
   animation: logoPulse 2s ease-in-out infinite;
-  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  letter-spacing: -0.5px;
+  padding: 0 10px;
+  z-index: 2;
 }
 
 .logoSymbol img {

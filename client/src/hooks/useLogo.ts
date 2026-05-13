@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { axiosClient, type ApiResponse } from '@/services/api';
+import { axiosClient, API_BASE_URL, type ApiResponse } from '@/services/api';
 
 interface LogoData {
   logoPath: string | null;
@@ -12,7 +12,13 @@ export function useLogo() {
     queryKey: logoQueryKey,
     queryFn: async () => {
       const response = await axiosClient.get<ApiResponse<LogoData>>('/admin/settings/logo');
-      return response.data.data?.logoPath ?? null;
+      const rawPath = response.data.data?.logoPath ?? null;
+      if (!rawPath) return null;
+      if (rawPath.startsWith('http')) return rawPath;
+
+      const base = API_BASE_URL.replace(/\/$/, '');
+      const pathCleaned = rawPath.replace(/^\//, '');
+      return `${base}/${pathCleaned}`;
     },
     staleTime: Infinity,
   });

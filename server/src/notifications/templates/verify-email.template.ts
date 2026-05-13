@@ -9,10 +9,7 @@ export const verifyEmailTemplate = (
   const safeName = escapeHtml(name);
   const safeVerifyUrl = escapeHtml(verifyUrl);
 
-  const logoInline =
-    logoCid && logoMimeType
-      ? `<img src="cid:${logoCid}" alt="Logo" style="max-height:60px;max-width:200px;margin-bottom:8px;" />`
-      : `<div style="font-size:34px;font-weight:900;letter-spacing:-0.8px;text-align:center;">LOGO</div>`;
+  const logoInline = `<div style="font-size:34px;font-weight:900;letter-spacing:-0.5px;text-align:center;color:#0d0d0d;">HR Data</div>`;
 
   return `
     <!DOCTYPE html>
@@ -37,7 +34,7 @@ export const verifyEmailTemplate = (
               <tr>
                 <td style="padding:34px 28px;">
                   <h1 style="margin:0 0 14px;font-size:26px;line-height:1.3;font-weight:900;color:#0d0d0d;text-align:right;">تفعيل البريد الإلكتروني</h1>
-                  <p style="margin:0 0 16px;font-size:15px;line-height:1.9;color:#0d0d0d;direction:ltr;text-align:right;">
+                 <p style="margin:0 0 16px;font-size:15px;line-height:1.9;color:#0d0d0d;text-align:right;">
                     أهلاً ${safeName}، شكراً لتسجيلك في منصتنا. لتفعيل حسابك والبدء باستخدام جميع الميزات، اضغط على زر التفعيل التالي.
                   </p>
 

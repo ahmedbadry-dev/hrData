@@ -81,7 +81,7 @@ export default function UserAnalyticsSection({
             >
               <div className={styles['card-top']}>
                 <div className={styles['card-main']}>
-                  <div className={styles['company-tag']}>{app.company}</div>
+                  <div className={styles['company-tag']}>اسم الشركة: {app.company}</div>
                   <h2 className={styles['job-title']}>{app.role}</h2>
                   <div className={styles['meta-row']}>
                     <span className={styles['meta-chip']}>🎓 {app.major}</span>

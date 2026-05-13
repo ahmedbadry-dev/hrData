@@ -52,7 +52,7 @@ export class SettingsService {
         const buffer = fs.readFileSync(fullPath);
         const mimeType = `image/${path.extname(logoPath).replace('.', '')}`;
         return {
-          logoPath: `${emailConfig.serverUrl}${logoPath}`,
+          logoPath,
           logoCid: 'companylogo',
           logoMimeType: mimeType,
           logoBuffer: buffer.toString('base64'),
@@ -63,7 +63,7 @@ export class SettingsService {
           const buffer = fs.readFileSync(fallbackPath);
           const mimeType = `image/${path.extname(defaultLogoPath).replace('.', '')}`;
           return {
-            logoPath: `${emailConfig.serverUrl}${defaultLogoPath}`,
+            logoPath: defaultLogoPath,
             logoCid: 'companylogo',
             logoMimeType: mimeType,
             logoBuffer: buffer.toString('base64'),
@@ -98,6 +98,6 @@ export class SettingsService {
       create: { key: 'app_logo', value: logoPath },
     });
 
-    return { logoPath: `${emailConfig.serverUrl}${logoPath}` };
+    return { logoPath };
   }
 }

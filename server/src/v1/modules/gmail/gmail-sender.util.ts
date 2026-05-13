@@ -88,16 +88,6 @@ export class GmailSender {
       }
     }
 
-    if (options.logoBuffer && options.logoMimeType) {
-      mailOptions.attachments = mailOptions.attachments || [];
-      mailOptions.attachments.push({
-        filename: 'logo.png',
-        content: options.logoBuffer,
-        contentType: options.logoMimeType,
-        cid: 'companylogo',
-      });
-    }
-
     const mailComposer = new MailComposer(mailOptions);
     const rawMessage = await mailComposer.compile().build();
 

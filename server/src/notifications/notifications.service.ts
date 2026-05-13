@@ -46,6 +46,10 @@ export class NotificationsService {
 
     while (attempts < MAX_RETRIES) {
       try {
+        if (!this.logoCid || !this.logoBuffer) {
+          await this.refreshLogoUrl().catch(() => {});
+        }
+
         const mailOptions: any = {
           from: this.fromAddress,
           to: options.to,
@@ -53,12 +57,11 @@ export class NotificationsService {
           html: options.html,
         };
 
-        if (this.logoCid && this.logoMimeType && this.logoBuffer) {
+        if (this.logoBuffer && this.logoCid) {
           mailOptions.attachments = [
             {
               filename: 'logo.png',
               content: this.logoBuffer,
-              contentType: this.logoMimeType,
               cid: this.logoCid,
             },
           ];

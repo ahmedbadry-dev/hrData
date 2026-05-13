@@ -119,6 +119,7 @@ export default function UserAutoApplySection({
   const [lastScheduledCount, setLastScheduledCount] = useState<number>(0);
   const [lastSkippedCount, setLastSkippedCount] = useState<number>(0);
   const [nowMs, setNowMs] = useState<number>(Date.now());
+  const [isSending, setIsSending] = useState(false);
 
   const previousRemainingRef = useRef<number | null>(null);
   const shownBlockingToastRef = useRef<string | null>(null);
@@ -476,16 +477,22 @@ export default function UserAutoApplySection({
           </Button>
           <Button
             className={styles['btn-primary']}
-            disabled={!selectedCv || selectedJobs.length === 0 || isQuotaBlocked}
+            disabled={!selectedCv || selectedJobs.length === 0 || isQuotaBlocked || isSending}
+            isLoading={isSending}
             onClick={() => {
+              if (isSending) return;
+              setIsSending(true);
               onStartSending(
                 { selected: selectedJobs, scheduleTime, delay, cv: selectedCv, body },
                 (result) => {
+                  setIsSending(false);
                   setLastScheduledCount(result.scheduledCount);
                   setLastSkippedCount(result.skippedCount);
                   setStep(3);
                 },
-                () => {}
+                () => {
+                  setIsSending(false);
+                }
               );
             }}
           >
@@ -595,7 +602,7 @@ export default function UserAutoApplySection({
                   />
                   <div>
                     <div className={styles['job-header']}>
-                      <div className={styles['company-tag']}>{job.company}</div>
+                      <div className={styles['company-tag']}>اسم الشركة: {job.company}</div>
                       {locked ? <span className={styles['lock-badge']}>🔒</span> : null}
                       {job.previousFailedStatus === 'FAILED' ? (
                         <span className={styles['retry-badge']}>إعادة محاولة</span>

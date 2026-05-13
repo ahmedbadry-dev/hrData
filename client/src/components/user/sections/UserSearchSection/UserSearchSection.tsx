@@ -225,7 +225,7 @@ export default function UserSearchSection({
                   >
                     <div className={styles['card-top']}>
                       <div className={styles['card-main']}>
-                        <div className={styles['company-tag']}>{job.company}</div>
+                        <div className={styles['company-tag']}>اسم الشركة: {job.company}</div>
                         <h2 className={styles['job-title']}>{job.role}</h2>
                         <div className={styles['meta-row']}>
                           <span className={styles['meta-chip']}>📍 {job.city}</span>
