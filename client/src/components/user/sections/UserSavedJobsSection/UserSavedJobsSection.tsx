@@ -3,6 +3,7 @@ import { EmptyState } from '@/components/common';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { getPageNumbers } from '@/lib/pagination';
+import { formatCity, formatCompany } from '@/lib/cityMapper';
 import styles from './UserSavedJobsSection.module.css';
 import searchStyles from '../UserSearchSection/UserSearchSection.module.css';
 
@@ -38,6 +39,12 @@ export default function UserSavedJobsSection({
     );
   }
 
+  const sortedSavedJobs = [...savedJobs].sort((a, b) => {
+    const dateA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+    const dateB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+    return dateB - dateA;
+  });
+
   return (
     <section>
       <div className={styles['saved-header']}>
@@ -45,21 +52,21 @@ export default function UserSavedJobsSection({
           <div className={styles['section-eyebrow']}>المحفوظة</div>
           <strong>{savedJobs.length} وظيفة</strong>
         </div>
-
+ 
         <Button className={styles['remove-all-btn']} onClick={onRemoveAll}>
           إزالة الكل
         </Button>
       </div>
-
+ 
       <div className={styles['results-list']}>
-        {savedJobs.map((job, index) => (
+        {sortedSavedJobs.map((job, index) => (
           <div className={styles['job-card']} key={`${job.company}-${job.role}-${index}`}>
             <div className={styles['card-top']}>
               <div className={styles['card-main']}>
-                <div className={styles['company-tag']}>اسم الشركة: {job.company}</div>
+                <div className={styles['company-tag']}>اسم الجهة: {formatCompany(job.company)}</div>
                 <h2 className={styles['job-title']}>{job.role}</h2>
                 <div className={styles['meta-row']}>
-                  <span className={styles['meta-chip']}>📍 {job.city}</span>
+                  <span className={styles['meta-chip']}>📍 {formatCity(job.city)}</span>
                   <span className={styles['meta-chip']}>🎓 {job.major}</span>
                   <span className={styles['meta-chip']}>
                     📅{' '}

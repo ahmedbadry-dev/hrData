@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Input } from '@/components/ui';
-import { Logo } from '@/components/ui/Logo/Logo';
 import { useRegisterMutation } from '@/modules/auth/api/mutations';
 import { mapErrorToArabic } from '@/lib/error-mapper';
 import styles from './RegisterForm.module.css';
@@ -86,12 +85,12 @@ export default function RegisterForm({ onLoginClick }: RegisterFormProps) {
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.logo}>
-          <Logo fallback="HR Data" className={styles.logoImg} />
+          <span className={styles.logoText}>HR Data</span>
         </div>
         <div className={styles.subtitle}>إنشاء حساب جديد</div>
       </div>
 
-      {error && <div className={styles.errorBox}>{error}</div>}
+
       {successMessage && <div className={styles.successBox}>{successMessage}</div>}
 
       <form className={styles.form} onSubmit={handleSubmit}>
@@ -173,6 +172,8 @@ export default function RegisterForm({ onLoginClick }: RegisterFormProps) {
             }}
           />
         </div>
+
+        {error && <div className={styles.errorBox}>{error}</div>}
 
         <Button
           variant="primary"

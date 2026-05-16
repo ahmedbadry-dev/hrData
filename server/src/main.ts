@@ -64,8 +64,7 @@ const startServer = async () => {
       logger.info(`📊 Health check available at http://localhost:${PORT}/api/v1/health`);
       logger.info(`🌍 Environment: ${appConfig.nodeEnv}`);
 
-      await notificationsService.refreshLogoUrl();
-      logger.info(`🖼️ Logo loaded`);
+
     });
 
     server.on('error', (error: NodeJS.ErrnoException) => {

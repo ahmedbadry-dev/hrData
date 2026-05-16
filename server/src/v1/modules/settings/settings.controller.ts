@@ -21,10 +21,4 @@ export class SettingsController {
     const data = await this.settingsService.getLogo();
     return ResponseHelper.ok(res, data, SETTINGS_MESSAGES.LOGO_RETRIEVED, _req.path);
   };
-
-  uploadLogo = async (req: Request, res: Response): Promise<Response> => {
-    const data = await this.settingsService.uploadLogo(req.file);
-    await notificationsService.refreshLogoUrl();
-    return ResponseHelper.created(res, data, SETTINGS_MESSAGES.LOGO_UPLOADED, req.path);
-  };
 }

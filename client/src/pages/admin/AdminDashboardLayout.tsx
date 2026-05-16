@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { AdminLayout, type AdminPageKey } from '@/components/admin/layout';
 import { AdminToast } from '@/components/admin/sections';
-import LogoModal from '@/components/admin/sections/AdminModals/LogoModal';
+
 
 export type AdminDashboardContextType = {
   openActivityId: number | null;
@@ -29,7 +29,7 @@ export default function AdminDashboardLayout() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [savedToken, setSavedToken] = useState('');
   const [tokenVisible, setTokenVisible] = useState(false);
-  const [logoModalOpen, setLogoModalOpen] = useState(false);
+
 
   const [openActivityId, setOpenActivityId] = useState<number | null>(null);
 
@@ -95,7 +95,7 @@ export default function AdminDashboardLayout() {
       <AdminLayout
         activePage={activePage}
         onNavigate={handleNavigate}
-        onLogoClick={() => setLogoModalOpen(true)}
+
         scraperRunning={true}
         mobileSidebarOpen={mobileSidebarOpen}
         onToggleSidebar={() => setMobileSidebarOpen((prev) => !prev)}
@@ -104,7 +104,7 @@ export default function AdminDashboardLayout() {
         <Outlet context={contextValue} />
       </AdminLayout>
 
-      <LogoModal open={logoModalOpen} onClose={() => setLogoModalOpen(false)} />
+
 
       <AdminToast
         message={toast.message}

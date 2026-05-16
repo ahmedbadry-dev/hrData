@@ -3,9 +3,7 @@ import { escapeHtml } from '../../shared/utils/escape-html.utils';
 export const announcementTemplate = (
   recipientName: string,
   title: string,
-  message: string,
-  logoCid?: string | null,
-  logoMimeType?: string | null
+  message: string
 ): string => {
   const safeRecipientName = escapeHtml(recipientName);
   const safeTitle = escapeHtml(title);

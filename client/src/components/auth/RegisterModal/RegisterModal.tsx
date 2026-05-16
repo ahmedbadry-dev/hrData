@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRegisterMutation } from '@/modules/auth/api/mutations';
 import { mapError } from '@/lib/error-mapper';
-import { Logo } from '@/components/ui/Logo/Logo';
 import styles from './RegisterModal.module.css';
 
 interface RegisterModalProps {
@@ -132,7 +131,7 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
 
         <div className={styles.logoWrap}>
           <div className={styles.logo}>
-            <Logo fallback="HR Data" className={styles.logoImg} />
+            <span className={styles.logoText}>HR Data</span>
           </div>
           <div className={styles.subtitle}>{isRegistered ? 'تم بنجاح' : 'إنشاء حساب جديد'}</div>
         </div>
@@ -157,13 +156,6 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
           ) : (
             /* ═══ REGISTER FORM ═══ */
             <>
-              {serverError && (
-                <div className={styles.serverError} role="alert">
-                  <span className={styles.serverErrorIcon}>⚠️</span>
-                  <span>{serverError}</span>
-                </div>
-              )}
-
               <form onSubmit={handleSubmit} noValidate>
                 <div className={styles.row2}>
                   <div className={styles.field}>
@@ -330,6 +322,13 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
                     </span>
                   )}
                 </div>
+
+                {serverError && (
+                  <div className={styles.serverError} role="alert">
+                    <span className={styles.serverErrorIcon}>⚠️</span>
+                    <span>{serverError}</span>
+                  </div>
+                )}
 
                 <button
                   className={styles.submitButton}

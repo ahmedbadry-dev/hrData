@@ -43,8 +43,7 @@ export class SettingsService {
       where: { key: 'app_logo' },
     });
 
-    const defaultLogoPath = '/uploads/logologo.png';
-    const logoPath = setting?.value || defaultLogoPath;
+    const logoPath = setting?.value || null;
 
     if (logoPath && logoPath.startsWith('/uploads/')) {
       const isServerCwd = process.cwd().endsWith('server') || process.cwd().endsWith('server\\');
@@ -61,49 +60,8 @@ export class SettingsService {
           logoMimeType: mimeType,
           logoBuffer: base64Str,
         };
-      } else if (logoPath !== defaultLogoPath) {
-        const fallbackPath = path.join(baseDir, defaultLogoPath);
-        if (fs.existsSync(fallbackPath)) {
-          const buffer = fs.readFileSync(fallbackPath);
-          const mimeType = `image/${path.extname(defaultLogoPath).replace('.', '')}`;
-          const base64Str = buffer.toString('base64');
-          return {
-            logoPath: `data:${mimeType};base64,${base64Str}`,
-            logoCid: 'companylogo',
-            logoMimeType: mimeType,
-            logoBuffer: base64Str,
-          };
-        }
       }
     }
-    return { logoPath };
-  }
-
-  async uploadLogo(file: AppFile | undefined): Promise<{ logoPath: string }> {
-    const existingLogo = await this.prisma.systemSetting.findUnique({
-      where: { key: 'app_logo' },
-    });
-
-    const defaultLogoPath = '/uploads/logologo.png';
-    const oldLogoPath = existingLogo?.value;
-
-    if (oldLogoPath && oldLogoPath !== defaultLogoPath) {
-      const isServerCwd = process.cwd().endsWith('server') || process.cwd().endsWith('server\\');
-      const baseDir = isServerCwd ? process.cwd() : path.join(process.cwd(), 'server');
-      const fullPath = path.join(baseDir, oldLogoPath);
-      if (fs.existsSync(fullPath)) {
-        fs.unlinkSync(fullPath);
-      }
-    }
-
-    const logoPath = `/uploads/${file?.filename || ''}`;
-
-    await this.prisma.systemSetting.upsert({
-      where: { key: 'app_logo' },
-      update: { value: logoPath },
-      create: { key: 'app_logo', value: logoPath },
-    });
-
     return { logoPath };
   }
 }

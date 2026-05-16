@@ -2,9 +2,7 @@ import { escapeHtml } from '../../shared/utils/escape-html.utils';
 
 export const resetPasswordTemplate = (
   name: string,
-  resetUrl: string,
-  logoCid?: string | null,
-  logoMimeType?: string | null
+  resetUrl: string
 ): string => {
   const safeName = escapeHtml(name);
   const safeResetUrl = escapeHtml(resetUrl);

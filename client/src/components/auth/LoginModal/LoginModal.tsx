@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLoginMutation, useForgotPasswordMutation } from '@/modules/auth/api/mutations';
 import { getErrorStatus, mapError } from '@/lib/error-mapper';
-import { Logo } from '@/components/ui/Logo/Logo';
 import styles from './LoginModal.module.css';
 
 interface LoginModalProps {
@@ -148,7 +147,7 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
 
         <div className={styles.logoWrap}>
           <div className={styles.logo}>
-            <Logo fallback="HR Data" className={styles.logoImg} />
+            <span className={styles.logoText}>HR Data</span>
           </div>
           <div className={styles.subtitle}>
             {view === 'login' && 'تسجيل الدخول'}

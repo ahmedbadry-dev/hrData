@@ -5,6 +5,7 @@ import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { getPageNumbers } from '@/lib/pagination';
 import { qualificationOptions, specializationOptions } from '@/modules/jobs/types/filterOptions';
+import { formatCity, formatCompany } from '@/lib/cityMapper';
 import styles from './UserSearchSection.module.css';
 
 interface UserSearchSectionProps {
@@ -225,10 +226,10 @@ export default function UserSearchSection({
                   >
                     <div className={styles['card-top']}>
                       <div className={styles['card-main']}>
-                        <div className={styles['company-tag']}>اسم الشركة: {job.company}</div>
+                        <div className={styles['company-tag']}>اسم الجهة: {formatCompany(job.company)}</div>
                         <h2 className={styles['job-title']}>{job.role}</h2>
                         <div className={styles['meta-row']}>
-                          <span className={styles['meta-chip']}>📍 {job.city}</span>
+                          <span className={styles['meta-chip']}>📍 {formatCity(job.city)}</span>
                           <span className={styles['meta-chip']}>🎓 {job.major}</span>
                           <span className={styles['meta-chip']}>
                             📅{' '}

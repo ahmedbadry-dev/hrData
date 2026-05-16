@@ -2,7 +2,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useAuth } from '@/modules/auth/api/hooks/use-auth';
 import { useLogoutMutation } from '@/modules/auth/api/mutations';
-import { Logo } from '@/components/ui/Logo/Logo';
 import styles from '@/components/home/layout/HomeLayout/HomeLayout.module.css';
 
 export default function HomeNavbar() {
@@ -20,7 +19,7 @@ export default function HomeNavbar() {
   return (
     <nav className={styles.nav}>
       <Link className={styles['nav-logo']} to="/">
-        <Logo className={styles['nav-logo-img']} />
+        <span className={styles['nav-logo-text']}>HR Data</span>
       </Link>
       <div className={styles['nav-links']}>
         {isHomePage && (

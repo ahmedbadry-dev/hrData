@@ -1,6 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/modules/auth/api/hooks';
-import { Logo } from '@/components/ui/Logo/Logo';
 import styles from './UserNavbar.module.css';
 
 interface UserNavbarProps {
@@ -31,14 +30,15 @@ export default function UserNavbar({ onToggleSidebar }: UserNavbarProps) {
           </svg>
         </button>
 
-        <div className={styles['logo-sub']}>
-          <Link className={styles.logo} to="/">
-            <Logo className={styles.logoImg} />
-          </Link>
-
+        <div className={styles['logo-group']}>
+          <div className={styles['logo-row']}>
+            <Link className={styles.logo} to="/">
+              <span className={styles.logoText}>HR Data</span>
+            </Link>
+            <span className={styles['user-badge']}>باحث عن عمل</span>
+          </div>
           <span className={styles['logo-tagline']}>منصة التوظيف المباشر</span>
         </div>
-        <span className={styles['user-badge']}>باحث عن عمل</span>
       </div>
 
       <div className={styles['header-right']}>

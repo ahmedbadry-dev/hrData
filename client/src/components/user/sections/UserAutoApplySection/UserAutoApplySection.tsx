@@ -4,6 +4,7 @@ import type { SavedJob } from '@/components/user/sections/userData';
 import type { ApplicationsQuota, ScheduleApplicationsResponse } from '@/modules/applications/types';
 import { EmptyState, PageHeader } from '@/components/common';
 import { Button, Input } from '@/components/ui';
+import { formatCompany } from '@/lib/cityMapper';
 import styles from './UserAutoApplySection.module.css';
 
 const MAX_SELECTED_JOBS = 20;
@@ -124,9 +125,18 @@ export default function UserAutoApplySection({
   const previousRemainingRef = useRef<number | null>(null);
   const shownBlockingToastRef = useRef<string | null>(null);
 
-  const savedJobKeys = useMemo(
-    () => savedJobs.map((job, index) => getSavedJobSelectionKey(job, index)),
+  const sortedSavedJobs = useMemo(
+    () => [...savedJobs].sort((a, b) => {
+      const dateA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+      const dateB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+      return dateB - dateA;
+    }),
     [savedJobs]
+  );
+
+  const savedJobKeys = useMemo(
+    () => sortedSavedJobs.map((job, index) => getSavedJobSelectionKey(job, index)),
+    [sortedSavedJobs]
   );
 
   const remainingQuota = Math.max(quota?.remaining ?? MAX_SELECTED_JOBS, 0);
@@ -187,8 +197,8 @@ export default function UserAutoApplySection({
   }, [effectiveSelectionLimit, isQuotaBlocked, remainingQuota, savedJobKeys]);
 
   const selectedJobs = useMemo(
-    () => savedJobs.filter((_, index) => Boolean(selectedMap[savedJobKeys[index]])),
-    [savedJobKeys, savedJobs, selectedMap]
+    () => sortedSavedJobs.filter((_, index) => Boolean(selectedMap[savedJobKeys[index]])),
+    [savedJobKeys, sortedSavedJobs, selectedMap]
   );
 
   const selectedCount = selectedJobs.length;
@@ -266,7 +276,7 @@ export default function UserAutoApplySection({
     }
 
     // Select only the first 10 jobs (or less if limit/available jobs are less)
-    const selectCount = Math.min(10, effectiveSelectionLimit, savedJobs.length);
+    const selectCount = Math.min(10, effectiveSelectionLimit, sortedSavedJobs.length);
     const nextSelection: Record<string, boolean> = {};
 
     for (let index = 0; index < selectCount; index++) {
@@ -460,7 +470,8 @@ export default function UserAutoApplySection({
         <div className={styles['field-wrap']}>
           <span className={styles['search-label']}>التأخير بين كل إيميل</span>
           <select value={delay} onChange={(e) => setDelay(e.target.value)}>
-            <option value="60">1 دقيقة (موصى به)</option>
+            <option value="30">30 ثانية (موصى به)</option>
+            <option value="60">1 دقيقة</option>
             <option value="120">2 دقيقة</option>
             <option value="300">5 دقائق</option>
           </select>
@@ -528,6 +539,9 @@ export default function UserAutoApplySection({
       <div className={styles['field-wrap']}>
         <span className={styles['search-label']}>عنوان البريد الإلكتروني</span>
         <Input type="text" value={subject} readOnly />
+        <div className={styles['field-hint']}>
+          نحن نضع العنوان المناسب في كل عملية إرسال ولا يحتاج تعديل كل مرة، نحن نتكفل بكل شيء عنك
+        </div>
       </div>
 
       <div className={styles['field-wrap']}>
@@ -546,9 +560,12 @@ export default function UserAutoApplySection({
             <span>اختر ملف PDF</span>
           )}
         </label>
+        <div className={styles['field-hint']}>
+          يرجى رفع ملف بصيغة PDF فقط.
+        </div>
       </div>
 
-      {savedJobs.length === 0 ? (
+      {sortedSavedJobs.length === 0 ? (
         <div className={styles['empty-card']}>
           <div>لا توجد وظائف محفوظة للتقديم</div>
           <small>احفظ وظائف من قسم «اكتشف الوظائف» أولاً</small>
@@ -576,7 +593,7 @@ export default function UserAutoApplySection({
             </div>
           </div>
           <div className={styles['results-list']}>
-            {savedJobs.map((job, index) => {
+            {sortedSavedJobs.map((job, index) => {
               const jobKey = savedJobKeys[index];
               const checked = Boolean(selectedMap[jobKey]);
               const locked =
@@ -602,7 +619,7 @@ export default function UserAutoApplySection({
                   />
                   <div>
                     <div className={styles['job-header']}>
-                      <div className={styles['company-tag']}>اسم الشركة: {job.company}</div>
+                      <div className={styles['company-tag']}>اسم الجهة: {formatCompany(job.company)}</div>
                       {locked ? <span className={styles['lock-badge']}>🔒</span> : null}
                       {job.previousFailedStatus === 'FAILED' ? (
                         <span className={styles['retry-badge']}>إعادة محاولة</span>
@@ -633,7 +650,7 @@ export default function UserAutoApplySection({
             التالي: جدولة الإرسال ←
           </Button>
           {(!selectedCv || selectedJobs.length === 0 || isQuotaBlocked) && (
-            <div className={styles['hint-text']}>
+            <div className={styles['field-hint']}>
               {isQuotaBlocked
                 ? DAILY_LIMIT_BLOCK_MESSAGE
                 : !selectedCv && !selectedJobs.length

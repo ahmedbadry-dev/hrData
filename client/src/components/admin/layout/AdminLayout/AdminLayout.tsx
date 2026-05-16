@@ -10,7 +10,6 @@ interface AdminLayoutProps {
   children: ReactNode;
   activePage: AdminPageKey;
   onNavigate: (page: AdminPageKey) => void;
-  onLogoClick: () => void;
   scraperRunning: boolean;
   mobileSidebarOpen: boolean;
   onToggleSidebar: () => void;
@@ -21,7 +20,6 @@ export default function AdminLayout({
   children,
   activePage,
   onNavigate,
-  onLogoClick,
   scraperRunning,
   mobileSidebarOpen,
   onToggleSidebar,
@@ -40,7 +38,6 @@ export default function AdminLayout({
         <AdminSidebar
           activePage={activePage}
           onNavigate={onNavigate}
-          onLogoClick={onLogoClick}
           scraperRunning={scraperRunning}
           isMobileOpen={mobileSidebarOpen}
         />

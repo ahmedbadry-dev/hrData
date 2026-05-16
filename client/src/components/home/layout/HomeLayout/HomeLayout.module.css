@@ -9,15 +9,14 @@
   background: var(--paper);
   border-bottom: 2px solid var(--ink);
   padding: 0 48px;
-  min-height: 64px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
 }
 
 .nav-logo {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 900;
   color: var(--ink);
   text-decoration: none;
@@ -25,6 +24,7 @@
   white-space: nowrap;
   display: flex;
   align-items: center;
+  line-height: 1;
 }
 
 .nav-logo em {
@@ -42,7 +42,6 @@
   display: flex;
   align-items: center;
   gap: 32px;
-  flex-wrap: wrap;
   justify-content: flex-end;
 }
 
@@ -52,6 +51,9 @@
   color: var(--ink);
   text-decoration: none;
   transition: color 0.2s;
+  line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
 .nav-link:hover {
@@ -68,8 +70,9 @@
 .btn-register {
   background: var(--ink);
   color: var(--paper);
-  border: none;
-  padding: 10px 24px;
+  border: 1px solid var(--ink);
+  padding: 0 24px;
+  height: 42px;
   font-family: 'Cairo', sans-serif;
   font-size: 13px;
   font-weight: 700;
@@ -81,6 +84,7 @@
   gap: 8px;
   border-radius: 2px;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .btn-register:hover {
@@ -91,7 +95,8 @@
   background: var(--paper);
   color: var(--ink);
   border: 1px solid var(--ink);
-  padding: 10px 24px;
+  padding: 0 24px;
+  height: 42px;
   font-family: 'Cairo', sans-serif;
   font-size: 13px;
   font-weight: 700;
@@ -103,6 +108,7 @@
   justify-content: center;
   border-radius: 2px;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .btn-login-navbar:hover {
@@ -571,11 +577,8 @@
   font-size: 28px;
   font-weight: 900;
   letter-spacing: -0.5px;
-}
-
-.footer-logo em {
-  color: var(--accent);
-  font-style: normal;
+  color: #fff;
+  line-height: 1;
 }
 
 .footer-logo-img {

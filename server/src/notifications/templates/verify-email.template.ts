@@ -2,9 +2,7 @@ import { escapeHtml } from '../../shared/utils/escape-html.utils';
 
 export const verifyEmailTemplate = (
   name: string,
-  verifyUrl: string,
-  logoCid?: string | null,
-  logoMimeType?: string | null
+  verifyUrl: string
 ): string => {
   const safeName = escapeHtml(name);
   const safeVerifyUrl = escapeHtml(verifyUrl);

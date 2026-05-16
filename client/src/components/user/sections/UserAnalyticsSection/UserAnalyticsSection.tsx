@@ -19,9 +19,18 @@ const statusColors: Record<UserApplication['status'], { color: string; text: str
   pending: { color: '#b8860b', text: 'قيد الإرسال' },
   sent: { color: '#1a6b4a', text: 'تم الإرسال' },
   opened: { color: '#1a6b4a', text: 'تم الفتح' },
-  replied: { color: '#c0392b', text: 'تم الرد' },
+  replied: { color: '#1a6b4a', text: 'تم الرد' },
   failed: { color: '#c0392b', text: 'فشل' },
   cancelled: { color: '#6c757d', text: 'ملغي' },
+};
+
+const statusPriority: Record<UserApplication['status'], number> = {
+  pending: 1,
+  replied: 2,
+  opened: 2,
+  sent: 2,
+  failed: 3,
+  cancelled: 4,
 };
 
 export default function UserAnalyticsSection({
@@ -33,6 +42,16 @@ export default function UserAnalyticsSection({
   onPageChange,
   onCancel,
 }: UserAnalyticsSectionProps) {
+  const sortedApplications = [...applications].sort((a, b) => {
+    const pA = statusPriority[a.status] || 99;
+    const pB = statusPriority[b.status] || 99;
+    if (pA !== pB) return pA - pB;
+
+    const dateA = a.date ? new Date(a.date).getTime() : 0;
+    const dateB = b.date ? new Date(b.date).getTime() : 0;
+    return dateB - dateA;
+  });
+
   if (applications.length === 0) {
     return (
       <section>
@@ -59,7 +78,7 @@ export default function UserAnalyticsSection({
       </div>
 
       <div className={styles['results-list']}>
-        {applications.map((app, index) => {
+        {sortedApplications.map((app, index) => {
           const status = statusColors[app.status] ?? statusColors.pending;
           const dateStr = app.date
             ? new Date(app.date).toLocaleDateString('ar-SA', {
@@ -81,7 +100,7 @@ export default function UserAnalyticsSection({
             >
               <div className={styles['card-top']}>
                 <div className={styles['card-main']}>
-                  <div className={styles['company-tag']}>اسم الشركة: {app.company}</div>
+                  <div className={styles['company-tag']}>اسم الجهة: {app.company}</div>
                   <h2 className={styles['job-title']}>{app.role}</h2>
                   <div className={styles['meta-row']}>
                     <span className={styles['meta-chip']}>🎓 {app.major}</span>
