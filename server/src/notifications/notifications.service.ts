@@ -11,13 +11,10 @@ import logger from '@/shared/utils/logger.util';
 import { transporterSingleton } from '@/config/mailer.config';
 
 export class NotificationsService {
-
   constructor(
     private readonly transporter: Transporter<SMTPTransport.SentMessageInfo> = transporterSingleton,
     private readonly fromAddress: string = emailConfig.from
   ) {}
-
-
 
   private async sendEmail(options: { to: string; subject: string; html: string }) {
     const MAX_RETRIES = 3;
@@ -25,15 +22,12 @@ export class NotificationsService {
 
     while (attempts < MAX_RETRIES) {
       try {
-
         const mailOptions: any = {
           from: `"${options.subject}" <${this.fromAddress}>`,
           to: options.to,
           subject: options.subject,
           html: options.html,
         };
-
-
 
         const info = await this.transporter.sendMail(mailOptions);
 
