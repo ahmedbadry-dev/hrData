@@ -7,7 +7,7 @@ import { Button, Input } from '@/components/ui';
 import { formatCompany } from '@/lib/cityMapper';
 import styles from './UserAutoApplySection.module.css';
 
-const MAX_SELECTED_JOBS = 20;
+const MAX_SELECTED_JOBS = 50;
 const LOW_REMAINING_WARNING_THRESHOLD = 5;
 const DAILY_LIMIT_BLOCK_MESSAGE = 'لا يمكن إرسال مزيد من الإيميلات اليومية، لقد تجاوزت الحد اليومي';
 

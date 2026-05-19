@@ -1,10 +1,10 @@
 .site-header {
   padding: 4px 24px;
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 3px solid var(--ink);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--ink);
+  background: #f3f0ea;
   position: sticky;
   top: 0;
   z-index: 200;
@@ -26,37 +26,49 @@
   border: none;
   cursor: pointer;
   padding: 6px;
-  color: var(--warm);
+  color: var(--ink);
   flex-shrink: 0;
 }
 
 .logo {
-  font-family: 'Cairo', sans-serif;
-  font-weight: 900;
-  font-size: 30px;
-  letter-spacing: -1px;
-  color: var(--paper);
-  text-decoration: none;
-  white-space: nowrap;
-  line-height: 1;
   display: flex;
   align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--ink);
+  flex-shrink: 0;
 }
 
-.logo span {
-  color: #fff;
+.logo-box {
+  width: 42px;
+  height: 42px;
+  background: var(--ink);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 26px;
+  font-weight: 900;
 }
 
-.logoImg {
-  height: 48px;
-  width: auto;
-  object-fit: contain;
-  background: #F4F0E8 !important;
-  padding: 4px 6px;
-  border-radius: 4px;
+.logo-text {
+  line-height: 1.1;
+  text-align: left;
+}
+
+.logo-text h2 {
+  font-size: 21px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ink);
+}
+
+.logo-text span {
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  color: #888;
   display: block;
-  margin-top: 8px;
-  margin-bottom: 6px;
 }
 
 .logo-group {
@@ -72,12 +84,12 @@
 }
 
 .logo-tagline {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
-  color: var(--warm);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  margin-top: -4px;
+  color: var(--muted);
+  letter-spacing: normal;
+  margin-top: 4px;
+  padding-right: 4px;
 }
 
 .user-badge {
@@ -101,16 +113,16 @@
 }
 
 .admin-user {
-  font-size: 12px;
-  color: var(--warm);
-  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  font-weight: 700;
   white-space: nowrap;
 }
 
 .header-stamp {
   width: 50px;
   height: 50px;
-  border: 2px solid var(--warm);
+  border: 2px solid var(--ink);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -126,33 +138,49 @@
 }
 
 .btn-logout {
-  background: none;
-  color: var(--warm);
-  border: 1px solid var(--warm);
-  padding: 7px 14px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  padding: 0 24px;
+  height: 42px;
   font-family: 'Cairo', sans-serif;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   border-radius: 2px;
   transition: all 0.2s;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .btn-logout:hover {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  background: var(--cream);
+  border-color: var(--ink);
+  color: var(--ink);
 }
 
 @media (max-width: 860px) {
+  .header-left {
+    justify-content: space-between;
+    width: 100%;
+  }
+
   .hamburger-btn {
     display: flex;
+    order: 2;
   }
 
   .admin-user,
   .header-stamp,
-  .logo-tagline {
+  .logo-tagline,
+  .btn-logout {
+    display: none;
+  }
+
+  .header-right {
     display: none;
   }
 }
@@ -164,22 +192,46 @@
     gap: 8px;
   }
 
-  .logoImg {
-    height: 32px;
-    margin-top: 4px;
-    margin-bottom: 4px;
-  }
-
   .user-badge {
     display: none;
   }
 
   .btn-logout {
-    padding: 6px 10px;
-    font-size: 10px;
+    padding: 0 12px;
+    height: 36px;
+    font-size: 11px;
   }
 
   .header-left {
     gap: 6px;
   }
+}
+
+.hamburger-svg line {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+.line-top {
+  transform-origin: 12px 6px;
+}
+
+.line-middle {
+  transform-origin: 12px 12px;
+}
+
+.line-bottom {
+  transform-origin: 12px 18px;
+}
+
+.open .line-top {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.open .line-middle {
+  opacity: 0;
+  transform: scale(0);
+}
+
+.open .line-bottom {
+  transform: translateY(-6px) rotate(-45deg);
 }

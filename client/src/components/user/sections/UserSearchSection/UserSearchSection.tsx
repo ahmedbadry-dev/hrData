@@ -1,6 +1,6 @@
 import type { SavedJob } from '@/components/user/sections/userData';
 import type { UserJob } from '@/modules/jobs/types';
-import { EmptyState, SearchBox, Select } from '@/components/common';
+import { EmptyState, SearchBox, Select, SearchableSelect } from '@/components/common';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { getPageNumbers } from '@/lib/pagination';
@@ -40,13 +40,97 @@ interface UserSearchSectionProps {
 
 const cityOptions = [
   { value: '', label: 'الكل' },
+  // الرياض
   { value: 'RIYADH', label: 'الرياض' },
+  { value: 'AL_KHARJ', label: 'الخرج' },
+  { value: 'AL_DAWADIMI', label: 'الدوادمي' },
+  { value: 'AL_MAJMAAH', label: 'المجمعة' },
+  { value: 'AL_QUWAYIYAH', label: 'القويعية' },
+  { value: 'WADI_AD_DAWASIR', label: 'وادي الدواسر' },
+  { value: 'AL_AFLAJ', label: 'الأفلاج' },
+  { value: 'AL_ZULFI', label: 'الزلفي' },
+  { value: 'SHAQRA', label: 'شقراء' },
+  { value: 'AFIF', label: 'عفيف' },
+  { value: 'AS_SULAYYIL', label: 'السليل' },
+
+  // مكة المكرمة
+  { value: 'MECCA', label: 'مكة المكرمة' },
   { value: 'JEDDAH', label: 'جدة' },
+  { value: 'TAIF', label: 'الطائف' },
+  { value: 'AL_QUNFUDHAH', label: 'القنفذة' },
+  { value: 'RABIGH', label: 'رابغ' },
+  { value: 'AL_LAYTH', label: 'الليث' },
+  { value: 'KHULAIS', label: 'خليص' },
+
+  // المدينة المنورة
+  { value: 'MEDINA', label: 'المدينة المنورة' },
+  { value: 'YANBU', label: 'ينبع' },
+  { value: 'AL_ULA', label: 'العلا' },
+  { value: 'MAHAD_AD_DAHAB', label: 'المهد' },
+  { value: 'BADR', label: 'بدر' },
+  { value: 'KHAYBAR', label: 'خيبر' },
+
+  // القصيم
+  { value: 'BURAYDAH', label: 'بريدة' },
+  { value: 'UNAIZAH', label: 'عنيزة' },
+  { value: 'AL_RASS', label: 'الرس' },
+  { value: 'AL_MITHNAB', label: 'المذنب' },
+  { value: 'ASH_SHAMASIYAH', label: 'الشماسية' },
+
+  // الشرقية
   { value: 'DAMMAM', label: 'الدمام' },
   { value: 'KHOBAR', label: 'الخبر' },
-  { value: 'MECCA', label: 'مكة' },
-  { value: 'MEDINA', label: 'المدينة' },
+  { value: 'AL_AHSA', label: 'الأحساء' },
+  { value: 'JUBAIL', label: 'الجبيل' },
+  { value: 'QATIF', label: 'القطيف' },
+  { value: 'HAFR_AL_BATIN', label: 'حفر الباطن' },
+  { value: 'AL_KHAFJI', label: 'الخفجي' },
+
+  // عسير
+  { value: 'ABHA', label: 'أبها' },
+  { value: 'KHAMIS_MUSHAIT', label: 'خميس مشيط' },
+  { value: 'BISHA', label: 'بيشة' },
+  { value: 'AL_NAMAS', label: 'النماص' },
+  { value: 'MAHAYIL_ASIR', label: 'محايل عسير' },
+
+  // تبوك
   { value: 'TABUK', label: 'تبوك' },
+  { value: 'DUBA', label: 'ضباء' },
+  { value: 'TAYMA', label: 'تيماء' },
+  { value: 'AL_WAJH', label: 'الوجه' },
+  { value: 'UMLUJ', label: 'أملج' },
+
+  // حائل
+  { value: 'HAIL', label: 'حائل' },
+  { value: 'BAQAA', label: 'بقعاء' },
+  { value: 'AL_GHAZALAH', label: 'الغزالة' },
+  { value: 'SAMIRA', label: 'سميراء' },
+
+  // الحدود الشمالية
+  { value: 'ARAR', label: 'عرعر' },
+  { value: 'RAFHA', label: 'رفحاء' },
+  { value: 'TURAIF', label: 'طريف' },
+
+  // جازان
+  { value: 'JIZAN', label: 'جازان' },
+  { value: 'SABYA', label: 'صبيا' },
+  { value: 'ABU_ARISH', label: 'أبو عريش' },
+  { value: 'SAMTAH', label: 'صامطة' },
+  { value: 'BAISH', label: 'بيش' },
+
+  // نجران
+  { value: 'NAJRAN', label: 'نجران' },
+  { value: 'SHARURAH', label: 'شرورة' },
+
+  // الباحة
+  { value: 'BAHA', label: 'الباحة' },
+  { value: 'BALJURASHI', label: 'بلجرشي' },
+  { value: 'AL_MAKHWAH', label: 'المخواة' },
+
+  // الجوف
+  { value: 'SAKAKA', label: 'سكاكا' },
+  { value: 'DUMAT_AL_JANDAL', label: 'دومة الجندل' },
+  { value: 'QURAYYAT', label: 'القريات' },
 ];
 
 const timeOptions = [
@@ -110,12 +194,12 @@ export default function UserSearchSection({
           </div>
           <div className={styles['filter-field']}>
             <span className={styles['search-label']}>المدينة</span>
-            <Select
+            <SearchableSelect
               options={cityOptions}
               value={country}
               onValueChange={onCountryChange}
               containerClassName={styles['city-select']}
-              scrollable={true}
+              placeholder="ابحث عن مدينة..."
             />
           </div>
           <div className={styles['filter-field']}>

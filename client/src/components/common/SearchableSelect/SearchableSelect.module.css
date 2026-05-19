@@ -1,0 +1,116 @@
+.select-container {
+  position: relative;
+  min-width: 140px;
+  direction: rtl;
+  font-family: 'Cairo', sans-serif;
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.select-input {
+  width: 100%;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  padding: 14px 16px 14px 36px;
+  cursor: text;
+  outline: none;
+  font-family: 'Cairo', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  transition: all 0.2s ease;
+  text-align: right;
+}
+
+.select-input:hover,
+.select-input:focus {
+  background: var(--cream);
+}
+
+.arrow-indicator {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  cursor: pointer;
+  z-index: 10;
+}
+
+.chevron-icon {
+  transition: transform 0.2s ease;
+}
+
+.chevron-rotated {
+  transform: rotate(180deg);
+}
+
+.dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  z-index: 100;
+  margin-top: -2px;
+  box-shadow: 4px 4px 0px var(--ink);
+  max-height: 250px;
+  overflow-y: auto;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  
+  /* scrollbar rules */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--paper);
+}
+
+/* Custom scrollbar for Webkit */
+.dropdown-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-list::-webkit-scrollbar-track {
+  background: var(--paper);
+}
+
+.dropdown-list::-webkit-scrollbar-thumb {
+  background: var(--accent);
+}
+
+.dropdown-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  color: var(--ink);
+  text-align: right;
+}
+
+.dropdown-item:hover,
+.dropdown-item.active {
+  background: var(--cream);
+}
+
+.dropdown-item.selected {
+  background: var(--cream);
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.no-results {
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #777;
+  text-align: center;
+}

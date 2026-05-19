@@ -45,12 +45,71 @@ enum NotificationTarget {
 
 enum JobLocation {
   RIYADH
+  AL_KHARJ
+  AL_DAWADIMI
+  AL_MAJMAAH
+  AL_QUWAYIYAH
+  WADI_AD_DAWASIR
+  AL_AFLAJ
+  AL_ZULFI
+  SHAQRA
+  AFIF
+  AS_SULAYYIL
+  MECCA
   JEDDAH
+  TAIF
+  AL_QUNFUDHAH
+  RABIGH
+  AL_LAYTH
+  KHULAIS
+  MEDINA
+  YANBU
+  AL_ULA
+  MAHAD_AD_DAHAB
+  BADR
+  KHAYBAR
+  BURAYDAH
+  UNAIZAH
+  AL_RASS
+  AL_MITHNAB
+  ASH_SHAMASIYAH
   DAMMAM
   KHOBAR
-  MECCA
-  MEDINA
+  AL_AHSA
+  JUBAIL
+  QATIF
+  HAFR_AL_BATIN
+  AL_KHAFJI
+  ABHA
+  KHAMIS_MUSHAIT
+  BISHA
+  AL_NAMAS
+  MAHAYIL_ASIR
   TABUK
+  DUBA
+  TAYMA
+  AL_WAJH
+  UMLUJ
+  HAIL
+  BAQAA
+  AL_GHAZALAH
+  SAMIRA
+  ARAR
+  RAFHA
+  TURAIF
+  JIZAN
+  SABYA
+  ABU_ARISH
+  SAMTAH
+  BAISH
+  NAJRAN
+  SHARURAH
+  BAHA
+  BALJURASHI
+  AL_MAKHWAH
+  SAKAKA
+  DUMAT_AL_JANDAL
+  QURAYYAT
   OTHER
 }
 
@@ -90,7 +149,7 @@ model User {
   passwordHash               String     @map("password_hash")
   role                       UserRole   @default(USER)
   status                     UserStatus @default(PENDING_VERIFICATION)
-  dailyEmailLimit            Int        @default(20) @map("daily_email_limit")
+  dailyEmailLimit            Int        @default(50) @map("daily_email_limit")
   limitReachedAt             DateTime?  @map("limit_reached_at")
   emailVerified              Boolean    @default(false) @map("email_verified")
   verificationToken          String?    @map("verification_token")

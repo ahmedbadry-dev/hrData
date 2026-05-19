@@ -25,20 +25,40 @@ function useAnimatedCounter(target: number, suffix = '') {
   const [value, setValue] = useState(`0${suffix}`);
 
   useEffect(() => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     const start = performance.now();
-    const duration = 1100;
+    const duration = isMobile ? 600 : 1100;
+    let timerId: number | null = null;
     let frame = 0;
 
-    const tick = (now: number) => {
-      const p = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - p, 4);
-      const current = Math.floor(target * ease);
-      setValue(`${current}${suffix}`);
-      if (p < 1) frame = requestAnimationFrame(tick);
-    };
+    if (isMobile) {
+      const interval = 40;
+      const tick = () => {
+        const elapsed = performance.now() - start;
+        const p = Math.min(elapsed / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 4);
+        const current = Math.floor(target * ease);
+        setValue(`${current}${suffix}`);
+        if (p < 1) {
+          timerId = window.setTimeout(tick, interval);
+        }
+      };
+      timerId = window.setTimeout(tick, interval);
+    } else {
+      const tick = (now: number) => {
+        const p = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 4);
+        const current = Math.floor(target * ease);
+        setValue(`${current}${suffix}`);
+        if (p < 1) frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    }
 
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      if (timerId !== null) clearTimeout(timerId);
+      cancelAnimationFrame(frame);
+    };
   }, [target, suffix]);
 
   return value;
@@ -68,199 +88,247 @@ export default function AdminAnalyticsSection({
   const autoSuccessRef = useRef<HTMLCanvasElement | null>(null);
   const dailyApplyRef = useRef<HTMLCanvasElement | null>(null);
 
+  // 1. Top Applied Jobs Chart
   useEffect(() => {
-    if (
-      !topJobsRef.current &&
-      !usersActivityRef.current &&
-      !autoSuccessRef.current &&
-      !dailyApplyRef.current
-    ) {
-      return;
-    }
+    if (!topJobsRef.current || !topJobs?.length) return;
 
-    const charts: Chart[] = [];
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    if (topJobsRef.current && topJobs?.length) {
-      charts.push(
-        new Chart(topJobsRef.current, {
-          type: 'bar',
-          data: {
-            labels: topJobs.map((j) => j.title),
-            datasets: [
-              {
-                data: topJobs.map((j) => j.applicationCount),
-                backgroundColor: ['#0d0d0d', '#c0392b', '#1a6b4a', '#b8860b', '#1a4a8a'],
-                borderWidth: 0,
-                barThickness: 26,
-              },
-            ],
-          },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: { titleFont: { family: 'Cairo' }, bodyFont: { family: 'Cairo' } },
+    let chart: Chart | null = null;
+    const timer = setTimeout(() => {
+      if (!topJobsRef.current) return;
+      chart = new Chart(topJobsRef.current, {
+        type: 'bar',
+        data: {
+          labels: topJobs.map((j) => j.title),
+          datasets: [
+            {
+              data: topJobs.map((j) => j.applicationCount),
+              backgroundColor: ['#0d0d0d', '#c0392b', '#1a6b4a', '#b8860b', '#1a4a8a'],
+              borderWidth: 0,
+              barThickness: isMobile ? 18 : 26,
             },
-            scales: {
-              x: {
-                beginAtZero: true,
-                grid: { color: 'rgba(13,13,13,.05)' },
-                ticks: { font: { family: 'Cairo' } },
-              },
-              y: {
-                grid: { display: false },
-                ticks: { font: { family: 'Cairo', weight: 700 }, color: '#0d0d0d' },
-              },
+          ],
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: isMobile ? 500 : 1000,
+            easing: 'easeOutQuart',
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: { titleFont: { family: 'Cairo' }, bodyFont: { family: 'Cairo' } },
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: 'rgba(13,13,13,.05)' },
+              ticks: { font: { family: 'Cairo' } },
+            },
+            y: {
+              grid: { display: false },
+              ticks: { font: { family: 'Cairo', weight: 700 }, color: '#0d0d0d' },
             },
           },
-        })
-      );
-    }
-
-    if (usersActivityRef.current && userActivity?.length) {
-      const labels = userActivity.map((d) => {
-        const date = new Date(d.date);
-        const days = ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
-        return days[date.getDay()];
+        },
       });
-      charts.push(
-        new Chart(usersActivityRef.current, {
-          type: 'bar',
-          data: {
-            labels,
-            datasets: [
-              {
-                label: 'نشط',
-                data: userActivity.map((d) => d.activeUsers),
-                backgroundColor: '#0d0d0d',
-                barThickness: 18,
-              },
-              {
-                label: 'جلسات جديدة',
-                data: userActivity.map((d) => d.newSessions),
-                backgroundColor: 'rgba(13,13,13,.25)',
-                barThickness: 18,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: true,
-                position: 'bottom',
-                labels: { font: { family: 'Cairo', size: 10 }, boxWidth: 10, padding: 10 },
-              },
-              tooltip: { titleFont: { family: 'Cairo' }, bodyFont: { family: 'Cairo' } },
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                grid: { color: 'rgba(13,13,13,.05)' },
-                ticks: { font: { family: 'Cairo' } },
-              },
-              x: {
-                grid: { display: false },
-                ticks: { font: { family: 'Cairo', weight: 700 } },
-              },
-            },
-          },
-        })
-      );
-    }
-
-    if (autoSuccessRef.current && statusDistribution) {
-      charts.push(
-        new Chart(autoSuccessRef.current, {
-          type: 'doughnut',
-          data: {
-            labels: ['ناجح', 'فشل الإرسال', 'قيد الإرسال'],
-            datasets: [
-              {
-                data: [
-                  statusDistribution.success,
-                  statusDistribution.failed,
-                  statusDistribution.pending,
-                ],
-                backgroundColor: ['#1a6b4a', '#c0392b', '#b8860b'],
-                borderWidth: 3,
-                borderColor: '#f5f0e8',
-                hoverOffset: 6,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: true,
-                position: 'bottom',
-                labels: { font: { family: 'Cairo', size: 11 }, boxWidth: 12, padding: 12 },
-              },
-              tooltip: {
-                titleFont: { family: 'Cairo' },
-                bodyFont: { family: 'Cairo' },
-                callbacks: {
-                  label: (context) => ` ${context.label}: ${context.parsed}`,
-                },
-              },
-            },
-            cutout: '65%',
-          },
-        })
-      );
-    }
-
-    if (dailyApplyRef.current && applicationsPerDay?.length) {
-      charts.push(
-        new Chart(dailyApplyRef.current, {
-          type: 'line',
-          data: {
-            labels: applicationsPerDay.map((d) => d.date.split('-')[2]),
-            datasets: [
-              {
-                data: applicationsPerDay.map((d) => d.count),
-                borderColor: '#c0392b',
-                backgroundColor: 'rgba(192,57,43,.06)',
-                borderWidth: 2,
-                tension: 0.4,
-                fill: true,
-                pointRadius: 0,
-                pointHoverRadius: 4,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: { titleFont: { family: 'Cairo' }, bodyFont: { family: 'Cairo' } },
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                grid: { color: 'rgba(13,13,13,.05)' },
-                ticks: { font: { family: 'Cairo' } },
-              },
-              x: {
-                grid: { display: false },
-                ticks: { font: { family: 'Cairo' }, maxTicksLimit: 10 },
-              },
-            },
-          },
-        })
-      );
-    }
+    }, isMobile ? 150 : 50);
 
     return () => {
-      charts.forEach((chart) => chart.destroy());
+      clearTimeout(timer);
+      if (chart) chart.destroy();
     };
-  }, [topJobs, userActivity, applicationsPerDay, statusDistribution, overview, advanced]);
+  }, [topJobs]);
+
+  // 2. User Activity Chart
+  useEffect(() => {
+    if (!usersActivityRef.current || !userActivity?.length) return;
+
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    const labels = userActivity.map((d) => {
+      const date = new Date(d.date);
+      const days = ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+      return days[date.getDay()];
+    });
+
+    let chart: Chart | null = null;
+    const timer = setTimeout(() => {
+      if (!usersActivityRef.current) return;
+      chart = new Chart(usersActivityRef.current, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'نشط',
+              data: userActivity.map((d) => d.activeUsers),
+              backgroundColor: '#0d0d0d',
+              barThickness: isMobile ? 12 : 18,
+            },
+            {
+              label: 'جلسات جديدة',
+              data: userActivity.map((d) => d.newSessions),
+              backgroundColor: 'rgba(13,13,13,.25)',
+              barThickness: isMobile ? 12 : 18,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: isMobile ? 500 : 1000,
+            easing: 'easeOutQuart',
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: { font: { family: 'Cairo', size: 10 }, boxWidth: 10, padding: 10 },
+            },
+            tooltip: { titleFont: { family: 'Cairo' }, bodyFont: { family: 'Cairo' } },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(13,13,13,.05)' },
+              ticks: { font: { family: 'Cairo' } },
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: 'Cairo', weight: 700 } },
+            },
+          },
+        },
+      });
+    }, isMobile ? 180 : 50);
+
+    return () => {
+      clearTimeout(timer);
+      if (chart) chart.destroy();
+    };
+  }, [userActivity]);
+
+  // 3. Auto Apply Success Rate Chart (Doughnut)
+  useEffect(() => {
+    if (!autoSuccessRef.current || !statusDistribution) return;
+
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    let chart: Chart | null = null;
+    const timer = setTimeout(() => {
+      if (!autoSuccessRef.current) return;
+      chart = new Chart(autoSuccessRef.current, {
+        type: 'doughnut',
+        data: {
+          labels: ['ناجح', 'فشل الإرسال', 'قيد الإرسال'],
+          datasets: [
+            {
+              data: [
+                statusDistribution.success,
+                statusDistribution.failed,
+                statusDistribution.pending,
+              ],
+              backgroundColor: ['#1a6b4a', '#c0392b', '#b8860b'],
+              borderWidth: 3,
+              borderColor: '#f5f0e8',
+              hoverOffset: 6,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: isMobile ? 500 : 1000,
+            easing: 'easeOutQuart',
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: { font: { family: 'Cairo', size: 11 }, boxWidth: 12, padding: 12 },
+            },
+            tooltip: {
+              titleFont: { family: 'Cairo' },
+              bodyFont: { family: 'Cairo' },
+              callbacks: {
+                label: (context) => ` ${context.label}: ${context.parsed}`,
+              },
+            },
+          },
+          cutout: '65%',
+        },
+      });
+    }, isMobile ? 210 : 50);
+
+    return () => {
+      clearTimeout(timer);
+      if (chart) chart.destroy();
+    };
+  }, [statusDistribution]);
+
+  // 4. Daily Applications Chart (Line)
+  useEffect(() => {
+    if (!dailyApplyRef.current || !applicationsPerDay?.length) return;
+
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    let chart: Chart | null = null;
+    const timer = setTimeout(() => {
+      if (!dailyApplyRef.current) return;
+      chart = new Chart(dailyApplyRef.current, {
+        type: 'line',
+        data: {
+          labels: applicationsPerDay.map((d) => d.date.split('-')[2]),
+          datasets: [
+            {
+              data: applicationsPerDay.map((d) => d.count),
+              borderColor: '#c0392b',
+              backgroundColor: 'rgba(192,57,43,.06)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true,
+              pointRadius: 0,
+              pointHoverRadius: 4,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: isMobile ? 500 : 1000,
+            easing: 'easeOutQuart',
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: { titleFont: { family: 'Cairo' }, bodyFont: { family: 'Cairo' } },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(13,13,13,.05)' },
+              ticks: { font: { family: 'Cairo' } },
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: 'Cairo' }, maxTicksLimit: 10 },
+            },
+          },
+        },
+      });
+    }, isMobile ? 240 : 50);
+
+    return () => {
+      clearTimeout(timer);
+      if (chart) chart.destroy();
+    };
+  }, [applicationsPerDay]);
 
   return (
     <section>

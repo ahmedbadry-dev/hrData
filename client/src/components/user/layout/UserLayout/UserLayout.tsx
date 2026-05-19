@@ -26,7 +26,7 @@ export default function UserLayout({
 }: UserLayoutProps) {
   return (
     <div className={styles['user-layout-root']}>
-      <UserNavbar onToggleSidebar={onToggleSidebar} />
+      <UserNavbar onToggleSidebar={onToggleSidebar} isSidebarOpen={mobileSidebarOpen} />
 
       <div
         className={cn(styles['sidebar-overlay'], mobileSidebarOpen && styles.open)}

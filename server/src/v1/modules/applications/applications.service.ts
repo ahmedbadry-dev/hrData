@@ -613,13 +613,13 @@ export class ApplicationsService {
   }
 
   private normalizeDailyEmailLimit(limit: number | null | undefined): number {
-    const defaultLimit = APPLICATIONS_CONSTANTS.DEFAULT_DAILY_EMAIL_LIMIT; // 20
+    const defaultLimit = APPLICATIONS_CONSTANTS.DEFAULT_DAILY_EMAIL_LIMIT; // 50
     if (typeof limit !== 'number' || Number.isNaN(limit)) {
       return defaultLimit;
     }
 
-    // Force limit to be at most 20 as requested by the user
-    return Math.min(20, Math.max(APPLICATIONS_CONSTANTS.DAILY_EMAIL_LIMIT_MIN, Math.floor(limit)));
+    // Force limit to be at most 50 as requested by the user
+    return Math.min(50, Math.max(APPLICATIONS_CONSTANTS.DAILY_EMAIL_LIMIT_MIN, Math.floor(limit)));
   }
 
   private getStartOfDay(date: Date): Date {

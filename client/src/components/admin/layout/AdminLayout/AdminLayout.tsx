@@ -27,7 +27,7 @@ export default function AdminLayout({
 }: AdminLayoutProps) {
   return (
     <div className={styles['admin-layout-root']}>
-      <AdminNavbar onToggleSidebar={onToggleSidebar} />
+      <AdminNavbar onToggleSidebar={onToggleSidebar} isSidebarOpen={mobileSidebarOpen} />
 
       <div
         className={cn(styles['sidebar-overlay'], mobileSidebarOpen && styles.open)}

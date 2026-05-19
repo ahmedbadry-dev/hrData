@@ -149,6 +149,10 @@
   }
 }
 
+.mobile-only-link {
+  display: none;
+}
+
 @media (max-width: 860px) {
   .sidebar-col {
     position: fixed;
@@ -163,5 +167,9 @@
   .sidebar-col.mobile-open,
   .mobile-open {
     transform: translateX(0);
+  }
+
+  .mobile-only-link {
+    display: block;
   }
 }
