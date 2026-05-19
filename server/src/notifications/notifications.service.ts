@@ -27,7 +27,7 @@ export class NotificationsService {
       try {
 
         const mailOptions: any = {
-          from: this.fromAddress,
+          from: `"${options.subject}" <${this.fromAddress}>`,
           to: options.to,
           subject: options.subject,
           html: options.html,
