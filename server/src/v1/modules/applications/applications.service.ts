@@ -370,6 +370,8 @@ export class ApplicationsService {
       ])
     );
 
+    const jobsToAdd = [];
+
     for (let index = 0; index < jobsWithinLimit.length; index++) {
       const savedJob = jobsWithinLimit[index];
       const app = createdApplicationsByJobId.get(savedJob.jobId);
@@ -389,10 +391,14 @@ export class ApplicationsService {
         cvFileName,
       };
 
-      if (isImmediate) {
-        const delayMs = index * delay;
-        logger.info(`📤 Adding job to queue: index=${index}, delay=${delayMs}ms`);
-        await jobApplicationsScheduleQueue.add(jobApplicationsScheduleQueue.name, jobData, {
+      const delayMs = isImmediate
+        ? index * delay
+        : scheduledAt!.getTime() - Date.now() + index * delay;
+
+      jobsToAdd.push({
+        name: jobApplicationsScheduleQueue.name,
+        data: jobData,
+        opts: {
           delay: delayMs,
           attempts: 3,
           backoff: {
@@ -401,20 +407,14 @@ export class ApplicationsService {
           },
           removeOnComplete: true,
           removeOnFail: { count: 100 },
-        });
-        logger.info(`✅ Job added to queue: index=${index}`);
-      } else if (scheduledAt) {
-        await jobApplicationsScheduleQueue.add(jobApplicationsScheduleQueue.name, jobData, {
-          delay: scheduledAt.getTime() - Date.now() + index * delay,
-          attempts: 3,
-          backoff: {
-            type: 'exponential',
-            delay: 5000,
-          },
-          removeOnComplete: true,
-          removeOnFail: { count: 100 },
-        });
-      }
+        },
+      });
+    }
+
+    if (jobsToAdd.length > 0) {
+      logger.info(`📤 Adding ${jobsToAdd.length} jobs to queue using addBulk...`);
+      await jobApplicationsScheduleQueue.addBulk(jobsToAdd);
+      logger.info(`✅ ${jobsToAdd.length} jobs added to queue successfully`);
     }
 
     void this.prisma.activityLog
