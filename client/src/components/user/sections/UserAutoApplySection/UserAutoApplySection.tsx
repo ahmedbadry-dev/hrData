@@ -274,9 +274,8 @@ export default function UserAutoApplySection({
       setSelectionError(DAILY_LIMIT_BLOCK_MESSAGE);
       return;
     }
-
-    // Select only the first 10 jobs (or less if limit/available jobs are less)
-    const selectCount = Math.min(10, effectiveSelectionLimit, sortedSavedJobs.length);
+    // Select only the first N jobs up to the effective selection limit
+    const selectCount = Math.min(effectiveSelectionLimit, sortedSavedJobs.length);
     const nextSelection: Record<string, boolean> = {};
 
     for (let index = 0; index < selectCount; index++) {
@@ -548,19 +547,19 @@ export default function UserAutoApplySection({
         <span className={styles['search-label']}>نص الرسالة</span>
         <div
           style={{
-            marginBottom: '12px',
-            padding: '12px',
+            marginBottom: '16px',
+            padding: '16px',
             backgroundColor: 'var(--surface)',
             borderRadius: '8px',
             border: '1px solid var(--border)',
           }}
         >
           <div
-            style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}
+            style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}
           >
             <span style={{ fontSize: '18px', flexShrink: 0 }}></span>
             <div>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
                 كيفية كتابة الرسالة
               </div>
               <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
@@ -572,13 +571,13 @@ export default function UserAutoApplySection({
           </div>
         </div>
 
-        <div style={{ marginBottom: '12px' }}>
+        <div style={{ marginBottom: '18px' }}>
           <div
             style={{
               fontSize: '12px',
               fontWeight: 600,
               color: 'var(--text-secondary)',
-              marginBottom: '6px',
+              marginBottom: '8px',
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
             }}
@@ -589,7 +588,7 @@ export default function UserAutoApplySection({
             style={{
               width: '100%',
               border: '2px solid var(--ink)',
-              padding: '14px 18px',
+              padding: '18px 22px',
               fontFamily: "'Cairo', sans-serif",
               fontSize: '14px',
               backgroundColor: 'var(--paper)',
@@ -597,20 +596,20 @@ export default function UserAutoApplySection({
               borderRadius: '4px',
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
-              lineHeight: '1.6',
+              lineHeight: '1.8',
             }}
           >
             {staticEmailIntro}
           </div>
         </div>
 
-        <div style={{ marginBottom: '8px' }}>
+        <div style={{ marginBottom: '16px' }}>
           <div
             style={{
               fontSize: '12px',
               fontWeight: 600,
               color: 'var(--text-secondary)',
-              marginBottom: '6px',
+              marginBottom: '8px',
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
             }}
@@ -622,10 +621,10 @@ export default function UserAutoApplySection({
             value={body}
             onChange={(e) => setBody(e.target.value)}
             style={{
-              minHeight: '140px',
-              padding: '10px 12px',
+              minHeight: '160px',
+              padding: '12px 14px',
               fontSize: '13px',
-              lineHeight: '1.5',
+              lineHeight: '1.6',
               borderRadius: '4px',
               border: '1px solid var(--border)',
               backgroundColor: 'var(--surface)',
@@ -669,7 +668,7 @@ export default function UserAutoApplySection({
                 disabled={isQuotaBlocked || savedJobs.length === 0 || effectiveSelectionLimit <= 0}
                 onClick={handleSelectFirstJobs}
               >
-                اختر أول 10 وظائف
+                اختر الكل
               </Button>
               <Button
                 className={styles['btn-ghost']}
