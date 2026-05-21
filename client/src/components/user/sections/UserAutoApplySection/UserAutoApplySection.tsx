@@ -34,6 +34,9 @@ interface UserAutoApplySectionProps {
   onGoHome: () => void;
 }
 
+const staticEmailIntro = `السلام عليكم ورحمة الله وبركاته،
+يُسعدني أن أتقدم بهذه الرسالة إلى شركة [اسم الشركة]، مُعبِّرًا عن رغبتي الصادقة في الانضمام إلى فريقكم المتميز، لِما تتمتع به شركتكم من بيئة عمل احترافية وفرص حقيقية للنمو والتطور.`;
+
 const professionalEmailBody = `أنا شاب سعودي طموح، أحمل مؤهلًا أكاديميًا مناسبًا وخبرة عملية أسهمت في صقل مهاراتي التحليلية وتعزيز قدرتي على العمل ضمن فريق متناسق وفعّال. وأُرفق مع هذه الرسالة سيرتي الذاتية التفصيلية للاطلاع على مسيرتي المهنية وأبرز إنجازاتي.
 
 وأُعرب عن أملي في التواصل معكم في الوقت الذي يناسبكم، لمناقشة ما أستطيع تقديمه من قيمة مضافة تُسهم في تحقيق أهداف الشركة وتطلعاتها.
@@ -122,11 +125,12 @@ export default function UserAutoApplySection({
   const shownBlockingToastRef = useRef<string | null>(null);
 
   const sortedSavedJobs = useMemo(
-    () => [...savedJobs].sort((a, b) => {
-      const dateA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-      const dateB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-      return dateB - dateA;
-    }),
+    () =>
+      [...savedJobs].sort((a, b) => {
+        const dateA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const dateB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return dateB - dateA;
+      }),
     [savedJobs]
   );
 
@@ -542,11 +546,96 @@ export default function UserAutoApplySection({
 
       <div className={styles['field-wrap']}>
         <span className={styles['search-label']}>نص الرسالة</span>
-        <div style={{ marginBottom: '8px', padding: '12px', backgroundColor: 'var(--surface)', color: 'var(--text-secondary)', borderRadius: '8px', fontSize: '14px', border: '1px solid var(--border)' }}>
-          السلام عليكم ورحمة الله وبركاته،<br />
-          يُسعدني أن أتقدم بهذه الرسالة إلى شركة [اسم الشركة]، مُعبِّرًا عن رغبتي الصادقة في الانضمام إلى فريقكم المتميز، لِما تتمتع به شركتكم من بيئة عمل احترافية وفرص حقيقية للنمو والتطور.
+        <div
+          style={{
+            marginBottom: '12px',
+            padding: '12px',
+            backgroundColor: 'var(--surface)',
+            borderRadius: '8px',
+            border: '1px solid var(--border)',
+          }}
+        >
+          <div
+            style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}
+          >
+            <span style={{ fontSize: '18px', flexShrink: 0 }}>📝</span>
+            <div>
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                كيفية كتابة الرسالة
+              </div>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                <strong>الخطوة 1:</strong> المقدمة الثابتة (تُضاف تلقائياً من قبلنا) <br />
+                <strong>الخطوة 2:</strong> أضف نصك الشخصي بدءاً من "أنا شاب سعودي..." <br />
+                <strong>النتيجة:</strong> رسالة احترافية متكاملة = (المقدمة) + (نصك)
+              </div>
+            </div>
+          </div>
         </div>
-        <textarea value={body} onChange={(e) => setBody(e.target.value)} style={{ minHeight: '180px' }} />
+
+        <div style={{ marginBottom: '12px' }}>
+          <div
+            style={{
+              fontSize: '12px',
+              fontWeight: 600,
+              color: 'var(--text-secondary)',
+              marginBottom: '6px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+          >
+            ✓ المقدمة الثابتة (تُضاف تلقائياً)
+          </div>
+          <div
+            style={{
+              padding: '10px 12px',
+              backgroundColor: 'rgba(76, 175, 80, 0.08)',
+              borderLeft: '3px solid var(--green)',
+              borderRadius: '4px',
+              fontSize: '13px',
+              color: 'var(--text-primary)',
+              lineHeight: '1.6',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}
+          >
+            {staticEmailIntro}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: '8px' }}>
+          <div
+            style={{
+              fontSize: '12px',
+              fontWeight: 600,
+              color: 'var(--text-secondary)',
+              marginBottom: '6px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+          >
+            ✏️ إضافتك الشخصية (عدّل هنا)
+          </div>
+          <textarea
+            placeholder="اكتب نصك الشخصي بدءاً من معلوماتك ومؤهلاتك... يمكنك تعديل النص وإضافة لمستك الشخصية"
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            style={{
+              minHeight: '140px',
+              padding: '10px 12px',
+              fontSize: '13px',
+              lineHeight: '1.5',
+              borderRadius: '4px',
+              border: '1px solid var(--border)',
+              backgroundColor: 'var(--surface)',
+              color: 'var(--text-primary)',
+              fontFamily: 'inherit',
+              resize: 'vertical',
+            }}
+          />
+          <div style={{ marginTop: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+            💡 <strong>نصيحة:</strong> ركّز على مؤهلاتك وخبرتك وما يميزك عن الآخرين.
+          </div>
+        </div>
       </div>
 
       <div className={styles['field-wrap']}>
@@ -560,9 +649,7 @@ export default function UserAutoApplySection({
             <span>اختر ملف PDF</span>
           )}
         </label>
-        <div className={styles['field-hint']}>
-          يرجى رفع ملف بصيغة PDF فقط.
-        </div>
+        <div className={styles['field-hint']}>يرجى رفع ملف بصيغة PDF فقط.</div>
       </div>
 
       {sortedSavedJobs.length === 0 ? (
@@ -619,7 +706,9 @@ export default function UserAutoApplySection({
                   />
                   <div>
                     <div className={styles['job-header']}>
-                      <div className={styles['company-tag']}>اسم الجهة: {formatCompany(job.company)}</div>
+                      <div className={styles['company-tag']}>
+                        اسم الجهة: {formatCompany(job.company)}
+                      </div>
                       {locked ? <span className={styles['lock-badge']}>🔒</span> : null}
                       {job.previousFailedStatus === 'FAILED' ? (
                         <span className={styles['retry-badge']}>إعادة محاولة</span>
