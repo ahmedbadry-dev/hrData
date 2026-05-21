@@ -587,15 +587,17 @@ export default function UserAutoApplySection({
           </div>
           <div
             style={{
-              padding: '10px 12px',
-              backgroundColor: 'var(--cream)',
-              borderLeft: '3px solid var(--green)',
+              width: '100%',
+              border: '2px solid var(--ink)',
+              padding: '14px 18px',
+              fontFamily: "'Cairo', sans-serif",
+              fontSize: '14px',
+              backgroundColor: 'var(--paper)',
+              color: 'var(--ink)',
               borderRadius: '4px',
-              fontSize: '13px',
-              color: 'var(--text-primary)',
-              lineHeight: '1.6',
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
+              lineHeight: '1.6',
             }}
           >
             {staticEmailIntro}
