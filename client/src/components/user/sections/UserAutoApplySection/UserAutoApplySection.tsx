@@ -621,7 +621,8 @@ export default function UserAutoApplySection({
             value={body}
             onChange={(e) => setBody(e.target.value)}
             style={{
-              minHeight: '160px',
+              minHeight: '200px',
+              minWidth: '100%',
               padding: '12px 14px',
               fontSize: '13px',
               lineHeight: '1.6',
@@ -630,7 +631,8 @@ export default function UserAutoApplySection({
               backgroundColor: 'var(--surface)',
               color: 'var(--text-primary)',
               fontFamily: 'inherit',
-              resize: 'vertical',
+              resize: 'both',
+              overflow: 'auto',
             }}
           />
           <div style={{ marginTop: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>
