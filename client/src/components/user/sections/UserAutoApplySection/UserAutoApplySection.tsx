@@ -363,13 +363,13 @@ export default function UserAutoApplySection({
       <section>
         <PageHeader title="التقديم الآلي" titleClassName={styles['section-headline']} />
         <div className={styles['warning-card']}>
-          <div className={styles['warning-icon']}>⚠</div>
+          <div className={styles['warning-icon']}></div>
           <div className={styles['warning-title']}>يرجى ربط حساب Gmail أولاً</div>
           <div className={styles['warning-desc']}>
             لاستخدام التقديم الآلي وإرسال طلباتك مباشرة من المنصة، يجب ربط حساب Gmail الخاص بك من
             صفحة الإعدادات.
             <div className={styles['gmail-note-box']}>
-              ⚠️ <strong>هام جداً:</strong> عند الربط، تأكد من تفعيل خيار
+              <strong>هام جداً:</strong> عند الربط، تأكد من تفعيل خيار
               <span style={{ whiteSpace: 'nowrap', fontWeight: 'bold' }}>
                 {' '}
                 (Send email on your behalf){' '}
@@ -390,7 +390,7 @@ export default function UserAutoApplySection({
       <section>
         {renderQuotaPanel()}
         <EmptyState
-          symbol="✓"
+          symbol=""
           title={`تم جدولة إرسال ${lastScheduledCount} رسائل بنجاح!`}
           description={
             <>
@@ -438,7 +438,7 @@ export default function UserAutoApplySection({
         />
 
         <div className={styles['chart-container']}>
-          <div className={styles['chart-title']}>💡 نصائح لوقت الإرسال المثالي</div>
+          <div className={styles['chart-title']}>نصائح لوقت الإرسال المثالي</div>
           <ul>
             <li>أفضل وقت للإرسال: من 8:00 صباحاً حتى 3:00 مساءً</li>
             <li>تجنب الإرسال في عطلة نهاية الأسبوع</li>
@@ -507,7 +507,7 @@ export default function UserAutoApplySection({
               );
             }}
           >
-            بدء الإرسال 🚀
+            بدء الإرسال
           </Button>
         </div>
       </section>
@@ -558,7 +558,7 @@ export default function UserAutoApplySection({
           <div
             style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}
           >
-            <span style={{ fontSize: '18px', flexShrink: 0 }}>📝</span>
+            <span style={{ fontSize: '18px', flexShrink: 0 }}></span>
             <div>
               <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
                 كيفية كتابة الرسالة
@@ -583,12 +583,12 @@ export default function UserAutoApplySection({
               letterSpacing: '0.5px',
             }}
           >
-            ✓ المقدمة الثابتة (تُضاف تلقائياً)
+            المقدمة الثابتة (تُضاف تلقائياً)
           </div>
           <div
             style={{
               padding: '10px 12px',
-              backgroundColor: 'rgba(76, 175, 80, 0.08)',
+              backgroundColor: 'var(--cream)',
               borderLeft: '3px solid var(--green)',
               borderRadius: '4px',
               fontSize: '13px',
@@ -613,7 +613,7 @@ export default function UserAutoApplySection({
               letterSpacing: '0.5px',
             }}
           >
-            ✏️ إضافتك الشخصية (عدّل هنا)
+            إضافتك الشخصية (عدّل هنا)
           </div>
           <textarea
             placeholder="اكتب نصك الشخصي بدءاً من معلوماتك ومؤهلاتك... يمكنك تعديل النص وإضافة لمستك الشخصية"
@@ -633,7 +633,7 @@ export default function UserAutoApplySection({
             }}
           />
           <div style={{ marginTop: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-            💡 <strong>نصيحة:</strong> ركّز على مؤهلاتك وخبرتك وما يميزك عن الآخرين.
+            <strong>نصيحة:</strong> ركّز على مؤهلاتك وخبرتك وما يميزك عن الآخرين.
           </div>
         </div>
       </div>
@@ -644,7 +644,7 @@ export default function UserAutoApplySection({
         <label className={`${styles['upload-box']} ${selectedCv ? styles.selected : ''}`}>
           <input type="file" accept=".pdf" onChange={handleFileSelect} />
           {selectedCv ? (
-            <span style={{ color: 'var(--green)', fontWeight: 600 }}>✓ {selectedCv.name}</span>
+            <span style={{ color: 'var(--green)', fontWeight: 600 }}>{selectedCv.name}</span>
           ) : (
             <span>اختر ملف PDF</span>
           )}
@@ -709,7 +709,7 @@ export default function UserAutoApplySection({
                       <div className={styles['company-tag']}>
                         اسم الجهة: {formatCompany(job.company)}
                       </div>
-                      {locked ? <span className={styles['lock-badge']}>🔒</span> : null}
+                      {locked ? <span className={styles['lock-badge']}></span> : null}
                       {job.previousFailedStatus === 'FAILED' ? (
                         <span className={styles['retry-badge']}>إعادة محاولة</span>
                       ) : null}
