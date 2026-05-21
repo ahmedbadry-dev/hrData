@@ -163,7 +163,7 @@ const cityNamesAr: Record<string, string> = {
 };
 
 export const formatCity = (city: string | null | undefined): string => {
-  if (!city || city.toUpperCase() === 'OTHER') return 'مدن أخرى';
+  if (!city || city.toUpperCase() === 'OTHER') return 'غير محددة';
   const upperCity = city.trim().toUpperCase();
   return cityNamesAr[upperCity] || city;
 };
