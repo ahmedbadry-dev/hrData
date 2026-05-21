@@ -137,6 +137,7 @@ export default function DashboardAutoApplyPage() {
         sendTime,
         delayBetweenEmails,
         cv: payload.cv,
+        emailBody: payload.body,
       },
       {
         onSuccess: (response) => {

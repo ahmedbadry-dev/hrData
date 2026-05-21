@@ -178,7 +178,8 @@ export class ApplicationsService {
     jobIds: string[],
     sendTime: string,
     delayBetweenEmails?: number,
-    cvFile?: MulterFile
+    cvFile?: MulterFile,
+    emailBody?: string
   ): Promise<ScheduleApplicationResponse> {
     const uniqueJobIds = [...new Set(jobIds)];
 
@@ -389,6 +390,7 @@ export class ApplicationsService {
         companyName: savedJob.job.companyName,
         cvPath,
         cvFileName,
+        emailBody,
       };
 
       const delayMs = isImmediate

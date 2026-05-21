@@ -57,6 +57,7 @@ export class ApplicationsController {
       sendTime,
       delayBetweenEmails,
       cv: cvData,
+      emailBody,
     } = req.body as ScheduleApplicationsDto['body'];
     let cvFile = req.file;
 
@@ -87,7 +88,8 @@ export class ApplicationsController {
       jobIds,
       sendTime,
       delayBetweenEmails,
-      cvFile
+      cvFile,
+      emailBody
     );
     return ResponseHelper.created(
       res,

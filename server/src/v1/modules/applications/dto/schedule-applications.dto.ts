@@ -43,6 +43,7 @@ export const ScheduleApplicationsDtoSchema = z.object({
       .default(APPLICATIONS_CONSTANTS.DEFAULT_DELAY_BETWEEN_EMAILS_MS)
       .optional(),
     cv: cvObjectSchema.optional(),
+    emailBody: z.string().optional(),
   }),
 });
 

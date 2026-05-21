@@ -34,15 +34,11 @@ interface UserAutoApplySectionProps {
   onGoHome: () => void;
 }
 
-const professionalEmailBody = `السلام عليكم ورحمة الله وبركاته،
+const professionalEmailBody = `أنا شاب سعودي طموح، أحمل مؤهلًا أكاديميًا مناسبًا وخبرة عملية أسهمت في صقل مهاراتي التحليلية وتعزيز قدرتي على العمل ضمن فريق متناسق وفعّال. وأُرفق مع هذه الرسالة سيرتي الذاتية التفصيلية للاطلاع على مسيرتي المهنية وأبرز إنجازاتي.
 
-أتقدم بهذه الرسالة مُعبِّراً عن اهتمامي الصادق بالانضمام إلى فريقكم الكريم، وذلك في ضوء ما تُقدِّمه مؤسستكم من بيئة عمل محفِّزة وفرص واعدة للنمو المهني.
+وأُعرب عن أملي في التواصل معكم في الوقت الذي يناسبكم، لمناقشة ما أستطيع تقديمه من قيمة مضافة تُسهم في تحقيق أهداف الشركة وتطلعاتها.
 
-أحمل مؤهلاً أكاديمياً ملائماً، وخبرةً عملية أسهمت في تطوير مهاراتي التحليلية وقدراتي على العمل ضمن فريق متكامل. وأُرفق بهذه الرسالة سيرتي الذاتية المُفصَّلة للاطلاع على مسيرتي المهنية وإنجازاتي.
-
-يسعدني التواصل معكم في الوقت المناسب لمناقشة كيفية إسهامي في تحقيق أهداف مؤسستكم.
-
-وتفضلوا بقبول فائق الاحترام والتقدير،`;
+وتقبلوا خالص الشكر والتقدير،`;
 
 const getSavedJobSelectionKey = (job: SavedJob, index: number): string =>
   job.jobId ?? `${job.company}-${job.role}-${index}`;
@@ -546,7 +542,11 @@ export default function UserAutoApplySection({
 
       <div className={styles['field-wrap']}>
         <span className={styles['search-label']}>نص الرسالة</span>
-        <textarea value={body} onChange={(e) => setBody(e.target.value)} />
+        <div style={{ marginBottom: '8px', padding: '12px', backgroundColor: 'var(--surface)', color: 'var(--text-secondary)', borderRadius: '8px', fontSize: '14px', border: '1px solid var(--border)' }}>
+          السلام عليكم ورحمة الله وبركاته،<br />
+          يُسعدني أن أتقدم بهذه الرسالة إلى شركة [اسم الشركة]، مُعبِّرًا عن رغبتي الصادقة في الانضمام إلى فريقكم المتميز، لِما تتمتع به شركتكم من بيئة عمل احترافية وفرص حقيقية للنمو والتطور.
+        </div>
+        <textarea value={body} onChange={(e) => setBody(e.target.value)} style={{ minHeight: '180px' }} />
       </div>
 
       <div className={styles['field-wrap']}>

@@ -63,8 +63,6 @@ const startServer = async () => {
       logger.info(`🚀 Server is running on http://localhost:${PORT}`);
       logger.info(`📊 Health check available at http://localhost:${PORT}/api/v1/health`);
       logger.info(`🌍 Environment: ${appConfig.nodeEnv}`);
-
-
     });
 
     server.on('error', (error: NodeJS.ErrnoException) => {

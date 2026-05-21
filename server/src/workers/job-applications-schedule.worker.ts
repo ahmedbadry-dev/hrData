@@ -23,6 +23,7 @@ export interface JobApplicationsScheduleJobData {
   companyName: string;
   cvPath: string | null;
   cvFileName: string | null;
+  emailBody?: string | undefined;
 }
 
 export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJobData>(
@@ -33,6 +34,7 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
       userId,
       userName,
       userEmail,
+      emailBody,
       hrEmail,
       jobTitle,
       companyName,
@@ -89,6 +91,7 @@ export const jobApplicationsScheduleWorker = new Worker<JobApplicationsScheduleJ
         recipientName: userName,
         jobTitle,
         companyName,
+        body: emailBody,
       });
 
       const gmailSender = new GmailSender(prismaClient);

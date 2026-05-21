@@ -35,6 +35,10 @@ export const scheduleApplication = async (
     formData.append('cv', payload.cv);
   }
 
+  if (payload.emailBody) {
+    formData.append('emailBody', payload.emailBody);
+  }
+
   const { data } = await axiosClient.post<ApiResponse<ScheduleApplicationsResponse>>(
     '/applications/schedule',
     formData,

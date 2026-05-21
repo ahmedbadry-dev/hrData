@@ -53,6 +53,7 @@ export interface ScheduleApplicationsRequest {
   sendTime: string;
   delayBetweenEmails?: number;
   cv?: File;
+  emailBody?: string;
 }
 
 export interface ScheduleApplicationsResponse extends ApplicationsQuota {
