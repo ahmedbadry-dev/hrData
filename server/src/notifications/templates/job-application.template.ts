@@ -28,6 +28,11 @@ export function jobApplicationTemplate(data: {
         مع خالص التقدير،<br/>
         ${safeRecipientName}
       </div>
+
+      <div style="text-align: center; margin-top: 40px;">
+        تم ارساله عبر منصه التوظيف المباشر<br/>
+        HRDatasa
+      </div>
     </body>
     </html>
   `;
