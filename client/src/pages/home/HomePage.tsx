@@ -4,6 +4,7 @@ import {
   HomeCtaSection,
   HomeFeaturesSection,
   HomeFooterSection,
+  HomeGoogleDataSection,
   HomeHeroSection,
   HomeHowSection,
   HomeQuoteSection,
@@ -44,6 +45,7 @@ export default function HomePage() {
       <HomeHowSection />
       <HomeFeaturesSection />
       <HomeQuoteSection />
+      <HomeGoogleDataSection />
       <HomeCtaSection />
       <HomeFooterSection />
     </HomeLayout>
