@@ -24,40 +24,38 @@ type RouteHead = {
 
 const ROUTE_HEAD: Record<string, RouteHead> = {
   '/': {
-    title: 'HR Data - Job Search & Auto-Apply Platform',
+    title: 'HR Data | منصة التوظيف المباشر',
     description:
-      'HR Data is an Arabic-language job search and application automation platform for job seekers in Saudi Arabia. Users can discover job listings, save opportunities, upload a CV, and send job application emails directly from their connected Gmail account using Gmail send-only access.',
+      'HR Data هي منصة ذكية تساعدك على اكتشاف وتتبع والتقديم على أفضل الوظائف في المملكة العربية السعودية والشرق الأوسط بشكل آلي واحترافي.',
     elements: [
       {
         type: 'meta',
         props: {
           name: 'keywords',
-          content:
-            'HR Data, HrDatasa, Saudi jobs, job search Saudi Arabia, auto apply jobs, Gmail send-only access, وظائف السعودية, منصة توظيف, تقديم آلي, البحث عن عمل',
+          content: 'وظائف، HR Data، توظيف، السعودية، تقديم آلي، بحث عن عمل، مسيرة مهنية',
         },
       },
       { type: 'meta', props: { name: 'robots', content: 'index, follow' } },
       { type: 'link', props: { rel: 'canonical', href: 'https://hrdatasa.com/' } },
-      { type: 'meta', props: { property: 'og:title', content: 'HR Data - Job Search & Auto-Apply Platform' } },
+      { type: 'meta', props: { property: 'og:title', content: 'HR Data | منصة التوظيف المباشر' } },
       {
         type: 'meta',
         props: {
           property: 'og:description',
-          content:
-            'Discover Saudi job listings, save opportunities, upload your CV, and send job application emails using Gmail send-only access.',
+          content: 'اكتشف وتتبع والتقديم على أفضل الوظائف بشكل آلي واحترافي مع منصة HR Data.',
         },
       },
       { type: 'meta', props: { property: 'og:type', content: 'website' } },
       { type: 'meta', props: { property: 'og:url', content: 'https://hrdatasa.com/' } },
       { type: 'meta', props: { property: 'og:site_name', content: 'HR Data' } },
       { type: 'meta', props: { property: 'og:locale', content: 'ar_SA' } },
-      { type: 'meta', props: { name: 'twitter:card', content: 'summary' } },
-      { type: 'meta', props: { name: 'twitter:title', content: 'HR Data - Job Search & Auto-Apply Platform' } },
+      { type: 'meta', props: { name: 'twitter:card', content: 'summary_large_image' } },
+      { type: 'meta', props: { name: 'twitter:title', content: 'HR Data | منصة التوظيف المباشر' } },
       {
         type: 'meta',
         props: {
           name: 'twitter:description',
-          content: 'An Arabic-language job search and application automation platform for job seekers in Saudi Arabia.',
+          content: 'منصة ذكية للتقديم الآلي على الوظائف وتتبع مسارك المهني.',
         },
       },
     ],
