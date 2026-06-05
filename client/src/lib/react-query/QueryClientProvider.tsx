@@ -1,7 +1,6 @@
 import { DefaultOptions, QueryClient } from '@tanstack/react-query';
 import { QueryClientProvider as _QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { ReactNode } from 'react';
+import { lazy, ReactNode, Suspense } from 'react';
 
 const defaultOptions = {
   queries: {
@@ -17,6 +16,14 @@ const makeQueryClient = () => {
 
 export const queryClient = makeQueryClient();
 
+const ReactQueryDevtools = import.meta.env.DEV
+  ? lazy(() =>
+      import('@tanstack/react-query-devtools').then((module) => ({
+        default: module.ReactQueryDevtools,
+      }))
+    )
+  : null;
+
 interface QueryClientProviderProps {
   children: ReactNode;
 }
@@ -25,7 +32,11 @@ export const QueryClientProvider: React.FC<QueryClientProviderProps> = ({ childr
   return (
     <_QueryClientProvider client={queryClient}>
       {children}
-      <ReactQueryDevtools />
+      {ReactQueryDevtools ? (
+        <Suspense fallback={null}>
+          <ReactQueryDevtools />
+        </Suspense>
+      ) : null}
     </_QueryClientProvider>
   );
 };

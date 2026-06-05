@@ -31,14 +31,15 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
     "@tanstack/react-query-devtools": "^5.97.0",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",
     "babel-plugin-react-compiler": "^1.0.0",
+    "tailwindcss": "^4.2.2",
     "typescript": "latest",
     "vite": "latest",
-    "@tailwindcss/vite": "^4.2.2",
-    "tailwindcss": "^4.2.2"
+    "vite-prerender-plugin": "^0.5.13"
   }
 }
