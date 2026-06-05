@@ -22,3 +22,7 @@ PLAN.md
 
 # Generated Prisma Client
 generated/
+
+# Local TLS certificates and private keys
+nginx/certs/*
+!nginx/certs/.gitkeep

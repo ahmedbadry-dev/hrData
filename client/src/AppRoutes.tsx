@@ -19,6 +19,8 @@ import DashboardSettingsPage from '@/pages/user/DashboardSettingsPage';
 
 import HomePage from '@/pages/home/HomePage';
 import NotFoundPage from '@/pages/error/NotFoundPage';
+import PrivacyPage from '@/pages/privacy/PrivacyPage';
+import TermsPage from '@/pages/terms/TermsPage';
 
 import VerifyEmailPage from '@/pages/auth/VerifyEmailPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
@@ -28,6 +30,8 @@ export default function AppRoutes() {
     <Routes>
       {/* Public routes */}
       <Route path="/" element={<HomePage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/terms" element={<TermsPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
