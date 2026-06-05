@@ -24,9 +24,9 @@ type RouteHead = {
 
 const ROUTE_HEAD: Record<string, RouteHead> = {
   '/': {
-    title: 'HR Data | منصة التوظيف المباشر',
+    title: 'HR Data | Job Search & Auto-Apply Platform',
     description:
-      'HR Data هي منصة ذكية تساعدك على اكتشاف وتتبع والتقديم على أفضل الوظائف في المملكة العربية السعودية والشرق الأوسط بشكل آلي واحترافي.',
+      'HR Data is an Arabic-language job search and auto-apply platform for Saudi Arabia. Discover job listings, save opportunities, and send applications directly from your Gmail account using send-only access.',
     elements: [
       {
         type: 'meta',
