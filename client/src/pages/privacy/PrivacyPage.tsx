@@ -6,8 +6,28 @@ export default function PrivacyPage() {
   return (
     <HomeLayout>
       <Helmet>
-        <title>سياسة الخصوصية — منصة التوظيف المباشر HrDatasa</title>
-        <meta name="description" content="سياسة الخصوصية في منصة التوظيف المباشر HrDatasa" />
+        <title>Privacy Policy - HR Data</title>
+        <meta
+          name="description"
+          content="Privacy policy for HR Data platform. Learn how we handle your data and Gmail OAuth access."
+        />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://hrdatasa.com/privacy" />
+        <meta property="og:title" content="Privacy Policy - HR Data" />
+        <meta
+          property="og:description"
+          content="Learn how HR Data handles account data, Gmail OAuth access, and Gmail send-only permissions."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://hrdatasa.com/privacy" />
+        <meta property="og:site_name" content="HR Data" />
+        <meta property="og:locale" content="ar_SA" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Privacy Policy - HR Data" />
+        <meta
+          name="twitter:description"
+          content="How HR Data handles privacy, user data, and Gmail OAuth send-only access."
+        />
       </Helmet>
 
       <section style={{ padding: '32px 16px', maxWidth: 980, margin: '0 auto', lineHeight: 1.6 }}>

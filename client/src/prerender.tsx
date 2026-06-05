@@ -16,20 +16,110 @@ type HeadElement = {
   props: Record<string, string>;
 };
 
-const ROUTE_HEAD: Record<string, { title: string; description: string }> = {
+type RouteHead = {
+  title: string;
+  description: string;
+  elements: HeadElement[];
+};
+
+const ROUTE_HEAD: Record<string, RouteHead> = {
   '/': {
     title: 'HR Data - Job Search & Auto-Apply Platform',
     description:
       'HR Data is an Arabic-language job search and application automation platform for job seekers in Saudi Arabia. Users can discover job listings, save opportunities, upload a CV, and send job application emails directly from their connected Gmail account using Gmail send-only access.',
+    elements: [
+      {
+        type: 'meta',
+        props: {
+          name: 'keywords',
+          content:
+            'HR Data, HrDatasa, Saudi jobs, job search Saudi Arabia, auto apply jobs, Gmail send-only access, وظائف السعودية, منصة توظيف, تقديم آلي, البحث عن عمل',
+        },
+      },
+      { type: 'meta', props: { name: 'robots', content: 'index, follow' } },
+      { type: 'link', props: { rel: 'canonical', href: 'https://hrdatasa.com/' } },
+      { type: 'meta', props: { property: 'og:title', content: 'HR Data - Job Search & Auto-Apply Platform' } },
+      {
+        type: 'meta',
+        props: {
+          property: 'og:description',
+          content:
+            'Discover Saudi job listings, save opportunities, upload your CV, and send job application emails using Gmail send-only access.',
+        },
+      },
+      { type: 'meta', props: { property: 'og:type', content: 'website' } },
+      { type: 'meta', props: { property: 'og:url', content: 'https://hrdatasa.com/' } },
+      { type: 'meta', props: { property: 'og:site_name', content: 'HR Data' } },
+      { type: 'meta', props: { property: 'og:locale', content: 'ar_SA' } },
+      { type: 'meta', props: { name: 'twitter:card', content: 'summary' } },
+      { type: 'meta', props: { name: 'twitter:title', content: 'HR Data - Job Search & Auto-Apply Platform' } },
+      {
+        type: 'meta',
+        props: {
+          name: 'twitter:description',
+          content: 'An Arabic-language job search and application automation platform for job seekers in Saudi Arabia.',
+        },
+      },
+    ],
   },
   '/privacy': {
     title: 'Privacy Policy - HR Data',
     description: 'Privacy policy for HR Data platform. Learn how we handle your data and Gmail OAuth access.',
+    elements: [
+      { type: 'meta', props: { name: 'robots', content: 'index, follow' } },
+      { type: 'link', props: { rel: 'canonical', href: 'https://hrdatasa.com/privacy' } },
+      { type: 'meta', props: { property: 'og:title', content: 'Privacy Policy - HR Data' } },
+      {
+        type: 'meta',
+        props: {
+          property: 'og:description',
+          content: 'Learn how HR Data handles account data, Gmail OAuth access, and Gmail send-only permissions.',
+        },
+      },
+      { type: 'meta', props: { property: 'og:type', content: 'website' } },
+      { type: 'meta', props: { property: 'og:url', content: 'https://hrdatasa.com/privacy' } },
+      { type: 'meta', props: { property: 'og:site_name', content: 'HR Data' } },
+      { type: 'meta', props: { property: 'og:locale', content: 'ar_SA' } },
+      { type: 'meta', props: { name: 'twitter:card', content: 'summary' } },
+      { type: 'meta', props: { name: 'twitter:title', content: 'Privacy Policy - HR Data' } },
+      {
+        type: 'meta',
+        props: {
+          name: 'twitter:description',
+          content: 'How HR Data handles privacy, user data, and Gmail OAuth send-only access.',
+        },
+      },
+    ],
   },
   '/terms': {
     title: 'Terms of Service - HR Data',
     description:
       'Terms of service for HR Data platform. Read our terms and conditions for using the job search and auto-apply service.',
+    elements: [
+      { type: 'meta', props: { name: 'robots', content: 'index, follow' } },
+      { type: 'link', props: { rel: 'canonical', href: 'https://hrdatasa.com/terms' } },
+      { type: 'meta', props: { property: 'og:title', content: 'Terms of Service - HR Data' } },
+      {
+        type: 'meta',
+        props: {
+          property: 'og:description',
+          content: 'Read the terms and conditions for using HR Data job search and auto-apply services.',
+        },
+      },
+      { type: 'meta', props: { property: 'og:type', content: 'website' } },
+      { type: 'meta', props: { property: 'og:url', content: 'https://hrdatasa.com/terms' } },
+      { type: 'meta', props: { property: 'og:site_name', content: 'HR Data' } },
+      { type: 'meta', props: { property: 'og:locale', content: 'ar_SA' } },
+      { type: 'meta', props: { name: 'twitter:card', content: 'summary' } },
+      { type: 'meta', props: { name: 'twitter:title', content: 'Terms of Service - HR Data' } },
+      {
+        type: 'meta',
+        props: {
+          name: 'twitter:description',
+          content: 'Terms and conditions for the HR Data job search and auto-apply platform.',
+        },
+      },
+    ],
   },
 };
 
@@ -111,6 +201,32 @@ const ensureDescription = (elements: HeadElement[], description: string) => {
   return [...elements, { type: 'meta', props: { name: 'description', content: description } }];
 };
 
+const elementKey = (element: HeadElement) => {
+  return [
+    element.type,
+    element.props.name ?? '',
+    element.props.property ?? '',
+    element.props.rel ?? '',
+    element.props.href ?? '',
+  ].join(':');
+};
+
+const mergeHeadElements = (elements: HeadElement[], fallbackElements: HeadElement[]) => {
+  const seen = new Set(elements.map(elementKey));
+  const merged = [...elements];
+
+  fallbackElements.forEach((element) => {
+    const key = elementKey(element);
+
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(element);
+    }
+  });
+
+  return merged;
+};
+
 const stripInlineHeadElements = (html: string) => {
   let next = html;
   let previous: string;
@@ -162,7 +278,10 @@ export async function prerender(data: PrerenderData) {
 
   const helmet = helmetContext.helmet;
   const title = titleFromHelmet(helmet) ?? fallbackHead.title;
-  const elements = ensureDescription(headElementsFromHelmet(helmet), fallbackHead.description);
+  const elements = mergeHeadElements(
+    ensureDescription(headElementsFromHelmet(helmet), fallbackHead.description),
+    fallbackHead.elements
+  );
   closeReactServerMessagePorts();
 
   return {

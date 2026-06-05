@@ -6,8 +6,28 @@ export default function TermsPage() {
   return (
     <HomeLayout>
       <Helmet>
-        <title>الشروط والأحكام — منصة التوظيف المباشر HrDatasa</title>
-        <meta name="description" content="الشروط والأحكام في منصة التوظيف المباشر HrDatasa" />
+        <title>Terms of Service - HR Data</title>
+        <meta
+          name="description"
+          content="Terms of service for HR Data platform. Read our terms and conditions for using the job search and auto-apply service."
+        />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://hrdatasa.com/terms" />
+        <meta property="og:title" content="Terms of Service - HR Data" />
+        <meta
+          property="og:description"
+          content="Read the terms and conditions for using HR Data job search and auto-apply services."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://hrdatasa.com/terms" />
+        <meta property="og:site_name" content="HR Data" />
+        <meta property="og:locale" content="ar_SA" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Terms of Service - HR Data" />
+        <meta
+          name="twitter:description"
+          content="Terms and conditions for the HR Data job search and auto-apply platform."
+        />
       </Helmet>
 
       <section style={{ padding: '32px 16px', maxWidth: 980, margin: '0 auto', lineHeight: 1.6 }}>
