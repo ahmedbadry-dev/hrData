@@ -32,6 +32,12 @@ export default function HomeGoogleDataSection() {
             اختياري ويستخدم لتشغيل ميزة التقديم عبر البريد، ولا يمنح التطبيق صلاحية قراءة بريدك أو
             إدارة رسائلك.
           </p>
+          <p className={styles['google-data-en']}>
+            HR Data is a Saudi Arabian job search and direct-apply platform. Users can browse job
+            listings and optionally connect their Gmail account to send job applications directly to
+            employers. The app requests only the <code>gmail.send</code> permission — it never reads,
+            stores, or shares inbox messages.
+          </p>
           <Link className={styles['google-data-link']} to="/privacy">
             اقرأ سياسة الخصوصية
           </Link>

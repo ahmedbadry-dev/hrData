@@ -4,7 +4,7 @@ import styles from '@/components/home/layout/HomeLayout/HomeLayout.module.css';
 
 export default function HomeFooterSection() {
   return (
-    <footer className={styles.footer}>
+    <footer className={styles.footer} id="contact">
       <div className={styles['footer-logo']}>
         <span>HR Data</span>
       </div>
@@ -16,7 +16,7 @@ export default function HomeFooterSection() {
         <Link className={styles['footer-link']} to="/terms">
           الشروط والأحكام
         </Link>
-        <a className={styles['footer-link']} href="#">
+        <a className={styles['footer-link']} href="mailto:support@hrdatasa.com">
           تواصل معنا
         </a>
       </div>

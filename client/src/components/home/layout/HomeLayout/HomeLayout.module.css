@@ -741,6 +741,25 @@
   text-decoration: none;
 }
 
+.google-data-en {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 12px 0 0;
+  direction: ltr;
+  text-align: left;
+  border-top: 1px solid var(--cream);
+  padding-top: 12px;
+}
+
+.google-data-en code {
+  font-family: monospace;
+  font-size: 11px;
+  background: rgba(0,0,0,0.05);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
 .google-data-link:hover {
   text-decoration: underline;
 }
@@ -841,11 +860,16 @@
 }
 
 .reveal {
-  opacity: 0;
-  transform: translateY(20px);
+  opacity: 1;
+  transform: none;
   transition:
     opacity 0.6s ease,
     transform 0.6s ease;
+}
+
+.reveal.not-visible {
+  opacity: 0;
+  transform: translateY(20px);
 }
 
 .reveal.in,

@@ -18,6 +18,7 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
+            entry.target.classList.remove(styles['not-visible']);
             entry.target.classList.add(styles.in);
             observer.unobserve(entry.target);
           }
@@ -26,7 +27,10 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
       { threshold: 0.1 }
     );
 
-    reveals.forEach((el) => observer.observe(el));
+    reveals.forEach((el) => {
+      el.classList.add(styles['not-visible']);
+      observer.observe(el);
+    });
     return () => observer.disconnect();
   }, []);
 
