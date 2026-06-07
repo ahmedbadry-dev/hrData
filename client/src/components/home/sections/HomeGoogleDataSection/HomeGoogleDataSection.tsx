@@ -22,7 +22,7 @@ export default function HomeGoogleDataSection() {
       <span className={styles['section-tag']}>بيانات جوجل</span>
       <h2 className={styles['section-title']}>كيف نستخدم Google و Gmail؟</h2>
       <div className={styles['google-data-layout']}>
-        <div className={`${styles['google-data-intro']} ${styles.reveal}`}>
+        <div className={styles['google-data-intro']}>
           <p>
             HR Data يساعد الباحثين عن عمل على اكتشاف الوظائف، حفظ الفرص المناسبة، وإرسال طلبات
             التقديم إلى أصحاب العمل مباشرة عبر البريد الإلكتروني.
@@ -38,7 +38,7 @@ export default function HomeGoogleDataSection() {
         </div>
         <div className={styles['google-data-points']}>
           {GOOGLE_DATA_POINTS.map((point, index) => (
-            <div className={`${styles['google-data-step']} ${styles.reveal}`} key={point.title}>
+            <div className={styles['google-data-step']} key={point.title}>
               <div className={styles['step-num']}>{String(index + 1).padStart(2, '0')}</div>
               <div className={styles['step-accent']} />
               <div className={styles['step-title']}>{point.title}</div>
