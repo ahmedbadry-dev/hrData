@@ -37,7 +37,10 @@ const ROUTE_HEAD: Record<string, RouteHead> = {
       },
       { type: 'meta', props: { name: 'robots', content: 'index, follow' } },
       { type: 'link', props: { rel: 'canonical', href: 'https://hrdatasa.com/' } },
-      { type: 'meta', props: { property: 'og:title', content: 'HR Data | منصة التوظيف المباشر' } },
+      {
+        type: 'meta',
+        props: { property: 'og:title', content: 'HR Data | Job Search & Auto-Apply Platform' },
+      },
       {
         type: 'meta',
         props: {
@@ -50,7 +53,10 @@ const ROUTE_HEAD: Record<string, RouteHead> = {
       { type: 'meta', props: { property: 'og:site_name', content: 'HR Data' } },
       { type: 'meta', props: { property: 'og:locale', content: 'ar_SA' } },
       { type: 'meta', props: { name: 'twitter:card', content: 'summary_large_image' } },
-      { type: 'meta', props: { name: 'twitter:title', content: 'HR Data | منصة التوظيف المباشر' } },
+      {
+        type: 'meta',
+        props: { name: 'twitter:title', content: 'HR Data | Job Search & Auto-Apply Platform' },
+      },
       {
         type: 'meta',
         props: {
@@ -62,7 +68,8 @@ const ROUTE_HEAD: Record<string, RouteHead> = {
   },
   '/privacy': {
     title: 'Privacy Policy - HR Data',
-    description: 'Privacy policy for HR Data platform. Learn how we handle your data and Gmail OAuth access.',
+    description:
+      'Privacy policy for HR Data platform. Learn how we handle your data and Gmail OAuth access.',
     elements: [
       { type: 'meta', props: { name: 'robots', content: 'index, follow' } },
       { type: 'link', props: { rel: 'canonical', href: 'https://hrdatasa.com/privacy' } },
@@ -71,7 +78,8 @@ const ROUTE_HEAD: Record<string, RouteHead> = {
         type: 'meta',
         props: {
           property: 'og:description',
-          content: 'Learn how HR Data handles account data, Gmail OAuth access, and Gmail send-only permissions.',
+          content:
+            'Learn how HR Data handles account data, Gmail OAuth access, and Gmail send-only permissions.',
         },
       },
       { type: 'meta', props: { property: 'og:type', content: 'website' } },
@@ -101,7 +109,8 @@ const ROUTE_HEAD: Record<string, RouteHead> = {
         type: 'meta',
         props: {
           property: 'og:description',
-          content: 'Read the terms and conditions for using HR Data job search and auto-apply services.',
+          content:
+            'Read the terms and conditions for using HR Data job search and auto-apply services.',
         },
       },
       { type: 'meta', props: { property: 'og:type', content: 'website' } },
@@ -146,11 +155,7 @@ const getElementProps = (element: ReactElement<Record<string, unknown>>) => {
       return;
     }
 
-    if (
-      typeof value === 'string' ||
-      typeof value === 'number' ||
-      typeof value === 'boolean'
-    ) {
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       props[key] = String(value);
     }
   });
@@ -163,18 +168,21 @@ const headElementsFromHelmet = (helmet: HelmetServerState | null | undefined) =>
     return [];
   }
 
-  return [...helmet.meta.toComponent(), ...helmet.link.toComponent()].reduce<HeadElement[]>((elements, element) => {
-    if (!isValidElement<Record<string, unknown>>(element) || typeof element.type !== 'string') {
+  return [...helmet.meta.toComponent(), ...helmet.link.toComponent()].reduce<HeadElement[]>(
+    (elements, element) => {
+      if (!isValidElement<Record<string, unknown>>(element) || typeof element.type !== 'string') {
+        return elements;
+      }
+
+      elements.push({
+        type: element.type,
+        props: getElementProps(element),
+      });
+
       return elements;
-    }
-
-    elements.push({
-      type: element.type,
-      props: getElementProps(element),
-    });
-
-    return elements;
-  }, []);
+    },
+    []
+  );
 };
 
 const titleFromHelmet = (helmet: HelmetServerState | null | undefined) => {
