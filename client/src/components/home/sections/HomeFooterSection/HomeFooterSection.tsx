@@ -1,5 +1,4 @@
 
-import { Link } from 'react-router-dom';
 import styles from '@/components/home/layout/HomeLayout/HomeLayout.module.css';
 
 export default function HomeFooterSection() {
@@ -10,12 +9,12 @@ export default function HomeFooterSection() {
       </div>
 
       <div className={styles['footer-links']}>
-        <Link className={styles['footer-link']} to="/privacy">
+        <a className={styles['footer-link']} href="https://hrdatasa.com/privacy">
           سياسة الخصوصية
-        </Link>
-        <Link className={styles['footer-link']} to="/terms">
+        </a>
+        <a className={styles['footer-link']} href="https://hrdatasa.com/terms">
           الشروط والأحكام
-        </Link>
+        </a>
         <a className={styles['footer-link']} href="mailto:support@hrdatasa.com">
           تواصل معنا
         </a>

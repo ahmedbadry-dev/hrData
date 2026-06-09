@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import styles from '@/components/home/layout/HomeLayout/HomeLayout.module.css';
 
 const GOOGLE_DATA_POINTS = [
@@ -41,9 +40,9 @@ export default function HomeGoogleDataSection() {
             or delete inbox messages and does not use Google user data for advertising or unrelated
             purposes.
           </p>
-          <Link className={styles['google-data-link']} to="/privacy">
+          <a className={styles['google-data-link']} href="https://hrdatasa.com/privacy">
             اقرأ سياسة الخصوصية وكيفية استخدام بيانات Google
-          </Link>
+          </a>
         </div>
         <div className={styles['google-data-points']}>
           {GOOGLE_DATA_POINTS.map((point, index) => (
