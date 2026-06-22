@@ -50,17 +50,6 @@ export default function AuthModals() {
     }
   }, [isAuthenticated, mode, closeAll, openLogin, openRegister, openForgotPassword]);
 
-  useEffect(() => {
-    if (!isAuthenticated || !mode) {
-      return;
-    }
-
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.delete('mode');
-    nextParams.delete('redirect');
-    navigateWithParams(nextParams);
-  }, [isAuthenticated, mode, searchParams]);
-
   if (isAuthenticated) {
     return null;
   }

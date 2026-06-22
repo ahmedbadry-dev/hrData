@@ -30,8 +30,12 @@ export const useLoginMutation = () => {
         sessionStorage.removeItem('redirectAfterLogin');
 
         const defaultPath = ALLOWED_ADMIN_ROLES.includes(user.role) ? '/admin' : '/dashboard';
+        const targetPath =
+          redirectPath && redirectPath !== '/' && redirectPath.startsWith('/')
+            ? redirectPath
+            : defaultPath;
 
-        navigate(redirectPath && redirectPath.startsWith('/') ? redirectPath : defaultPath, {
+        navigate(targetPath, {
           replace: true,
         });
       }
