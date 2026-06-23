@@ -69,6 +69,9 @@ export default function UserSavedJobsSection({
                   <span className={styles['meta-chip']}>📍 {formatCity(job.city)}</span>
                   <span className={styles['meta-chip']}>🎓 {job.major}</span>
                   <span className={styles['meta-chip']}>
+                    الخبرة: {job.experience || 'غير محدد'}
+                  </span>
+                  <span className={styles['meta-chip']}>
                     📅{' '}
                     {new Date(job.timestamp).toLocaleDateString('ar-SA', {
                       year: 'numeric',

@@ -10,6 +10,7 @@ export interface JobResponse {
   specialization: JobSpecialization;
   category: string | null;
   description: string | null;
+  experience: string | null;
   source: string;
   sourceUrl: string | null;
   language: string;

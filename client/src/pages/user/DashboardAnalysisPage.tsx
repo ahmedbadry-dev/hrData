@@ -69,6 +69,7 @@ export default function DashboardAnalysisPage() {
         email: app.job?.hrEmail || '',
         major: app.job?.category || '',
         city: app.job?.location || '',
+        experience: app.job?.experience,
         date: app.scheduledAt || app.sentAt || null,
         status: mapStatusToUserApp(app.status),
         retryCount: app.retryCount,

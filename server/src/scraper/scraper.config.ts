@@ -231,6 +231,12 @@ export const JOB_RESPONSE_SCHEMA = {
         nullable: false,
       },
       description: { type: 'STRING', description: 'وصف مختصر للوظيفة في 2-3 جمل', nullable: false },
+      experience: {
+        type: 'STRING',
+        description:
+          'Required experience in Arabic. Use "غير محدد" if required experience is not mentioned.',
+        nullable: false,
+      },
       language: { type: 'STRING', description: 'لغة الإعلان: ar أو en', nullable: false },
       postedAt: {
         type: 'STRING',
@@ -251,6 +257,7 @@ export const JOB_RESPONSE_SCHEMA = {
       'specialization',
       'category',
       'description',
+      'experience',
       'language',
     ],
   },

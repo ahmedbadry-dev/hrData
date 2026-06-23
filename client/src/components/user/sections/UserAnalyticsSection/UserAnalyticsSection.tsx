@@ -105,6 +105,9 @@ export default function UserAnalyticsSection({
                   <div className={styles['meta-row']}>
                     <span className={styles['meta-chip']}>🎓 {app.major}</span>
                     <span className={styles['meta-chip']}>📍 {app.city}</span>
+                    <span className={styles['meta-chip']}>
+                      الخبرة: {app.experience || 'غير محدد'}
+                    </span>
                     <span className={styles['meta-chip']}>📅 {dateStr}</span>
                   </div>
                 </div>

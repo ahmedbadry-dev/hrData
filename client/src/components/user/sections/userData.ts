@@ -6,6 +6,7 @@ export interface UserJob {
   date: string;
   email: string;
   hrEmail?: string;
+  experience?: string | null;
   jobId?: string;
   isSaved?: boolean;
   previousFailedStatus?: 'FAILED';
@@ -24,6 +25,7 @@ export interface UserApplication {
   major: string;
   city: string;
   date: string | null;
+  experience?: string | null;
   status: 'pending' | 'sent' | 'opened' | 'replied' | 'failed' | 'cancelled';
   retryCount?: number;
   errorMessage?: string | null;

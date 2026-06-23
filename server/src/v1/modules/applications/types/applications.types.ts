@@ -23,6 +23,7 @@ export interface ApplicationResponse {
     title: string;
     companyName: string;
     hrEmail: string | null;
+    experience: string | null;
   };
 }
 

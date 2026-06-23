@@ -292,6 +292,7 @@ export class JobsService {
     if (data.location) createData.location = data.location;
     if (data.category) createData.category = data.category;
     if (data.description) createData.description = data.description;
+    if (data.experience) createData.experience = data.experience;
     if (data.hrEmail) createData.hrEmail = data.hrEmail;
     if (data.sourceUrl) createData.sourceUrl = data.sourceUrl;
     if (data.postedAt) createData.postedAt = new Date(data.postedAt);
@@ -324,6 +325,7 @@ export class JobsService {
         location: data.location ?? null,
         category: data.category ?? null,
         description: data.description ?? null,
+        experience: data.experience ?? null,
         hrEmail: data.hrEmail || null,
         sourceUrl: data.sourceUrl || null,
         postedAt: data.postedAt ? new Date(data.postedAt) : null,
@@ -513,6 +515,7 @@ export class JobsService {
       specialization: job.specialization,
       category: job.category,
       description: job.description,
+      experience: job.experience,
       source: job.source,
       sourceUrl: job.sourceUrl,
       language: job.language,

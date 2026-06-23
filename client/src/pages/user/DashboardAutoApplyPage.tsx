@@ -19,6 +19,7 @@ const mapSavedJob = (job: {
   location: string | null;
   postedAt: string | null;
   hrEmail: string | null;
+  experience: string | null;
   previousFailedStatus?: 'FAILED';
 }): SavedJob => ({
   page: 'dashboard',
@@ -28,6 +29,7 @@ const mapSavedJob = (job: {
   city: job.location || '',
   date: job.postedAt || '',
   email: job.hrEmail || '',
+  experience: job.experience,
   timestamp: job.postedAt || new Date().toISOString(),
   jobId: job.id,
   hrEmail: job.hrEmail || undefined,
@@ -70,6 +72,7 @@ export default function DashboardAutoApplyPage() {
           location: job.location,
           postedAt: job.postedAt,
           hrEmail: job.hrEmail,
+          experience: job.experience,
           previousFailedStatus: job.previousFailedStatus,
         })
       ),

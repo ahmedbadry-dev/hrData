@@ -7,6 +7,7 @@ export interface Job {
   location: string | null;
   category: string | null;
   description: string | null;
+  experience: string | null;
   hrEmail: string | null;
   source: string;
   sourceUrl: string | null;

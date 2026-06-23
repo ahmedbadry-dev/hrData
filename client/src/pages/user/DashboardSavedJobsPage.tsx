@@ -35,6 +35,7 @@ const mapJobToSavedJob = (job: PaginatedJobs['jobs'][number]): SavedJob => ({
   city: job.location || '',
   date: job.postedAt || '',
   email: job.hrEmail || '',
+  experience: job.experience,
   timestamp: job.postedAt || new Date().toISOString(),
   jobId: job.id,
   hrEmail: job.hrEmail || undefined,

@@ -94,6 +94,7 @@ export class ApplicationsService {
                 title: true,
                 companyName: true,
                 hrEmail: true,
+                experience: true,
               },
             },
           },
@@ -143,6 +144,7 @@ export class ApplicationsService {
               title: true,
               companyName: true,
               hrEmail: true,
+              experience: true,
             },
           },
         },
@@ -640,7 +642,13 @@ export class ApplicationsService {
 
   private mapApplicationResponse(
     application: Application & {
-      job: { id: string; title: string; companyName: string; hrEmail: string | null };
+      job: {
+        id: string;
+        title: string;
+        companyName: string;
+        hrEmail: string | null;
+        experience: string | null;
+      };
     }
   ): ApplicationResponse {
     return {

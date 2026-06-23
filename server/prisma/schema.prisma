@@ -195,6 +195,7 @@ model Job {
   hrEmail     String?      @map("hr_email")
   source      String
   sourceUrl   String?      @map("source_url")
+  experience  String?
   language    String       @default("ar")
   postedAt    DateTime?    @map("posted_at")
   expiresAt   DateTime?    @map("expires_at")

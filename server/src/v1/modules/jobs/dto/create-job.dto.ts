@@ -10,6 +10,7 @@ export const CreateJobDtoSchema = z.object({
     location: z.nativeEnum(JobLocation).optional(),
     category: z.string().trim().optional(),
     description: z.string().trim().optional(),
+    experience: z.string().trim().optional(),
     hrEmail: z.string().email('Invalid email').optional().or(z.literal('')),
     sourceUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
     language: z.string().default('ar').optional(),

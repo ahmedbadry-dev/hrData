@@ -105,6 +105,7 @@ export class ScraperStorage {
           hrEmail: job.hrEmail,
           qualification: job.qualification as JobQualification,
           specialization: job.specialization as JobSpecialization,
+          experience: job.experience,
           sourceUrl: job.sourceUrl,
           expiresAt: job.expiresAt ? new Date(job.expiresAt) : null,
         },
@@ -117,6 +118,7 @@ export class ScraperStorage {
           specialization: job.specialization as JobSpecialization,
           category: job.category,
           description: job.description,
+          experience: job.experience,
           hrEmail: job.hrEmail,
           sourceUrl: job.sourceUrl,
           language: job.language,
@@ -152,6 +154,7 @@ export class ScraperStorage {
       specialization: job.specialization?.toUpperCase() || 'OTHER',
       category: String(job.category ?? '').slice(0, 200),
       description: String(job.description ?? '').slice(0, 5000),
+      experience: String(job.experience || 'غير محدد').trim().slice(0, 200) || 'غير محدد',
       source: String(job.source ?? '').slice(0, 200),
       language: job.language === 'en' ? 'en' : 'ar',
     };

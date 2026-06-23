@@ -36,6 +36,7 @@ export interface ExtractedJob {
   specialization: string;
   category: string;
   description: string;
+  experience: string;
   hrEmail: string | null;
   sourceUrl: string;
   language: string;

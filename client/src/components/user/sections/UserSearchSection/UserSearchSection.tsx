@@ -316,6 +316,9 @@ export default function UserSearchSection({
                           <span className={styles['meta-chip']}>📍 {formatCity(job.city)}</span>
                           <span className={styles['meta-chip']}>🎓 {job.major}</span>
                           <span className={styles['meta-chip']}>
+                            الخبرة: {job.experience || 'غير محدد'}
+                          </span>
+                          <span className={styles['meta-chip']}>
                             📅{' '}
                             {job.date
                               ? new Date(job.date).toLocaleDateString('ar-SA', {
