@@ -7,9 +7,12 @@ export interface ApplicationJob {
   title: string;
   companyName: string;
   hrEmail: string | null;
+  description: string | null;
   experience: string | null;
   category: string | null;
   location: string | null;
+  qualification: string | null;
+  specialization: string | null;
 }
 
 export interface Application {

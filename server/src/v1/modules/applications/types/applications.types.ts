@@ -1,4 +1,9 @@
-import { ApplicationStatus } from '@prisma/client';
+import {
+  ApplicationStatus,
+  JobLocation,
+  JobQualification,
+  JobSpecialization,
+} from '@prisma/client';
 
 export interface EmailQuotaResponse {
   emailsUsedToday: number;
@@ -23,7 +28,12 @@ export interface ApplicationResponse {
     title: string;
     companyName: string;
     hrEmail: string | null;
+    location: JobLocation | null;
+    category: string | null;
+    description: string | null;
     experience: string | null;
+    qualification: JobQualification;
+    specialization: JobSpecialization;
   };
 }
 

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { getPageNumbers } from '@/lib/pagination';
 import { formatCity, formatCompany } from '@/lib/cityMapper';
+import { qualificationOptions } from '@/modules/jobs/types/filterOptions';
 import styles from './UserSavedJobsSection.module.css';
 import searchStyles from '../UserSearchSection/UserSearchSection.module.css';
 
@@ -16,6 +17,33 @@ interface UserSavedJobsSectionProps {
   isLoading?: boolean;
   onPageChange?: (page: number) => void;
 }
+
+const EMPTY_FIELD_LABEL = 'غير محدد';
+
+const getQualificationLabel = (qualification?: string | null) =>
+  qualificationOptions.find((option) => option.value === qualification)?.label || EMPTY_FIELD_LABEL;
+
+const formatJobDate = (date?: string | null) => {
+  if (!date) {
+    return EMPTY_FIELD_LABEL;
+  }
+
+  const parsedDate = new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return date;
+  }
+
+  return parsedDate.toLocaleDateString('ar-SA', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
+const getExperienceIcon = (experience: string) =>
+  ['بدون خبرة', 'لا يشترط', 'غير مطلوبة', 'غير مطلوب'].some((phrase) => experience.includes(phrase))
+    ? '✨'
+    : '💼';
 
 export default function UserSavedJobsSection({
   savedJobs,
@@ -52,57 +80,90 @@ export default function UserSavedJobsSection({
           <div className={styles['section-eyebrow']}>المحفوظة</div>
           <strong>{savedJobs.length} وظيفة</strong>
         </div>
- 
+
         <Button className={styles['remove-all-btn']} onClick={onRemoveAll}>
           إزالة الكل
         </Button>
       </div>
- 
+
       <div className={styles['results-list']}>
-        {sortedSavedJobs.map((job, index) => (
-          <div className={styles['job-card']} key={`${job.company}-${job.role}-${index}`}>
-            <div className={styles['card-top']}>
-              <div className={styles['card-main']}>
-                <div className={styles['company-tag']}>اسم الجهة: {formatCompany(job.company)}</div>
-                <h2 className={styles['job-title']}>{job.role}</h2>
-                <div className={styles['meta-row']}>
-                  <span className={styles['meta-chip']}>📍 {formatCity(job.city)}</span>
-                  <span className={styles['meta-chip']}>🎓 {job.major}</span>
-                  <span className={styles['meta-chip']}>
-                    الخبرة: {job.experience || 'غير محدد'}
-                  </span>
-                  <span className={styles['meta-chip']}>
-                    📅{' '}
-                    {new Date(job.timestamp).toLocaleDateString('ar-SA', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </span>
+        {sortedSavedJobs.map((job, index) => {
+          const experienceText = job.experience?.trim() || EMPTY_FIELD_LABEL;
+          const descriptionText = job.description?.trim() || 'لا يوجد وصف متاح';
+          const categoryText = job.major?.trim() || EMPTY_FIELD_LABEL;
+
+          return (
+            <div className={styles['job-card']} key={`${job.company}-${job.role}-${index}`}>
+              <div className={styles['card-top']}>
+                <div className={styles['card-main']}>
+                  <div className={styles['company-tag']}>
+                    اسم الجهة: {formatCompany(job.company)}
+                  </div>
+                  <h2 className={styles['job-title']}>{job.role}</h2>
+                  <div className={styles['meta-row']}>
+                    <span className={styles['meta-chip']}>
+                      <span className={styles['meta-text']}>{formatCity(job.city)}</span>
+                      <span className={styles['meta-icon']} aria-hidden="true">
+                        📍
+                      </span>
+                    </span>
+                    <span className={styles['meta-chip']}>
+                      <span className={styles['meta-text']}>
+                        {getQualificationLabel(job.qualification)}
+                      </span>
+                      <span className={styles['meta-icon']} aria-hidden="true">
+                        🎓
+                      </span>
+                    </span>
+                    <span className={styles['meta-chip']}>
+                      <span className={styles['meta-text']}>{categoryText}</span>
+                      <span className={styles['meta-icon']} aria-hidden="true">
+                        📘
+                      </span>
+                    </span>
+                    <span className={styles['meta-chip']}>
+                      <span className={styles['meta-text']}>
+                        {formatJobDate(job.date || job.timestamp)}
+                      </span>
+                      <span className={styles['meta-icon']} aria-hidden="true">
+                        📅
+                      </span>
+                    </span>
+                    <span className={cn(styles['meta-chip'], styles['experience-chip'])}>
+                      <span className={styles['meta-text']}>{experienceText}</span>
+                      <span className={styles['meta-icon']} aria-hidden="true">
+                        {getExperienceIcon(experienceText)}
+                      </span>
+                    </span>
+                  </div>
+                  <div className={styles['job-description']}>
+                    <div className={styles['description-label']}>الوصف الوظيفي</div>
+                    <p className={styles['description-text']}>{descriptionText}</p>
+                  </div>
                 </div>
+
+                <Button
+                  type="button"
+                  variant="icon"
+                  className={cn(styles['save-btn'], styles.saved)}
+                  onClick={() => onRemoveByIndex(index)}
+                  title="إزالة من المحفوظات"
+                >
+                  <svg viewBox="0 0 24 24">
+                    <path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z" />
+                  </svg>
+                </Button>
               </div>
 
-              <Button
-                type="button"
-                variant="icon"
-                className={cn(styles['save-btn'], styles.saved)}
-                onClick={() => onRemoveByIndex(index)}
-                title="إزالة من المحفوظات"
-              >
-                <svg viewBox="0 0 24 24">
-                  <path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z" />
-                </svg>
-              </Button>
+              <div className={styles['card-email']}>
+                <a className={styles['email-link']} href={`mailto:${job.hrEmail || job.email}`}>
+                  📧 {job.hrEmail || job.email}
+                </a>
+                <span className={styles['email-hint']}>أرسل سيرتك إلى</span>
+              </div>
             </div>
-
-            <div className={styles['card-email']}>
-              <a className={styles['email-link']} href={`mailto:${job.hrEmail || job.email}`}>
-                📧 {job.hrEmail || job.email}
-              </a>
-              <span className={styles['email-hint']}>أرسل سيرتك إلى</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {totalPages > 1 && onPageChange && (

@@ -141,6 +141,32 @@ const timeOptions = [
 ];
 
 const SKELETON_CARDS_COUNT = 4;
+const EMPTY_FIELD_LABEL = 'غير محدد';
+
+const getQualificationLabel = (qualification?: string | null) =>
+  qualificationOptions.find((option) => option.value === qualification)?.label || EMPTY_FIELD_LABEL;
+
+const formatJobDate = (date?: string | null) => {
+  if (!date) {
+    return EMPTY_FIELD_LABEL;
+  }
+
+  const parsedDate = new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return date;
+  }
+
+  return parsedDate.toLocaleDateString('ar-SA', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
+const getExperienceIcon = (experience: string) =>
+  ['بدون خبرة', 'لا يشترط', 'غير مطلوبة', 'غير مطلوب'].some((phrase) => experience.includes(phrase))
+    ? '✨'
+    : '💼';
 
 export default function UserSearchSection({
   searchQuery,
@@ -301,6 +327,9 @@ export default function UserSearchSection({
                 const key = `${job.company}-${job.role}`;
                 const saved = isSaved(job);
                 const selected = selectedCard === key;
+                const experienceText = job.experience?.trim() || EMPTY_FIELD_LABEL;
+                const descriptionText = job.description?.trim() || 'لا يوجد وصف متاح';
+                const categoryText = job.major?.trim() || EMPTY_FIELD_LABEL;
 
                 return (
                   <div
@@ -310,24 +339,47 @@ export default function UserSearchSection({
                   >
                     <div className={styles['card-top']}>
                       <div className={styles['card-main']}>
-                        <div className={styles['company-tag']}>اسم الجهة: {formatCompany(job.company)}</div>
+                        <div className={styles['company-tag']}>
+                          اسم الجهة: {formatCompany(job.company)}
+                        </div>
                         <h2 className={styles['job-title']}>{job.role}</h2>
                         <div className={styles['meta-row']}>
-                          <span className={styles['meta-chip']}>📍 {formatCity(job.city)}</span>
-                          <span className={styles['meta-chip']}>🎓 {job.major}</span>
                           <span className={styles['meta-chip']}>
-                            الخبرة: {job.experience || 'غير محدد'}
+                            <span className={styles['meta-text']}>{formatCity(job.city)}</span>
+                            <span className={styles['meta-icon']} aria-hidden="true">
+                              📍
+                            </span>
                           </span>
                           <span className={styles['meta-chip']}>
-                            📅{' '}
-                            {job.date
-                              ? new Date(job.date).toLocaleDateString('ar-SA', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                })
-                              : ''}
+                            <span className={styles['meta-text']}>
+                              {getQualificationLabel(job.qualification)}
+                            </span>
+                            <span className={styles['meta-icon']} aria-hidden="true">
+                              🎓
+                            </span>
                           </span>
+                          <span className={styles['meta-chip']}>
+                            <span className={styles['meta-text']}>{categoryText}</span>
+                            <span className={styles['meta-icon']} aria-hidden="true">
+                              📘
+                            </span>
+                          </span>
+                          <span className={styles['meta-chip']}>
+                            <span className={styles['meta-text']}>{formatJobDate(job.date)}</span>
+                            <span className={styles['meta-icon']} aria-hidden="true">
+                              📅
+                            </span>
+                          </span>
+                          <span className={cn(styles['meta-chip'], styles['experience-chip'])}>
+                            <span className={styles['meta-text']}>{experienceText}</span>
+                            <span className={styles['meta-icon']} aria-hidden="true">
+                              {getExperienceIcon(experienceText)}
+                            </span>
+                          </span>
+                        </div>
+                        <div className={styles['job-description']}>
+                          <div className={styles['description-label']}>الوصف الوظيفي</div>
+                          <p className={styles['description-text']}>{descriptionText}</p>
                         </div>
                       </div>
 

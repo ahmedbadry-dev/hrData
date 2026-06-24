@@ -1,4 +1,12 @@
-import { Application, ApplicationStatus, Prisma, PrismaClient } from '@prisma/client';
+import {
+  Application,
+  ApplicationStatus,
+  JobLocation,
+  JobQualification,
+  JobSpecialization,
+  Prisma,
+  PrismaClient,
+} from '@prisma/client';
 import { APPLICATIONS_CONSTANTS } from './applications.constants';
 import {
   ApplicationResponse,
@@ -94,7 +102,12 @@ export class ApplicationsService {
                 title: true,
                 companyName: true,
                 hrEmail: true,
+                location: true,
+                category: true,
+                description: true,
                 experience: true,
+                qualification: true,
+                specialization: true,
               },
             },
           },
@@ -144,7 +157,12 @@ export class ApplicationsService {
               title: true,
               companyName: true,
               hrEmail: true,
+              location: true,
+              category: true,
+              description: true,
               experience: true,
+              qualification: true,
+              specialization: true,
             },
           },
         },
@@ -647,7 +665,12 @@ export class ApplicationsService {
         title: string;
         companyName: string;
         hrEmail: string | null;
+        location: JobLocation | null;
+        category: string | null;
+        description: string | null;
         experience: string | null;
+        qualification: JobQualification;
+        specialization: JobSpecialization;
       };
     }
   ): ApplicationResponse {
