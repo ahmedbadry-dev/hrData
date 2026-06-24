@@ -21,7 +21,17 @@ export default function HomeGoogleDataSection() {
       <span className={styles['section-tag']}>عن المنصة وبيانات جوجل</span>
       <h2 className={styles['section-title']}>ما هي HR Data وكيف تستخدم Gmail؟</h2>
       <div className={styles['google-data-layout']}>
-        <div className={styles['google-data-intro']}>
+        <div className={`${styles['steps-grid']} ${styles['google-data-points']}`}>
+          {GOOGLE_DATA_POINTS.map((point, index) => (
+            <div className={`${styles.step} ${styles.reveal}`} key={point.title}>
+              <div className={styles['step-num']}>{String(index + 1).padStart(2, '0')}</div>
+              <div className={styles['step-accent']} />
+              <div className={styles['step-title']}>{point.title}</div>
+              <div className={styles['step-body']}>{point.body}</div>
+            </div>
+          ))}
+        </div>
+        <div className={`${styles['google-data-intro']} ${styles.reveal}`}>
           <p>
             HR Data منصة سعودية للبحث عن الوظائف والتقديم عليها. تساعد الباحثين عن عمل على تصفح
             الوظائف، حفظ الفرص المناسبة، وإرسال طلبات التقديم التي يختارونها مباشرة إلى أصحاب العمل.
@@ -43,16 +53,6 @@ export default function HomeGoogleDataSection() {
           <a className={styles['google-data-link']} href="https://hrdatasa.com/privacy">
             اقرأ سياسة الخصوصية وكيفية استخدام بيانات Google
           </a>
-        </div>
-        <div className={styles['google-data-points']}>
-          {GOOGLE_DATA_POINTS.map((point, index) => (
-            <div className={styles['google-data-step']} key={point.title}>
-              <div className={styles['step-num']}>{String(index + 1).padStart(2, '0')}</div>
-              <div className={styles['step-accent']} />
-              <div className={styles['step-title']}>{point.title}</div>
-              <div className={styles['step-body']}>{point.body}</div>
-            </div>
-          ))}
         </div>
       </div>
     </section>

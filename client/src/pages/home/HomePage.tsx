@@ -42,9 +42,9 @@ export default function HomePage() {
         />
       </Helmet>
       <HomeHeroSection />
-      <HomeGoogleDataSection />
       <HomeHowSection />
       <HomeFeaturesSection />
+      <HomeGoogleDataSection />
       <HomeQuoteSection />
       <HomeCtaSection />
       <HomeFooterSection />
