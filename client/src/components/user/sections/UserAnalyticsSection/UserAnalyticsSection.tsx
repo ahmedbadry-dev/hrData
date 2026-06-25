@@ -104,6 +104,8 @@ export default function UserAnalyticsSection({
                 day: 'numeric',
               });
           const experienceText = app.experience?.trim() || EMPTY_FIELD_LABEL;
+          const experienceIcon = getExperienceIcon(experienceText);
+          const isNoExperience = experienceIcon === '✨';
           const languageRequirementText = app.languageRequirement?.trim() || EMPTY_FIELD_LABEL;
           const descriptionText = app.description?.trim() || 'لا يوجد وصف متاح';
           const categoryText = app.major?.trim() || EMPTY_FIELD_LABEL;
@@ -116,7 +118,7 @@ export default function UserAnalyticsSection({
             >
               <div className={styles['card-top']}>
                 <div className={styles['card-main']}>
-                  <div className={styles['company-tag']}>اسم الجهة: {app.company}</div>
+                  <div className={styles['company-tag']}>{app.company}</div>
                   <h2 className={styles['job-title']}>{app.role}</h2>
                   <div className={styles['meta-row']}>
                     <span className={styles['meta-chip']}>
@@ -145,9 +147,15 @@ export default function UserAnalyticsSection({
                       </span>
                       <span className={styles['meta-text']}>{dateStr}</span>
                     </span>
-                    <span className={cn(styles['meta-chip'], styles['experience-chip'])}>
+                    <span
+                      className={cn(
+                        styles['meta-chip'],
+                        styles['experience-chip'],
+                        isNoExperience && styles['no-experience-chip']
+                      )}
+                    >
                       <span className={styles['meta-icon']} aria-hidden="true">
-                        {getExperienceIcon(experienceText)}
+                        {experienceIcon}
                       </span>
                       <span className={styles['meta-text']}>{experienceText}</span>
                     </span>
@@ -157,10 +165,6 @@ export default function UserAnalyticsSection({
                       </span>
                       <span className={styles['meta-text']}>{languageRequirementText}</span>
                     </span>
-                  </div>
-                  <div className={styles['job-description']}>
-                    <div className={styles['description-label']}>الوصف الوظيفي</div>
-                    <p className={styles['description-text']}>{descriptionText}</p>
                   </div>
                 </div>
 
@@ -180,6 +184,11 @@ export default function UserAnalyticsSection({
                     إلغاء
                   </button>
                 )}
+              </div>
+
+              <div className={styles['job-description']}>
+                <div className={styles['description-label']}>الوصف الوظيفي</div>
+                <p className={styles['description-text']}>{descriptionText}</p>
               </div>
 
               <div className={styles['card-email']}>

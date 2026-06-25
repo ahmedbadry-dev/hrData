@@ -89,6 +89,8 @@ export default function UserSavedJobsSection({
       <div className={styles['results-list']}>
         {sortedSavedJobs.map((job, index) => {
           const experienceText = job.experience?.trim() || EMPTY_FIELD_LABEL;
+          const experienceIcon = getExperienceIcon(experienceText);
+          const isNoExperience = experienceIcon === '✨';
           const languageRequirementText = job.languageRequirement?.trim() || EMPTY_FIELD_LABEL;
           const descriptionText = job.description?.trim() || 'لا يوجد وصف متاح';
           const categoryText = job.major?.trim() || EMPTY_FIELD_LABEL;
@@ -97,9 +99,7 @@ export default function UserSavedJobsSection({
             <div className={styles['job-card']} key={`${job.company}-${job.role}-${index}`}>
               <div className={styles['card-top']}>
                 <div className={styles['card-main']}>
-                  <div className={styles['company-tag']}>
-                    اسم الجهة: {formatCompany(job.company)}
-                  </div>
+                  <div className={styles['company-tag']}>{formatCompany(job.company)}</div>
                   <h2 className={styles['job-title']}>{job.role}</h2>
                   <div className={styles['meta-row']}>
                     <span className={styles['meta-chip']}>
@@ -130,9 +130,15 @@ export default function UserSavedJobsSection({
                         {formatJobDate(job.date || job.timestamp)}
                       </span>
                     </span>
-                    <span className={cn(styles['meta-chip'], styles['experience-chip'])}>
+                    <span
+                      className={cn(
+                        styles['meta-chip'],
+                        styles['experience-chip'],
+                        isNoExperience && styles['no-experience-chip']
+                      )}
+                    >
                       <span className={styles['meta-icon']} aria-hidden="true">
-                        {getExperienceIcon(experienceText)}
+                        {experienceIcon}
                       </span>
                       <span className={styles['meta-text']}>{experienceText}</span>
                     </span>
@@ -142,10 +148,6 @@ export default function UserSavedJobsSection({
                       </span>
                       <span className={styles['meta-text']}>{languageRequirementText}</span>
                     </span>
-                  </div>
-                  <div className={styles['job-description']}>
-                    <div className={styles['description-label']}>الوصف الوظيفي</div>
-                    <p className={styles['description-text']}>{descriptionText}</p>
                   </div>
                 </div>
 
@@ -160,6 +162,11 @@ export default function UserSavedJobsSection({
                     <path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z" />
                   </svg>
                 </Button>
+              </div>
+
+              <div className={styles['job-description']}>
+                <div className={styles['description-label']}>الوصف الوظيفي</div>
+                <p className={styles['description-text']}>{descriptionText}</p>
               </div>
 
               <div className={styles['card-email']}>
