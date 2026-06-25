@@ -71,6 +71,7 @@ export default function DashboardAnalysisPage() {
         city: app.job?.location || '',
         description: app.job?.description,
         experience: app.job?.experience,
+        languageRequirement: app.job?.languageRequirement,
         qualification: app.job?.qualification,
         specialization: app.job?.specialization,
         date: app.scheduledAt || app.sentAt || null,

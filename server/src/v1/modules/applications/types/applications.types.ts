@@ -32,6 +32,7 @@ export interface ApplicationResponse {
     category: string | null;
     description: string | null;
     experience: string | null;
+    languageRequirement: string | null;
     qualification: JobQualification;
     specialization: JobSpecialization;
   };

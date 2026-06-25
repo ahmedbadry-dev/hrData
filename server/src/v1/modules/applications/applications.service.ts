@@ -106,6 +106,7 @@ export class ApplicationsService {
                 category: true,
                 description: true,
                 experience: true,
+                languageRequirement: true,
                 qualification: true,
                 specialization: true,
               },
@@ -161,6 +162,7 @@ export class ApplicationsService {
               category: true,
               description: true,
               experience: true,
+              languageRequirement: true,
               qualification: true,
               specialization: true,
             },
@@ -669,6 +671,7 @@ export class ApplicationsService {
         category: string | null;
         description: string | null;
         experience: string | null;
+        languageRequirement: string | null;
         qualification: JobQualification;
         specialization: JobSpecialization;
       };

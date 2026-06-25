@@ -3,7 +3,12 @@ import * as cheerio from 'cheerio';
 import Bottleneck from 'bottleneck';
 import logger from '@/shared/utils/logger.util';
 import { geminiClient } from '@/config/llm';
-import { AI_REQUESTS_PER_MINUTE, JOB_RESPONSE_SCHEMA, MAX_CONTENT_CHARS, VALID_LOCATIONS } from './scraper.config';
+import {
+  AI_REQUESTS_PER_MINUTE,
+  JOB_RESPONSE_SCHEMA,
+  MAX_CONTENT_CHARS,
+  VALID_LOCATIONS,
+} from './scraper.config';
 import { WebSiteConfig, ExtractedJob } from './scraper.types';
 
 export class ScraperClient {
@@ -104,7 +109,7 @@ export class ScraperClient {
       const response = await this.aiLimiter.schedule(() =>
         geminiClient.models.generateContent({
           model: 'gemini-3-flash-preview',
-          contents: `Extract the following structured JSON from this job posting. Return ONLY valid JSON, no markdown, no explanation.\n\nRules:\n- All values must be strings\n- title, companyName, category, description, and experience MUST be extracted in Arabic language\n- experience must describe the required experience, for example "لا يشترط", "1-3 سنوات", or "3 سنوات فأكثر"\n- If required experience is not mentioned, use "غير محدد"\n- location must be exactly one of: ${VALID_LOCATIONS.join(', ')}\n- qualification must be exactly one of: HIGH_SCHOOL, DIPLOMA, BACHELOR, MASTER, PHD, OTHER\n- specialization must be exactly one of: ENGINEERING, INFORMATION_TECHNOLOGY, BUSINESS_ADMINISTRATION, ACCOUNTING_FINANCE, MARKETING_SALES, HEALTHCARE, EDUCATION, HUMAN_RESOURCES, OTHER\n- If a field cannot be determined, use "OTHER"\n- Return ONLY the JSON object (or array if multiple jobs found)\n\nContent:\n${content}`,
+          contents: `Extract the following structured JSON from this job posting. Return ONLY valid JSON, no markdown, no explanation.\n\nRules:\n- All values must be strings\n- title, companyName, category, description, experience, and languageRequirement MUST be extracted in Arabic language\n- experience must describe the required experience, for example "لا يشترط", "1-3 سنوات", or "3 سنوات فأكثر"\n- If required experience is not mentioned, use "غير محدد"\n- languageRequirement must describe whether English language is required. Use exactly one of: "اللغة الإنجليزية مطلوبة", "اللغة الإنجليزية غير مطلوبة", "غير محدد"\n- If English language requirement is not mentioned, use "غير محدد"\n- language means the job post language only. Use "ar" for Arabic posts and "en" for English posts\n- location must be exactly one of: ${VALID_LOCATIONS.join(', ')}\n- qualification must be exactly one of: HIGH_SCHOOL, DIPLOMA, BACHELOR, MASTER, PHD, OTHER\n- specialization must be exactly one of: ENGINEERING, INFORMATION_TECHNOLOGY, BUSINESS_ADMINISTRATION, ACCOUNTING_FINANCE, MARKETING_SALES, HEALTHCARE, EDUCATION, HUMAN_RESOURCES, OTHER\n- If a field cannot be determined, use "OTHER"\n- Return ONLY the JSON object (or array if multiple jobs found)\n\nContent:\n${content}`,
           config: {
             responseMimeType: 'application/json',
             responseJsonSchema: JOB_RESPONSE_SCHEMA,

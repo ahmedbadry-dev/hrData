@@ -237,6 +237,12 @@ export const JOB_RESPONSE_SCHEMA = {
           'Required experience in Arabic. Use "غير محدد" if required experience is not mentioned.',
         nullable: false,
       },
+      languageRequirement: {
+        type: 'STRING',
+        description:
+          'English language requirement in Arabic. Use exactly one of: "اللغة الإنجليزية مطلوبة", "اللغة الإنجليزية غير مطلوبة", "غير محدد".',
+        nullable: false,
+      },
       language: { type: 'STRING', description: 'لغة الإعلان: ar أو en', nullable: false },
       postedAt: {
         type: 'STRING',
@@ -258,6 +264,7 @@ export const JOB_RESPONSE_SCHEMA = {
       'category',
       'description',
       'experience',
+      'languageRequirement',
       'language',
     ],
   },

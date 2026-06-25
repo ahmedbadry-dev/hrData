@@ -12,6 +12,7 @@ export interface UserJob {
   hrEmail?: string;
   description?: string | null;
   experience?: string | null;
+  languageRequirement?: string | null;
   qualification?: string | null;
   specialization?: string | null;
   jobId?: string;

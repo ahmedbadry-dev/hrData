@@ -89,6 +89,7 @@ export default function UserSavedJobsSection({
       <div className={styles['results-list']}>
         {sortedSavedJobs.map((job, index) => {
           const experienceText = job.experience?.trim() || EMPTY_FIELD_LABEL;
+          const languageRequirementText = job.languageRequirement?.trim() || EMPTY_FIELD_LABEL;
           const descriptionText = job.description?.trim() || 'لا يوجد وصف متاح';
           const categoryText = job.major?.trim() || EMPTY_FIELD_LABEL;
 
@@ -133,6 +134,12 @@ export default function UserSavedJobsSection({
                       <span className={styles['meta-text']}>{experienceText}</span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         {getExperienceIcon(experienceText)}
+                      </span>
+                    </span>
+                    <span className={cn(styles['meta-chip'], styles['language-chip'])}>
+                      <span className={styles['meta-text']}>{languageRequirementText}</span>
+                      <span className={styles['meta-icon']} aria-hidden="true">
+                        🌐
                       </span>
                     </span>
                   </div>

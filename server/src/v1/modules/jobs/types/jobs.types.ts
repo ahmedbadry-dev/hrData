@@ -11,6 +11,7 @@ export interface JobResponse {
   category: string | null;
   description: string | null;
   experience: string | null;
+  languageRequirement: string | null;
   source: string;
   sourceUrl: string | null;
   language: string;

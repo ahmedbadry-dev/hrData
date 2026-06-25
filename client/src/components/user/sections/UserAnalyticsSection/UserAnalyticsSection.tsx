@@ -104,6 +104,7 @@ export default function UserAnalyticsSection({
                 day: 'numeric',
               });
           const experienceText = app.experience?.trim() || EMPTY_FIELD_LABEL;
+          const languageRequirementText = app.languageRequirement?.trim() || EMPTY_FIELD_LABEL;
           const descriptionText = app.description?.trim() || 'لا يوجد وصف متاح';
           const categoryText = app.major?.trim() || EMPTY_FIELD_LABEL;
 
@@ -148,6 +149,12 @@ export default function UserAnalyticsSection({
                       <span className={styles['meta-text']}>{experienceText}</span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         {getExperienceIcon(experienceText)}
+                      </span>
+                    </span>
+                    <span className={cn(styles['meta-chip'], styles['language-chip'])}>
+                      <span className={styles['meta-text']}>{languageRequirementText}</span>
+                      <span className={styles['meta-icon']} aria-hidden="true">
+                        🌐
                       </span>
                     </span>
                   </div>

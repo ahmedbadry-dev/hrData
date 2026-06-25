@@ -9,6 +9,7 @@ export interface ApplicationJob {
   hrEmail: string | null;
   description: string | null;
   experience: string | null;
+  languageRequirement: string | null;
   category: string | null;
   location: string | null;
   qualification: string | null;
