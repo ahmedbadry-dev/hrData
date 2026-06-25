@@ -103,44 +103,44 @@ export default function UserSavedJobsSection({
                   <h2 className={styles['job-title']}>{job.role}</h2>
                   <div className={styles['meta-row']}>
                     <span className={styles['meta-chip']}>
-                      <span className={styles['meta-text']}>{formatCity(job.city)}</span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         📍
                       </span>
+                      <span className={styles['meta-text']}>{formatCity(job.city)}</span>
                     </span>
                     <span className={styles['meta-chip']}>
-                      <span className={styles['meta-text']}>
-                        {getQualificationLabel(job.qualification)}
-                      </span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         🎓
                       </span>
+                      <span className={styles['meta-text']}>
+                        {getQualificationLabel(job.qualification)}
+                      </span>
                     </span>
                     <span className={styles['meta-chip']}>
-                      <span className={styles['meta-text']}>{categoryText}</span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         📘
                       </span>
+                      <span className={styles['meta-text']}>{categoryText}</span>
                     </span>
                     <span className={styles['meta-chip']}>
-                      <span className={styles['meta-text']}>
-                        {formatJobDate(job.date || job.timestamp)}
-                      </span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         📅
                       </span>
+                      <span className={styles['meta-text']}>
+                        {formatJobDate(job.date || job.timestamp)}
+                      </span>
                     </span>
                     <span className={cn(styles['meta-chip'], styles['experience-chip'])}>
-                      <span className={styles['meta-text']}>{experienceText}</span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         {getExperienceIcon(experienceText)}
                       </span>
+                      <span className={styles['meta-text']}>{experienceText}</span>
                     </span>
                     <span className={cn(styles['meta-chip'], styles['language-chip'])}>
-                      <span className={styles['meta-text']}>{languageRequirementText}</span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         🌐
                       </span>
+                      <span className={styles['meta-text']}>{languageRequirementText}</span>
                     </span>
                   </div>
                   <div className={styles['job-description']}>

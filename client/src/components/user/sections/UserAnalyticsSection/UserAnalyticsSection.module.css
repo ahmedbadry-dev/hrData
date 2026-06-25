@@ -87,13 +87,17 @@
   font-weight: 600;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 6px;
   direction: rtl;
+  flex-direction: row;
+  text-align: right;
   min-width: 0;
 }
 
 .meta-text {
   min-width: 0;
+  text-align: right;
   overflow-wrap: anywhere;
 }
 
@@ -325,7 +329,8 @@
   .meta-chip {
     width: 100%;
     justify-content: flex-start;
-    font-size: 16px;
+    gap: 8px;
+    font-size: 15px;
     line-height: 1.6;
   }
 
@@ -334,19 +339,26 @@
   }
 
   .job-description {
-    margin-top: 24px;
+    max-width: 292px;
+    margin: 28px auto 0;
+    text-align: center;
   }
 
   .description-label {
     text-align: center;
-    font-size: 16px;
-    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.5;
+    margin-bottom: 14px;
   }
 
   .description-text {
     font-size: 14px;
-    line-height: 2;
-    -webkit-line-clamp: 4;
+    font-weight: 600;
+    line-height: 2.05;
+    text-align: center;
+    overflow-wrap: anywhere;
+    -webkit-line-clamp: 5;
   }
 
   .status-box,

@@ -120,42 +120,42 @@ export default function UserAnalyticsSection({
                   <h2 className={styles['job-title']}>{app.role}</h2>
                   <div className={styles['meta-row']}>
                     <span className={styles['meta-chip']}>
-                      <span className={styles['meta-text']}>{formatCity(app.city)}</span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         📍
                       </span>
+                      <span className={styles['meta-text']}>{formatCity(app.city)}</span>
                     </span>
                     <span className={styles['meta-chip']}>
-                      <span className={styles['meta-text']}>
-                        {getQualificationLabel(app.qualification)}
-                      </span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         🎓
                       </span>
+                      <span className={styles['meta-text']}>
+                        {getQualificationLabel(app.qualification)}
+                      </span>
                     </span>
                     <span className={styles['meta-chip']}>
-                      <span className={styles['meta-text']}>{categoryText}</span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         📘
                       </span>
+                      <span className={styles['meta-text']}>{categoryText}</span>
                     </span>
                     <span className={styles['meta-chip']}>
-                      <span className={styles['meta-text']}>{dateStr}</span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         📅
                       </span>
+                      <span className={styles['meta-text']}>{dateStr}</span>
                     </span>
                     <span className={cn(styles['meta-chip'], styles['experience-chip'])}>
-                      <span className={styles['meta-text']}>{experienceText}</span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         {getExperienceIcon(experienceText)}
                       </span>
+                      <span className={styles['meta-text']}>{experienceText}</span>
                     </span>
                     <span className={cn(styles['meta-chip'], styles['language-chip'])}>
-                      <span className={styles['meta-text']}>{languageRequirementText}</span>
                       <span className={styles['meta-icon']} aria-hidden="true">
                         🌐
                       </span>
+                      <span className={styles['meta-text']}>{languageRequirementText}</span>
                     </span>
                   </div>
                   <div className={styles['job-description']}>
