@@ -709,9 +709,7 @@ export default function UserAutoApplySection({
                   />
                   <div>
                     <div className={styles['job-header']}>
-                      <div className={styles['company-tag']}>
-                        اسم الجهة: {formatCompany(job.company)}
-                      </div>
+                      <div className={styles['company-tag']}>{formatCompany(job.company)}</div>
                       {locked ? <span className={styles['lock-badge']}></span> : null}
                       {job.previousFailedStatus === 'FAILED' ? (
                         <span className={styles['retry-badge']}>إعادة محاولة</span>

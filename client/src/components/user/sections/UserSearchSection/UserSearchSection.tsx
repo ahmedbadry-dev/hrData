@@ -332,6 +332,9 @@ export default function UserSearchSection({
                 const isNoExperience = experienceIcon === '✨';
                 const languageRequirementText =
                   job.languageRequirement?.trim() || EMPTY_FIELD_LABEL;
+                const isLanguageNotRequired = ['غير مطلوبة', 'غير مطلوب'].some((phrase) =>
+                  languageRequirementText.includes(phrase)
+                );
                 const descriptionText = job.description?.trim() || 'لا يوجد وصف متاح';
                 const categoryText = job.major?.trim() || EMPTY_FIELD_LABEL;
 
@@ -384,7 +387,12 @@ export default function UserSearchSection({
                             </span>
                             <span className={styles['meta-text']}>{experienceText}</span>
                           </span>
-                          <span className={cn(styles['meta-chip'], styles['language-chip'])}>
+                          <span
+                            className={cn(
+                              styles['meta-chip'],
+                              isLanguageNotRequired && styles['language-chip']
+                            )}
+                          >
                             <span className={styles['meta-icon']} aria-hidden="true">
                               🌐
                             </span>

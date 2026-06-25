@@ -107,6 +107,9 @@ export default function UserAnalyticsSection({
           const experienceIcon = getExperienceIcon(experienceText);
           const isNoExperience = experienceIcon === '✨';
           const languageRequirementText = app.languageRequirement?.trim() || EMPTY_FIELD_LABEL;
+          const isLanguageNotRequired = ['غير مطلوبة', 'غير مطلوب'].some((phrase) =>
+            languageRequirementText.includes(phrase)
+          );
           const descriptionText = app.description?.trim() || 'لا يوجد وصف متاح';
           const categoryText = app.major?.trim() || EMPTY_FIELD_LABEL;
 
@@ -159,7 +162,12 @@ export default function UserAnalyticsSection({
                       </span>
                       <span className={styles['meta-text']}>{experienceText}</span>
                     </span>
-                    <span className={cn(styles['meta-chip'], styles['language-chip'])}>
+                    <span
+                      className={cn(
+                        styles['meta-chip'],
+                        isLanguageNotRequired && styles['language-chip']
+                      )}
+                    >
                       <span className={styles['meta-icon']} aria-hidden="true">
                         🌐
                       </span>
