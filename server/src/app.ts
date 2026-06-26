@@ -50,7 +50,9 @@ app.use(cookieParser());
 app.use(requestLogger);
 app.use(csrfProtectionMiddleware);
 
-app.use('/admin/queues', bullBoardRouter);
+if (!appConfig.isProduction) {
+  app.use('/admin/queues', bullBoardRouter);
+}
 
 app.use(
   ['/uploads', '/api/uploads', '/api/v1/uploads'],
