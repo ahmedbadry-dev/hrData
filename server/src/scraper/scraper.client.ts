@@ -9,7 +9,14 @@ import {
   MAX_CONTENT_CHARS,
   VALID_LOCATIONS,
 } from './scraper.config';
-import { WebSiteConfig, ExtractedJob } from './scraper.types';
+import type { WebSiteConfig, ExtractedJob, JobLinksResult } from './scraper.types';
+
+interface FetchHtmlResult {
+  ok: boolean;
+  html: string | null;
+  errorMessage: string | null;
+  statusCode: number | null;
+}
 
 export class ScraperClient {
   private static readonly httpClient = axios.create({
@@ -27,31 +34,56 @@ export class ScraperClient {
     minTime: 60000 / AI_REQUESTS_PER_MINUTE,
     maxConcurrent: 1,
   });
-  static async fetchHtml(url: string, retries = 3): Promise<string | null> {
+  static async fetchHtmlResult(url: string, retries = 3): Promise<FetchHtmlResult> {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
-        const { data } = await this.httpClient.get<string>(url);
-        return data;
-      } catch (error: any) {
-        const status = error?.response?.status;
-        if (status === 404 || status === 403) return null;
+        const { data, status } = await this.httpClient.get<string>(url);
+        return { ok: true, html: data, errorMessage: null, statusCode: status };
+      } catch (error: unknown) {
+        const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+        if (status === 404 || status === 403) {
+          return {
+            ok: false,
+            html: null,
+            errorMessage: `HTTP ${status}`,
+            statusCode: status,
+          };
+        }
         if (status === 429) {
           await new Promise((r) => setTimeout(r, 10000));
           continue;
         }
-        if (attempt === retries) return null;
+        if (attempt === retries) {
+          return {
+            ok: false,
+            html: null,
+            errorMessage: error instanceof Error ? error.message : 'Failed to fetch HTML',
+            statusCode: typeof status === 'number' ? status : null,
+          };
+        }
         await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt - 1)));
       }
     }
-    return null;
+    return {
+      ok: false,
+      html: null,
+      errorMessage: 'Failed to fetch HTML after retries',
+      statusCode: null,
+    };
   }
 
-  static async getJobLinks(site: WebSiteConfig): Promise<string[]> {
+  static async fetchHtml(url: string, retries = 3): Promise<string | null> {
+    const result = await this.fetchHtmlResult(url, retries);
+    return result.ok ? result.html : null;
+  }
+
+  static async getJobLinksResult(site: WebSiteConfig): Promise<JobLinksResult> {
     let html: string | null;
+    let statusCode: number | null;
 
     if (site.ajaxConfig) {
       try {
-        const { data } = await this.httpClient.post(
+        const { data, status } = await this.httpClient.post(
           site.ajaxConfig.endpoint,
           new URLSearchParams(site.ajaxConfig.params),
           {
@@ -62,16 +94,39 @@ export class ScraperClient {
             },
           }
         );
+        statusCode = status;
         html = data?.html ?? null;
       } catch (error) {
         logger.error(`[Scraper] AJAX fetch failed for ${site.name}: ${error}`);
-        return [];
+        return {
+          ok: false,
+          links: [],
+          errorMessage: error instanceof Error ? error.message : String(error),
+          statusCode: null,
+        };
       }
     } else {
-      html = await this.fetchHtml(site.url);
+      const fetchResult = await this.fetchHtmlResult(site.url);
+      if (!fetchResult.ok) {
+        return {
+          ok: false,
+          links: [],
+          errorMessage: fetchResult.errorMessage,
+          statusCode: fetchResult.statusCode,
+        };
+      }
+      html = fetchResult.html;
+      statusCode = fetchResult.statusCode;
     }
 
-    if (!html) return [];
+    if (!html) {
+      return {
+        ok: false,
+        links: [],
+        errorMessage: 'Source returned empty HTML',
+        statusCode,
+      };
+    }
 
     const $ = cheerio.load(html);
     const links: string[] = [];
@@ -81,7 +136,13 @@ export class ScraperClient {
       const fullUrl = href.startsWith('http') ? href : `${site.baseUrl}${href}`;
       if (!links.includes(fullUrl)) links.push(fullUrl);
     });
-    return links;
+    return { ok: true, links, errorMessage: null, statusCode };
+  }
+
+  static async getJobLinks(site: WebSiteConfig): Promise<string[]> {
+    const result = await this.getJobLinksResult(site);
+    if (!result.ok) return [];
+    return result.links;
   }
 
   static async getJobContent(jobUrl: string, site: WebSiteConfig): Promise<string | null> {
@@ -130,8 +191,9 @@ export class ScraperClient {
         job.sourceUrl = sourceUrl;
         return job;
       });
-    } catch (error: any) {
-      logger.error(`[Scraper] AI Error: ${error?.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`[Scraper] AI Error: ${errorMessage}`);
       return null;
     }
   }

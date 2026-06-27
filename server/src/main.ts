@@ -8,14 +8,14 @@ import { appConfig, getEnvVarAsNumber } from './config/env.config';
 import logger from '@/shared/utils/logger.util';
 import prisma from './config/db.config';
 import redis from './config/redis';
-import { notificationsService } from './notifications/notifications.service';
-import { SettingsService } from './v1/modules/settings/settings.service';
 
 import { jobApplicationsScheduleWorker } from '@/workers/job-applications-schedule.worker';
 import { scraperWorker } from '@/workers/scraper.worker';
 import { maintenanceWorker, startMaintenanceSchedule } from '@/workers/maintenance.worker';
 
 import { startScraperSchedule } from './scraper/scraper.scheduler';
+import { SITES_CONFIG } from './scraper/scraper.config';
+import { scraperSourceStatusStore } from './scraper/scraper-source-status.store';
 
 process.on('uncaughtException', (err: Error) => {
   logger.error('💥 UNCAUGHT EXCEPTION — shutting down', {
@@ -39,6 +39,10 @@ const PORT = getEnvVarAsNumber('PORT', 5000);
 async function bootstrapScraper(): Promise<void> {
   try {
     await redis.del('scraper:is-running');
+    await scraperSourceStatusStore.markRunningSourcesStale(
+      SITES_CONFIG,
+      'Server restarted before this source finished'
+    );
     const scraperStatus = await redis.get('scraper:status');
 
     if (scraperStatus === 'running') {

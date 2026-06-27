@@ -10,7 +10,11 @@ export const SCRAPER_INTERNAL_CONSTANTS = {
     TRUE: 'true',
   },
   EXPIRY: {
-    LOCK_ONE_HOUR: 3600,
+    RUN_LOCK_SECONDS: 6 * 60 * 60,
+    WORKER_HEARTBEAT_TTL_SECONDS: 90,
+  },
+  THRESHOLDS: {
+    SOURCE_RUNNING_STALE_AFTER_MS: 3 * 60 * 60 * 1000,
   },
   REDIS_MODES: {
     EX: 'EX',
@@ -27,8 +31,8 @@ export const SCRAPER_INTERNAL_CONSTANTS = {
     EXPLORING: (name: string) => `[Scraper] 📡 Exploring site: ${name}`,
     FINISHED: (name: string, newLinks: number, newScrapedJobs: number) =>
       `[Scraper] ✅ Finished: ${name} and saved ${newLinks} new links and ${newScrapedJobs} new scraped jobs`,
-    SITE_FAILURE: (name: string, error: any) => `[Scraper] Site Failure (${name}): ${error}`,
-    EXCEPTION: (url: string, error: any) => `[Scraper] Exception processing ${url}: ${error}`,
-    LOCK_ERROR: (error: any) => `[Scraper] Critical Redis error while handling lock: ${error}`,
+    SITE_FAILURE: (name: string, error: unknown) => `[Scraper] Site Failure (${name}): ${error}`,
+    EXCEPTION: (url: string, error: unknown) => `[Scraper] Exception processing ${url}: ${error}`,
+    LOCK_ERROR: (error: unknown) => `[Scraper] Critical Redis error while handling lock: ${error}`,
   },
 } as const;

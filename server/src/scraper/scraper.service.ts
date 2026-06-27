@@ -1,12 +1,14 @@
 import pLimit from 'p-limit';
+import { randomUUID } from 'crypto';
 import logger from '@/shared/utils/logger.util';
 import redis from '@/config/redis';
 import { SITES_CONFIG, DELAY_BETWEEN_SITES_MS, MAX_CONCURRENT_REQUESTS } from './scraper.config';
-import { WebSiteConfig, ApiSourceConfig } from './scraper.types';
+import type { WebSiteConfig, ApiSourceConfig } from './scraper.types';
 import { ScraperClient } from './scraper.client';
 import { TwitterClient } from './scraper.twitter';
 import { ScraperStorage } from './scraper.storage';
 import { SCRAPER_INTERNAL_CONSTANTS } from './scraper.constants';
+import { scraperSourceStatusStore } from './scraper-source-status.store';
 
 const limit = pLimit(MAX_CONCURRENT_REQUESTS);
 
@@ -53,25 +55,17 @@ async function processTwitterSource(
 ): Promise<{ count: number; urls: { site: string; url: string }[] }> {
   const { valid, error } = await TwitterClient.verifyApiKey(config);
   if (!valid) {
-    logger.error(`[Twitter] Verification failed: ${error}`);
-    return { count: 0, urls: [] };
+    throw new Error(error ?? 'Twitter API verification failed');
   }
 
   const { jobs, error: searchError } = await TwitterClient.searchTweets(config);
   if (searchError) {
-    logger.error(`[Twitter] Search error: ${searchError}`);
-    return { count: 0, urls: [] };
+    throw new Error(searchError);
   }
 
   if (jobs.length === 0) {
     return { count: 0, urls: [] };
   }
-
-  const jobDetails = jobs.map((job) => ({
-    site: config.name,
-    url: job.sourceUrl,
-    content: `${job.text}\n\nEmails: ${job.emails.join(', ')}`,
-  }));
 
   const urls = jobs.map((job) => ({ site: config.name, url: job.sourceUrl }));
 
@@ -90,13 +84,14 @@ export async function runScraperForAllSites(): Promise<void> {
       SCRAPER_INTERNAL_CONSTANTS.REDIS_KEYS.IS_RUNNING,
       SCRAPER_INTERNAL_CONSTANTS.REDIS_VALUES.TRUE,
       SCRAPER_INTERNAL_CONSTANTS.REDIS_MODES.EX,
-      SCRAPER_INTERNAL_CONSTANTS.EXPIRY.LOCK_ONE_HOUR
+      SCRAPER_INTERNAL_CONSTANTS.EXPIRY.RUN_LOCK_SECONDS
     );
   } catch (error) {
     logger.error(SCRAPER_INTERNAL_CONSTANTS.LOGS.LOCK_ERROR(error));
     return;
   }
   logger.info(SCRAPER_INTERNAL_CONSTANTS.LOGS.START);
+  const runId = randomUUID();
 
   // Clear old logs before starting a new run
   await ScraperStorage.clearScrapedLogs();
@@ -111,6 +106,7 @@ export async function runScraperForAllSites(): Promise<void> {
       let jobsScraped = 0;
 
       try {
+        await scraperSourceStatusStore.markRunning(site, runId);
         logger.info(SCRAPER_INTERNAL_CONSTANTS.LOGS.EXPLORING(site.name));
 
         if (site.type === 'api') {
@@ -122,16 +118,35 @@ export async function runScraperForAllSites(): Promise<void> {
           logger.info(SCRAPER_INTERNAL_CONSTANTS.LOGS.FINISHED(apiSite.name, urls.length, count));
         } else {
           const webSite = site as WebSiteConfig;
-          const jobLinks = await ScraperClient.getJobLinks(webSite);
+          const jobLinksResult = await ScraperClient.getJobLinksResult(webSite);
+          if (!jobLinksResult.ok) {
+            throw new Error(jobLinksResult.errorMessage ?? 'Failed to fetch source links');
+          }
+
+          const jobLinks = jobLinksResult.links;
           if (jobLinks.length === 0) {
+            if (!webSite.allowEmptyLinks) {
+              throw new Error(
+                `No job links matched selector "${webSite.jobLinkSelector}" for ${webSite.name}. The source markup may have changed.`
+              );
+            }
+
+            const duration = Date.now() - siteStartTime;
             // Log empty results
             await ScraperStorage.saveScrapedLog({
               siteName: webSite.name,
               linksFound: 0,
               jobsScraped: 0,
               status: 'SUCCESS',
-              duration: Date.now() - siteStartTime,
+              duration,
             });
+            await scraperSourceStatusStore.markSuccess(site, {
+              runId,
+              linksFound: 0,
+              jobsScraped: 0,
+              durationMs: duration,
+            });
+            await sleep(DELAY_BETWEEN_SITES_MS);
             continue;
           }
 
@@ -163,27 +178,49 @@ export async function runScraperForAllSites(): Promise<void> {
         }
 
         // Save Scraped Log to DB
+        const duration = Date.now() - siteStartTime;
         await ScraperStorage.saveScrapedLog({
           siteName: site.name,
           linksFound,
           jobsScraped,
           status: 'SUCCESS',
-          duration: Date.now() - siteStartTime,
+          duration,
+        });
+
+        await scraperSourceStatusStore.markSuccess(site, {
+          runId,
+          linksFound,
+          jobsScraped,
+          durationMs: duration,
         });
 
         await sleep(DELAY_BETWEEN_SITES_MS);
       } catch (siteError) {
         logger.error(SCRAPER_INTERNAL_CONSTANTS.LOGS.SITE_FAILURE(site.name, siteError));
+        const errorMessage = siteError instanceof Error ? siteError.message : String(siteError);
+        const duration = Date.now() - siteStartTime;
 
         // Save Failure Log
         await ScraperStorage.saveScrapedLog({
           siteName: site.name,
-          linksFound: 0,
-          jobsScraped: 0,
+          linksFound,
+          jobsScraped,
           status: 'FAILURE',
-          errorMessage: siteError instanceof Error ? siteError.message : String(siteError),
-          duration: Date.now() - siteStartTime,
+          errorMessage,
+          duration,
         });
+
+        await scraperSourceStatusStore.markFailure(
+          site,
+          {
+            runId,
+            linksFound,
+            jobsScraped,
+            durationMs: duration,
+          },
+          errorMessage
+        );
+        await sleep(DELAY_BETWEEN_SITES_MS);
       }
     }
 

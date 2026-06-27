@@ -1,16 +1,31 @@
 import { useQuery } from '@tanstack/react-query';
-import { axiosClient } from '@/services/api';
 import { AdminScraperSection } from '@/components/admin/sections';
+import { axiosClient } from '@/services/api';
 import { useScraperControl } from '@/modules/admin/hooks/useScraperControl';
+import { useScraperLogs, useScraperStatus } from '@/modules/admin/scraper/api/hooks/use-scraper';
+import type { AdminScraperStatus, ScraperSourceState } from '@/modules/admin/scraper/api/types';
+
+const DEFAULT_SCRAPER_STATUS: AdminScraperStatus = {
+  isRunning: false,
+  lastRun: null,
+  workerHealthy: false,
+  queue: {
+    waiting: 0,
+    active: 0,
+    failed: 0,
+    delayed: 0,
+    scheduled: 0,
+  },
+  sources: [],
+};
+
+const ACTIVE_SOURCE_STATES = new Set<ScraperSourceState>(['ACTIVE', 'RUNNING', 'NO_DATA']);
+const nextRuns = ['09:00 صباحاً', '12:00 منتصف الليل'];
 
 export default function AdminScrapPage() {
   const { startMutation, stopMutation, runNowMutation, resetQueueMutation } = useScraperControl();
-
-  const { data: statusResponse } = useQuery({
-    queryKey: ['admin', 'scraper-status'],
-    queryFn: () => axiosClient.get('/admin/scraper/status').then((r) => r.data),
-    refetchInterval: 5000,
-  });
+  const { data: statusResponse } = useScraperStatus();
+  const { data: dbLogsResponse } = useScraperLogs();
 
   const { data: totalJobs } = useQuery({
     queryKey: ['jobs', 'total-count'],
@@ -18,33 +33,14 @@ export default function AdminScrapPage() {
     staleTime: 60 * 1000,
   });
 
-  // "المصادر النشطة" — hardcoded 10
-  const activeSources = 10;
-
-  // "التشغيل القادم" — hardcoded times
-  const nextRuns = ['09:00 صباحاً', '12:00 مساءً'];
-
-  const scraperSources = [
-    'Ewdifh',
-    'Wadifh',
-    'Linkedksa',
-    'Tabiwazifa',
-    'Jbscv',
-    'Fu1sa',
-    'Alwzifa',
-    'Jobhuna',
-    'Twitter',
-  ];
-
-  const { data: dbLogsResponse } = useQuery({
-    queryKey: ['admin', 'scraper-logs'],
-    queryFn: () => axiosClient.get('/admin/scraper/logs').then((r) => r.data),
-    refetchInterval: 10000,
-  });
+  const scraperStatus = statusResponse?.data ?? DEFAULT_SCRAPER_STATUS;
+  const activeSources = scraperStatus.sources.filter((source) =>
+    ACTIVE_SOURCE_STATES.has(source.state)
+  ).length;
 
   return (
     <AdminScraperSection
-      status={statusResponse?.data ?? { isRunning: false, lastRun: null }}
+      status={scraperStatus}
       totalJobs={totalJobs}
       activeSources={activeSources}
       nextRuns={nextRuns}
@@ -53,7 +49,7 @@ export default function AdminScrapPage() {
       onRunNow={() => runNowMutation.mutate()}
       onResetQueue={() => resetQueueMutation.mutate()}
       scraperLogs={dbLogsResponse?.data ?? []}
-      scraperSources={scraperSources}
+      scraperSources={scraperStatus.sources}
     />
   );
 }
