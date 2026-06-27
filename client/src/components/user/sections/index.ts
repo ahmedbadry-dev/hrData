@@ -4,3 +4,10 @@ export { default as UserSavedJobsSection } from './UserSavedJobsSection/UserSave
 export { default as UserAutoApplySection } from './UserAutoApplySection/UserAutoApplySection';
 export { default as UserAnalyticsSection } from './UserAnalyticsSection/UserAnalyticsSection';
 export { default as UserSettingsSection } from './UserSettingsSection/UserSettingsSection';
+export { default as UserProfileSection } from './UserProfileSection/UserProfileSection';
+export type {
+  UserEducationValues,
+  UserExperienceEntry,
+  UserLanguageEntry,
+  UserProfileFormValues,
+} from './UserProfileSection/UserProfileSection';

@@ -2,7 +2,14 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import styles from './UserSidebar.module.css';
 
-export type UserPageKey = 'home' | 'search' | 'saved' | 'auto-apply' | 'analytics' | 'settings';
+export type UserPageKey =
+  | 'home'
+  | 'search'
+  | 'saved'
+  | 'auto-apply'
+  | 'analytics'
+  | 'settings'
+  | 'profile';
 
 interface UserSidebarProps {
   activePage: UserPageKey;
@@ -161,6 +168,28 @@ export default function UserSidebar({
                   <line x1="17" y1="8" x2="23" y2="8" />
                 </svg>
                 الإعدادات
+              </button>
+            </li>
+            <li>
+              <button
+                className={cn(styles['nav-link'], activePage === 'profile' && styles.active)}
+                onClick={() => onNavigate('profile')}
+              >
+                <svg
+                  className={styles['nav-icon']}
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                </svg>
+                الملف الشخصي
               </button>
             </li>
             <li className={styles['mobile-only-link']}>

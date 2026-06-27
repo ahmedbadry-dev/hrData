@@ -50,13 +50,6 @@ export default function UserNavbar({ onToggleSidebar, isSidebarOpen }: UserNavba
 
       <div className={styles['header-right']}>
         <span className={styles['admin-user']}>مرحباً، {firstName}</span>
-        <div className={styles['header-stamp']}>
-          توظيف
-          <br />
-          مباشر
-          <br />
-          ٢٠٢٦
-        </div>
         <button className={styles['btn-logout']} onClick={() => navigate('/')}>
           ← اذهب للرئيسيه
         </button>

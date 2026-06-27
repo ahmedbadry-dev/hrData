@@ -105,7 +105,31 @@ export default function HomeNavbar() {
         <div className={styles['nav-auth-left']}>
           {isLoading ? null : isAuthenticated ? (
             <>
-              <span className={styles['nav-welcome']}>مرحباً {greetingName}</span>
+              <div className={styles['nav-profile-group']}>
+                <button
+                  type="button"
+                  className={styles['profile-icon-btn']}
+                  onClick={() => navigate('/dashboard/profile')}
+                  aria-label="الملف الشخصي"
+                  title="الملف الشخصي"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="8" r="4" />
+                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                  </svg>
+                </button>
+                <span className={styles['nav-welcome']}>مرحباً {greetingName}</span>
+              </div>
               <button
                 className={styles['btn-login-navbar']}
                 onClick={() => logoutMutation.mutate()}
@@ -201,6 +225,16 @@ export default function HomeNavbar() {
                     style={{ flex: 1 }}
                     onClick={() => {
                       setIsMenuOpen(false);
+                      navigate('/dashboard/profile');
+                    }}
+                  >
+                    الملف الشخصي
+                  </button>
+                  <button
+                    className={styles['btn-login-navbar']}
+                    style={{ flex: 1 }}
+                    onClick={() => {
+                      setIsMenuOpen(false);
                       logoutMutation.mutate();
                     }}
                     disabled={logoutMutation.isPending}
@@ -246,5 +280,4 @@ export default function HomeNavbar() {
     </>
   );
 }
-
 

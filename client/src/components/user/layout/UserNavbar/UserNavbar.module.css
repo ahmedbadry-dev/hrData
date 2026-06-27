@@ -119,24 +119,6 @@
   white-space: nowrap;
 }
 
-.header-stamp {
-  width: 50px;
-  height: 50px;
-  border: 2px solid var(--ink);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 8px;
-  font-weight: 700;
-  text-align: center;
-  line-height: 1.3;
-  color: var(--accent);
-  letter-spacing: 0.5px;
-  transform: rotate(-12deg);
-  flex-shrink: 0;
-}
-
 .btn-logout {
   background: var(--paper);
   color: var(--ink);
@@ -174,7 +156,6 @@
   }
 
   .admin-user,
-  .header-stamp,
   .logo-tagline,
   .btn-logout {
     display: none;

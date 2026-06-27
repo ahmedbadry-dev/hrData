@@ -16,6 +16,7 @@ import DashboardSavedJobsPage from '@/pages/user/DashboardSavedJobsPage';
 import DashboardAutoApplyPage from '@/pages/user/DashboardAutoApplyPage';
 import DashboardAnalysisPage from '@/pages/user/DashboardAnalysisPage';
 import DashboardSettingsPage from '@/pages/user/DashboardSettingsPage';
+import DashboardProfilePage from '@/pages/user/DashboardProfilePage';
 
 import HomePage from '@/pages/home/HomePage';
 import NotFoundPage from '@/pages/error/NotFoundPage';
@@ -50,6 +51,7 @@ export default function AppRoutes() {
         <Route path="auto-apply" element={<DashboardAutoApplyPage />} />
         <Route path="analysis" element={<DashboardAnalysisPage />} />
         <Route path="settings" element={<DashboardSettingsPage />} />
+        <Route path="profile" element={<DashboardProfilePage />} />
       </Route>
 
       {/* Protected admin routes */}

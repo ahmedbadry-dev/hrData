@@ -18,6 +18,7 @@ export default function UserDashboardLayout() {
   else if (location.pathname.includes('/dashboard/auto-apply')) activePage = 'auto-apply';
   else if (location.pathname.includes('/dashboard/analysis')) activePage = 'analytics';
   else if (location.pathname.includes('/dashboard/settings')) activePage = 'settings';
+  else if (location.pathname.includes('/dashboard/profile')) activePage = 'profile';
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -42,6 +43,9 @@ export default function UserDashboardLayout() {
         break;
       case 'settings':
         navigate('/dashboard/settings');
+        break;
+      case 'profile':
+        navigate('/dashboard/profile');
         break;
     }
   };
