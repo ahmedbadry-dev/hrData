@@ -46,7 +46,9 @@
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -185,7 +187,9 @@
   border-radius: 0;
   font-weight: 600;
   box-shadow: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .input::placeholder {
@@ -195,6 +199,26 @@
 .input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
+}
+
+.input[readonly] {
+  background: rgba(237, 232, 220, 0.55);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.field-control-error {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
+}
+
+.field-error {
+  display: block;
+  margin-top: 7px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.5;
 }
 
 .select {
@@ -247,7 +271,9 @@
   gap: 10px;
   flex-wrap: wrap;
   direction: rtl;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .tags-area:focus-within {
@@ -269,7 +295,9 @@
   line-height: 1;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .skill-add-btn:hover {
@@ -318,7 +346,9 @@
   padding: 8px 12px;
   min-height: 36px;
   line-height: 1;
-  transition: background 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    transform 0.2s;
 }
 
 .tag:hover {
@@ -401,7 +431,9 @@
   font-weight: 700;
   cursor: pointer;
   text-align: right;
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 }
 
 .month-picker-btn:hover {
@@ -497,7 +529,10 @@
   padding: 8px 10px;
   cursor: pointer;
   text-align: center;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .month-picker-option:hover {
@@ -522,7 +557,9 @@
   font-weight: 800;
   padding: 9px 12px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .month-picker-clear:hover {
@@ -570,7 +607,9 @@
   font-weight: 700;
   padding: 5px 12px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   border-radius: 0;
   flex-shrink: 0;
 }
@@ -597,7 +636,10 @@
   font-weight: 700;
   padding: 14px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
   text-align: center;
   display: block;
   border-radius: 0;
@@ -661,6 +703,11 @@
   box-shadow: none;
 }
 
+.language-name-input.field-control-error {
+  background: rgba(192, 57, 43, 0.06);
+  border-right-color: var(--accent);
+}
+
 .pills {
   grid-area: pills;
   display: flex;
@@ -678,7 +725,10 @@
   border: 1.5px solid rgba(200, 184, 154, 0.75);
   color: var(--muted);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
   background: transparent;
   font-family: 'Cairo', sans-serif;
   border-radius: 0;
@@ -711,7 +761,9 @@
   font-weight: 700;
   padding: 7px 12px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   border-radius: 0;
   direction: rtl;
 }
@@ -739,7 +791,10 @@
   font-weight: 700;
   padding: 10px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
   text-align: center;
   display: block;
   border-radius: 0;
@@ -761,6 +816,19 @@
   border-top: 0;
   justify-content: space-between;
   align-items: center;
+}
+
+.save-actions-main {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.save-error {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
 }
 
 .btn-primary {
@@ -904,6 +972,10 @@
     padding: 16px;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .save-actions-main {
+    width: 100%;
   }
 
   .btn-primary,

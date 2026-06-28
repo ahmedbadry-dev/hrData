@@ -1,82 +1,140 @@
+import { useQueryClient } from '@tanstack/react-query';
+import { EmptyState } from '@/components/common';
 import {
   UserProfileSection,
-  type UserEducationValues,
+  type UserEducationSkillsValues,
   type UserExperienceEntry,
-  type UserLanguageEntry,
   type UserProfileFormValues,
 } from '@/components/user/sections';
+import { FullPageSpinner } from '@/components/ui';
+import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/modules/auth/api/hooks';
+import {
+  profileQueryKeys,
+  type ProfileData,
+  type ProfileQualification,
+  type ProfileSpecialization,
+  useProfile,
+  useUpdatePersonalProfile,
+  useUpdateProfileEducationSkills,
+  useUpdateProfileExperience,
+} from '@/modules/profile';
+import type { ApiResponse } from '@/services/api';
 
-const TEMP_PROFILE_FALLBACK: UserProfileFormValues = {
-  firstName: 'محمد',
-  lastName: 'العتيبي',
-  email: 'm.alatybi@email.com',
-  phone: '+966 50 123 4567',
-  summary:
-    'مطور برمجيات متخصص في تطوير الويب والتطبيقات، أمتلك خبرة تزيد على 5 سنوات في بناء حلول تقنية متكاملة.',
-};
+type ProfileApiResponse = ApiResponse<ProfileData>;
 
-const TEMP_EXPERIENCE_FALLBACK: UserExperienceEntry[] = [
-  {
-    id: 'experience-1',
-    jobTitle: 'مطور ويب أول',
-    company: 'شركة تقنية الرياض',
-    startDate: '2021-03',
-    endDate: '2024-08',
-    description:
-      'قيادة فريق تطوير مكون من 4 مطورين، وتسليم 3 مشاريع كبرى في الموعد المحدد.',
-  },
-  {
-    id: 'experience-2',
-    jobTitle: 'مطور جونيور',
-    company: 'شركة إبداع للتقنية',
-    startDate: '2019-06',
-    endDate: '2021-02',
-    description: 'تطوير واجهات مستخدم تفاعلية باستخدام React وتكاملها مع الـ APIs.',
-  },
-];
+const PROFILE_STALE_TIME_MS = 2 * 60 * 1000;
 
-const TEMP_SKILLS_FALLBACK: string[] = [];
-
-const TEMP_LANGUAGES_FALLBACK: UserLanguageEntry[] = [
-  {
-    id: 'language-ar',
-    name: 'العربية',
-    level: 'fluent',
-  },
-  {
-    id: 'language-en',
-    name: 'الإنجليزية',
-    level: 'intermediate',
-  },
-];
-
-const TEMP_EDUCATION_FALLBACK: UserEducationValues = {
-  qualification: 'BAC',
-  specialization: 'IT',
-  institution: 'جامعة الملك سعود',
-  graduationYear: '2020',
-};
+const updateProfileCache =
+  (queryClient: ReturnType<typeof useQueryClient>) => (response: ProfileApiResponse) => {
+    queryClient.setQueryData(profileQueryKeys.me(), response);
+  };
 
 export default function DashboardProfilePage() {
-  const { data: authData } = useAuth();
-  const user = authData.user;
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const { data: authData, setSession } = useAuth();
+  const setProfileCache = updateProfileCache(queryClient);
 
-  const initialProfile: UserProfileFormValues = {
-    firstName: user?.firstName || TEMP_PROFILE_FALLBACK.firstName,
-    lastName: user?.lastName || TEMP_PROFILE_FALLBACK.lastName,
-    email: user?.email || TEMP_PROFILE_FALLBACK.email,
-    phone: TEMP_PROFILE_FALLBACK.phone,
-    summary: TEMP_PROFILE_FALLBACK.summary,
+  const { data, isLoading, isFetching, isError } = useProfile({
+    staleTime: PROFILE_STALE_TIME_MS,
+    refetchOnMount: true,
+  });
+
+  const personalMutation = useUpdatePersonalProfile({
+    onSuccess: (response) => {
+      setProfileCache(response);
+
+      const savedProfile = response.data?.profile;
+      if (savedProfile && authData.user && authData.accessToken) {
+        setSession({
+          accessToken: authData.accessToken,
+          user: {
+            ...authData.user,
+            firstName: savedProfile.firstName,
+            lastName: savedProfile.lastName,
+            fullName: `${savedProfile.firstName} ${savedProfile.lastName}`,
+          },
+        });
+      }
+    },
+  });
+
+  const experienceMutation = useUpdateProfileExperience({
+    onSuccess: setProfileCache,
+  });
+
+  const educationSkillsMutation = useUpdateProfileEducationSkills({
+    onSuccess: setProfileCache,
+  });
+
+  const profileData = data?.data;
+
+  const handleSavePersonal = async (profile: UserProfileFormValues) => {
+    await personalMutation.mutateAsync({
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      phone: profile.phone,
+      summary: profile.summary,
+    });
+    showToast({ message: 'تم حفظ المعلومات الشخصية', type: 'success' });
   };
+
+  const handleSaveExperience = async (experience: UserExperienceEntry[]) => {
+    await experienceMutation.mutateAsync({
+      experiences: experience.map(({ jobTitle, company, startDate, endDate, description }) => ({
+        jobTitle,
+        company,
+        startDate,
+        endDate,
+        description,
+      })),
+    });
+    showToast({ message: 'تم حفظ الخبرة المهنية', type: 'success' });
+  };
+
+  const handleSaveEducationSkills = async ({
+    education,
+    skills,
+    languages,
+  }: UserEducationSkillsValues) => {
+    await educationSkillsMutation.mutateAsync({
+      qualification: education.qualification as ProfileQualification | '',
+      specialization: education.specialization as ProfileSpecialization | '',
+      institution: education.institution,
+      graduationYear: education.graduationYear,
+      skills,
+      languages: languages.map(({ name, level }) => ({ name, level })),
+    });
+    showToast({ message: 'تم حفظ التعليم والمهارات', type: 'success' });
+  };
+
+  if (isLoading || (isFetching && !profileData)) {
+    return <FullPageSpinner message="جاري تحميل الملف الشخصي" />;
+  }
+
+  if (isError || !profileData) {
+    return (
+      <section>
+        <EmptyState
+          symbol="!"
+          title="تعذر تحميل الملف الشخصي"
+          description="يرجى إعادة المحاولة بعد قليل"
+        />
+      </section>
+    );
+  }
 
   return (
     <UserProfileSection
-      initialProfile={initialProfile}
-      initialExperience={TEMP_EXPERIENCE_FALLBACK}
-      initialSkills={TEMP_SKILLS_FALLBACK}
-      initialLanguages={TEMP_LANGUAGES_FALLBACK}
-      initialEducation={TEMP_EDUCATION_FALLBACK}
+      initialProfile={profileData.profile}
+      initialExperience={profileData.experience}
+      initialSkills={profileData.skills}
+      initialLanguages={profileData.languages}
+      initialEducation={profileData.education}
+      onSavePersonal={handleSavePersonal}
+      onSaveExperience={handleSaveExperience}
+      onSaveEducationSkills={handleSaveEducationSkills}
     />
   );
 }

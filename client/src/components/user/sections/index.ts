@@ -6,6 +6,7 @@ export { default as UserAnalyticsSection } from './UserAnalyticsSection/UserAnal
 export { default as UserSettingsSection } from './UserSettingsSection/UserSettingsSection';
 export { default as UserProfileSection } from './UserProfileSection/UserProfileSection';
 export type {
+  UserEducationSkillsValues,
   UserEducationValues,
   UserExperienceEntry,
   UserLanguageEntry,

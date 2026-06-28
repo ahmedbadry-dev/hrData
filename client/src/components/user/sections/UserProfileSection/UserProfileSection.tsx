@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Select } from '@/components/common';
 import { Button, Input } from '@/components/ui';
+import { mapError } from '@/lib/error-mapper';
 import { cn } from '@/lib/utils';
 import styles from './UserProfileSection.module.css';
 
@@ -23,7 +24,7 @@ export interface UserExperienceEntry {
   description: string;
 }
 
-type LanguageLevel = 'beginner' | 'intermediate' | 'advanced' | 'fluent';
+type LanguageLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'FLUENT' | 'NATIVE';
 
 export interface UserLanguageEntry {
   id: string;
@@ -38,19 +39,38 @@ export interface UserEducationValues {
   graduationYear: string;
 }
 
+export interface UserEducationSkillsValues {
+  education: UserEducationValues;
+  skills: string[];
+  languages: UserLanguageEntry[];
+}
+
 interface UserProfileSectionProps {
   initialProfile: UserProfileFormValues;
   initialExperience: UserExperienceEntry[];
   initialSkills: string[];
   initialLanguages: UserLanguageEntry[];
   initialEducation: UserEducationValues;
+  onSavePersonal?: (profile: UserProfileFormValues) => Promise<void> | void;
+  onSaveExperience?: (experience: UserExperienceEntry[]) => Promise<void> | void;
+  onSaveEducationSkills?: (values: UserEducationSkillsValues) => Promise<void> | void;
 }
 
 interface SaveActionsProps {
   isSaved: boolean;
+  isSaving: boolean;
+  error?: string | null;
   onSave: () => void;
   onReset: () => void;
 }
+
+type ExperienceFieldName = keyof Omit<UserExperienceEntry, 'id'>;
+type ExperienceFieldErrors = Record<string, Partial<Record<ExperienceFieldName, string>>>;
+type LanguageFieldErrors = Record<string, string>;
+
+const EXPERIENCE_END_DATE_ERROR = 'تاريخ النهاية يجب أن يكون بعد أو مساوي لتاريخ البداية';
+const DUPLICATE_LANGUAGE_ERROR = 'هذه اللغة مضافة بالفعل';
+const DUPLICATE_SKILL_ERROR = 'هذه المهارة مضافة بالفعل';
 
 const PROFILE_TABS: Array<{
   id: ProfileTab;
@@ -83,33 +103,34 @@ const ARABIC_NUMBER_FORMATTER = new Intl.NumberFormat('ar-EG', {
 });
 
 const LANGUAGE_LEVELS: Array<{ value: LanguageLevel; label: string }> = [
-  { value: 'beginner', label: 'مبتدئ' },
-  { value: 'intermediate', label: 'متوسط' },
-  { value: 'advanced', label: 'متقدم' },
-  { value: 'fluent', label: 'متمكن' },
+  { value: 'NATIVE', label: 'اللغة الأم' },
+  { value: 'BEGINNER', label: 'مبتدئ' },
+  { value: 'INTERMEDIATE', label: 'متوسط' },
+  { value: 'ADVANCED', label: 'متقدم' },
+  { value: 'FLUENT', label: 'متمكن' },
 ];
 
 const QUALIFICATION_OPTIONS = [
   { value: '', label: 'الكل' },
-  { value: 'HS', label: 'ثانوية عامة' },
-  { value: 'DIP', label: 'دبلوم' },
-  { value: 'BAC', label: 'بكالوريوس' },
-  { value: 'MAS', label: 'ماجستير' },
+  { value: 'HIGH_SCHOOL', label: 'ثانوية عامة' },
+  { value: 'DIPLOMA', label: 'دبلوم' },
+  { value: 'BACHELOR', label: 'بكالوريوس' },
+  { value: 'MASTER', label: 'ماجستير' },
   { value: 'PHD', label: 'دكتوراه' },
-  { value: 'OTH', label: 'أخرى' },
+  { value: 'OTHER', label: 'أخرى' },
 ];
 
 const SPECIALIZATION_OPTIONS = [
   { value: '', label: 'الكل' },
-  { value: 'ENG', label: 'هندسة' },
-  { value: 'IT', label: 'تقنية المعلومات' },
-  { value: 'BUS', label: 'إدارة أعمال' },
-  { value: 'ACC', label: 'محاسبة ومالية' },
-  { value: 'MKT', label: 'تسويق ومبيعات' },
-  { value: 'HLT', label: 'رعاية صحية' },
-  { value: 'EDU', label: 'تعليم' },
-  { value: 'HR', label: 'موارد بشرية' },
-  { value: 'OTH', label: 'أخرى' },
+  { value: 'ENGINEERING', label: 'هندسة' },
+  { value: 'INFORMATION_TECHNOLOGY', label: 'تقنية المعلومات' },
+  { value: 'BUSINESS_ADMINISTRATION', label: 'إدارة أعمال' },
+  { value: 'ACCOUNTING_FINANCE', label: 'محاسبة ومالية' },
+  { value: 'MARKETING_SALES', label: 'تسويق ومبيعات' },
+  { value: 'HEALTHCARE', label: 'رعاية صحية' },
+  { value: 'EDUCATION', label: 'تعليم' },
+  { value: 'HUMAN_RESOURCES', label: 'موارد بشرية' },
+  { value: 'OTHER', label: 'أخرى' },
 ];
 
 const MONTH_OPTIONS = [
@@ -153,7 +174,7 @@ function createTemporaryLanguageEntry(): UserLanguageEntry {
   return {
     id: `new-language-${newLanguageCounter}`,
     name: '',
-    level: 'beginner',
+    level: 'BEGINNER',
   };
 }
 
@@ -246,6 +267,7 @@ interface MonthPickerProps {
   onValueChange: (value: string) => void;
   placeholder: string;
   allowClear?: boolean;
+  hasError?: boolean;
 }
 
 function MonthPicker({
@@ -253,6 +275,7 @@ function MonthPicker({
   onValueChange,
   placeholder,
   allowClear = false,
+  hasError = false,
 }: MonthPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -283,8 +306,13 @@ function MonthPicker({
     <div className={styles['month-picker']} ref={containerRef}>
       <button
         type="button"
-        className={cn(styles['month-picker-btn'], isOpen && styles['month-picker-open'])}
+        className={cn(
+          styles['month-picker-btn'],
+          isOpen && styles['month-picker-open'],
+          hasError && styles['field-control-error']
+        )}
         aria-expanded={isOpen}
+        aria-invalid={hasError || undefined}
         onClick={() => setIsOpen((current) => !current)}
       >
         <span>{getMonthPickerLabel(value, placeholder)}</span>
@@ -364,16 +392,20 @@ function MonthPicker({
   );
 }
 
-function SaveActions({ isSaved, onSave, onReset }: SaveActionsProps) {
+function SaveActions({ isSaved, isSaving, error, onSave, onReset }: SaveActionsProps) {
   return (
     <div className={styles['save-bar']}>
-      <Button
-        type="button"
-        className={cn(styles['btn-primary'], isSaved && styles.saved)}
-        onClick={onSave}
-      >
-        {isSaved ? '✓ تم الحفظ' : 'حفظ التغييرات'}
-      </Button>
+      <div className={styles['save-actions-main']}>
+        <Button
+          type="button"
+          className={cn(styles['btn-primary'], isSaved && styles.saved)}
+          onClick={onSave}
+          isLoading={isSaving}
+        >
+          {isSaving ? 'جاري الحفظ' : isSaved ? '✓ تم الحفظ' : 'حفظ التغييرات'}
+        </Button>
+        {error ? <div className={styles['save-error']}>{error}</div> : null}
+      </div>
       <Button type="button" variant="ghost" className={styles['btn-ghost']} onClick={onReset}>
         إلغاء
       </Button>
@@ -387,17 +419,97 @@ export default function UserProfileSection({
   initialSkills,
   initialLanguages,
   initialEducation,
+  onSavePersonal,
+  onSaveExperience,
+  onSaveEducationSkills,
 }: UserProfileSectionProps) {
   const [activeTab, setActiveTab] = useState<ProfileTab>('personal');
   const [profile, setProfile] = useState<UserProfileFormValues>(() => initialProfile);
-  const [experienceEntries, setExperienceEntries] =
-    useState<UserExperienceEntry[]>(() => initialExperience);
+  const [experienceEntries, setExperienceEntries] = useState<UserExperienceEntry[]>(
+    () => initialExperience
+  );
   const [skills, setSkills] = useState<string[]>(() => initialSkills);
   const [skillInput, setSkillInput] = useState('');
   const [skillError, setSkillError] = useState('');
   const [languages, setLanguages] = useState<UserLanguageEntry[]>(() => initialLanguages);
   const [education, setEducation] = useState<UserEducationValues>(() => initialEducation);
   const [savedTab, setSavedTab] = useState<ProfileTab | null>(null);
+  const [savingTab, setSavingTab] = useState<ProfileTab | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [experienceErrors, setExperienceErrors] = useState<ExperienceFieldErrors>({});
+  const [languageErrors, setLanguageErrors] = useState<LanguageFieldErrors>({});
+
+  useEffect(() => {
+    setProfile(initialProfile);
+  }, [initialProfile]);
+
+  useEffect(() => {
+    setExperienceEntries(initialExperience);
+    setExperienceErrors({});
+  }, [initialExperience]);
+
+  useEffect(() => {
+    setSkills(initialSkills);
+    setSkillInput('');
+    setSkillError('');
+  }, [initialSkills]);
+
+  useEffect(() => {
+    setLanguages(initialLanguages);
+    setLanguageErrors({});
+  }, [initialLanguages]);
+
+  useEffect(() => {
+    setEducation(initialEducation);
+  }, [initialEducation]);
+
+  const clearExperienceError = (id: string, field?: ExperienceFieldName) => {
+    setExperienceErrors((currentErrors) => {
+      const entryErrors = currentErrors[id];
+      if (!entryErrors) {
+        return currentErrors;
+      }
+
+      if (!field) {
+        const { [id]: _removed, ...remainingErrors } = currentErrors;
+        return remainingErrors;
+      }
+
+      if (!entryErrors[field]) {
+        return currentErrors;
+      }
+
+      const { [field]: _removedField, ...remainingEntryErrors } = entryErrors;
+      if (Object.keys(remainingEntryErrors).length === 0) {
+        const { [id]: _removed, ...remainingErrors } = currentErrors;
+        return remainingErrors;
+      }
+
+      return {
+        ...currentErrors,
+        [id]: remainingEntryErrors,
+      };
+    });
+  };
+
+  const clearLanguageError = (id: string) => {
+    setLanguageErrors((currentErrors) => {
+      if (!currentErrors[id]) {
+        return currentErrors;
+      }
+
+      const { [id]: _removed, ...remainingErrors } = currentErrors;
+      return remainingErrors;
+    });
+  };
+
+  const handleTabChange = (tab: ProfileTab) => {
+    setActiveTab(tab);
+    setSaveError(null);
+    setExperienceErrors({});
+    setLanguageErrors({});
+    setSkillError('');
+  };
 
   const updateProfile = (field: keyof UserProfileFormValues, value: string) => {
     setProfile((current) => ({
@@ -405,6 +517,7 @@ export default function UserProfileSection({
       [field]: value,
     }));
     setSavedTab(null);
+    setSaveError(null);
   };
 
   const updateExperienceEntry = (
@@ -423,6 +536,8 @@ export default function UserProfileSection({
       )
     );
     setSavedTab(null);
+    setSaveError(null);
+    clearExperienceError(id, field);
   };
 
   const updateEducation = (field: keyof UserEducationValues, value: string) => {
@@ -431,6 +546,7 @@ export default function UserProfileSection({
       [field]: value,
     }));
     setSavedTab(null);
+    setSaveError(null);
   };
 
   const handleSkillInputChange = (value: string) => {
@@ -462,6 +578,7 @@ export default function UserProfileSection({
     setSkillInput('');
     setSkillError('');
     setSavedTab(null);
+    setSaveError(null);
   };
 
   const handleSkillKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -477,6 +594,7 @@ export default function UserProfileSection({
     setSkills((currentSkills) => currentSkills.filter((skill) => skill !== skillToRemove));
     setSkillError('');
     setSavedTab(null);
+    setSaveError(null);
   };
 
   const handleSetLanguageLevel = (id: string, level: LanguageLevel) => {
@@ -491,6 +609,8 @@ export default function UserProfileSection({
       )
     );
     setSavedTab(null);
+    setSaveError(null);
+    clearLanguageError(id);
   };
 
   const handleLanguageNameChange = (id: string, name: string) => {
@@ -505,26 +625,34 @@ export default function UserProfileSection({
       )
     );
     setSavedTab(null);
+    setSaveError(null);
+    clearLanguageError(id);
   };
 
   const handleRemoveLanguage = (id: string) => {
     setLanguages((currentLanguages) => currentLanguages.filter((language) => language.id !== id));
     setSavedTab(null);
+    setSaveError(null);
+    clearLanguageError(id);
   };
 
   const handleAddLanguage = () => {
     setLanguages((currentLanguages) => [...currentLanguages, createTemporaryLanguageEntry()]);
     setSavedTab(null);
+    setSaveError(null);
   };
 
   const handleResetPersonal = () => {
     setProfile(initialProfile);
     setSavedTab(null);
+    setSaveError(null);
   };
 
   const handleResetExperience = () => {
     setExperienceEntries(initialExperience);
+    setExperienceErrors({});
     setSavedTab(null);
+    setSaveError(null);
   };
 
   const handleResetEducation = () => {
@@ -532,26 +660,115 @@ export default function UserProfileSection({
     setSkillInput('');
     setSkillError('');
     setLanguages(initialLanguages);
+    setLanguageErrors({});
     setEducation(initialEducation);
     setSavedTab(null);
+    setSaveError(null);
   };
 
   const handleAddExperience = () => {
-    setExperienceEntries((currentEntries) => [
-      ...currentEntries,
-      createEmptyExperienceEntry(),
-    ]);
+    setExperienceEntries((currentEntries) => [...currentEntries, createEmptyExperienceEntry()]);
     setSavedTab(null);
+    setSaveError(null);
   };
 
   const handleRemoveExperience = (id: string) => {
     setExperienceEntries((currentEntries) => currentEntries.filter((entry) => entry.id !== id));
     setSavedTab(null);
+    setSaveError(null);
+    clearExperienceError(id);
   };
 
-  const handleSave = (tab: ProfileTab) => {
-    setSavedTab(tab);
-    window.setTimeout(() => setSavedTab(null), 2500);
+  const validateExperienceBeforeSave = () => {
+    const nextErrors: ExperienceFieldErrors = {};
+
+    for (const entry of experienceEntries) {
+      if (entry.startDate && entry.endDate && entry.endDate < entry.startDate) {
+        nextErrors[entry.id] = {
+          ...nextErrors[entry.id],
+          endDate: EXPERIENCE_END_DATE_ERROR,
+        };
+      }
+    }
+
+    setExperienceErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const validateEducationSkillsBeforeSave = () => {
+    const nextLanguageErrors: LanguageFieldErrors = {};
+    const seenLanguages = new Map<string, string>();
+
+    for (const language of languages) {
+      const normalizedName = language.name.trim().toLocaleLowerCase();
+      if (!normalizedName) {
+        continue;
+      }
+
+      if (seenLanguages.has(normalizedName)) {
+        nextLanguageErrors[language.id] = DUPLICATE_LANGUAGE_ERROR;
+        continue;
+      }
+
+      seenLanguages.set(normalizedName, language.id);
+    }
+
+    const seenSkills = new Set<string>();
+    const hasDuplicateSkill = skills.some((skill) => {
+      const normalizedSkill = skill.trim().toLocaleLowerCase();
+      if (!normalizedSkill) {
+        return false;
+      }
+
+      if (seenSkills.has(normalizedSkill)) {
+        return true;
+      }
+
+      seenSkills.add(normalizedSkill);
+      return false;
+    });
+
+    setLanguageErrors(nextLanguageErrors);
+    if (hasDuplicateSkill) {
+      setSkillError(DUPLICATE_SKILL_ERROR);
+    }
+
+    return Object.keys(nextLanguageErrors).length === 0 && !hasDuplicateSkill;
+  };
+
+  const handleSave = async (tab: ProfileTab) => {
+    setSaveError(null);
+
+    if (tab === 'experience' && !validateExperienceBeforeSave()) {
+      return;
+    }
+
+    if (tab === 'education' && !validateEducationSkillsBeforeSave()) {
+      return;
+    }
+
+    setSavingTab(tab);
+
+    try {
+      if (tab === 'personal') {
+        await onSavePersonal?.(profile);
+      } else if (tab === 'experience') {
+        await onSaveExperience?.(experienceEntries);
+      } else {
+        await onSaveEducationSkills?.({
+          education,
+          skills,
+          languages,
+        });
+      }
+
+      setSavedTab(tab);
+      window.setTimeout(() => setSavedTab(null), 2500);
+    } catch (error) {
+      setSaveError(mapError(error));
+    } finally {
+      setSavingTab(null);
+    }
   };
 
   return (
@@ -571,7 +788,7 @@ export default function UserProfileSection({
               aria-selected={isActive}
               aria-controls={`profile-panel-${tab.id}`}
               className={cn(styles['tab-btn'], isActive && styles.active)}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
             >
               <TabIcon icon={tab.icon} />
               <span className={styles['tab-label']}>{tab.label}</span>
@@ -629,7 +846,8 @@ export default function UserProfileSection({
                   className={cn(styles.input, styles['ltr-input'])}
                   value={profile.email}
                   placeholder="example@email.com"
-                  onChange={(event) => updateProfile('email', event.target.value)}
+                  readOnly
+                  aria-readonly="true"
                 />
               </label>
 
@@ -639,7 +857,7 @@ export default function UserProfileSection({
                   type="tel"
                   className={cn(styles.input, styles['ltr-input'])}
                   value={profile.phone}
-                  placeholder="+966 5X XXX XXXX"
+                  placeholder="05XXXXXXXX"
                   onChange={(event) => updateProfile('phone', event.target.value)}
                 />
               </label>
@@ -666,6 +884,8 @@ export default function UserProfileSection({
 
         <SaveActions
           isSaved={savedTab === 'personal'}
+          isSaving={savingTab === 'personal'}
+          error={activeTab === 'personal' ? saveError : null}
           onSave={() => handleSave('personal')}
           onReset={handleResetPersonal}
         />
@@ -744,8 +964,14 @@ export default function UserProfileSection({
                         value={entry.endDate}
                         placeholder="حتى الآن / اختر تاريخ النهاية"
                         allowClear
+                        hasError={Boolean(experienceErrors[entry.id]?.endDate)}
                         onValueChange={(value) => updateExperienceEntry(entry.id, 'endDate', value)}
                       />
+                      {experienceErrors[entry.id]?.endDate ? (
+                        <span className={styles['field-error']}>
+                          {experienceErrors[entry.id]?.endDate}
+                        </span>
+                      ) : null}
                     </label>
                   </div>
 
@@ -777,6 +1003,8 @@ export default function UserProfileSection({
 
         <SaveActions
           isSaved={savedTab === 'experience'}
+          isSaving={savingTab === 'experience'}
+          error={activeTab === 'experience' ? saveError : null}
           onSave={() => handleSave('experience')}
           onReset={handleResetExperience}
         />
@@ -874,13 +1102,19 @@ export default function UserProfileSection({
                 <label className={styles['language-name-wrap']}>
                   <span className={styles['sr-only']}>اسم اللغة</span>
                   <Input
-                    className={cn(styles.input, styles['language-name-input'])}
+                    className={cn(
+                      styles.input,
+                      styles['language-name-input'],
+                      languageErrors[language.id] && styles['field-control-error']
+                    )}
                     value={language.name}
                     placeholder="اسم اللغة"
-                    onChange={(event) =>
-                      handleLanguageNameChange(language.id, event.target.value)
-                    }
+                    aria-invalid={Boolean(languageErrors[language.id]) || undefined}
+                    onChange={(event) => handleLanguageNameChange(language.id, event.target.value)}
                   />
+                  {languageErrors[language.id] ? (
+                    <span className={styles['field-error']}>{languageErrors[language.id]}</span>
+                  ) : null}
                 </label>
               </div>
             ))}
@@ -955,6 +1189,8 @@ export default function UserProfileSection({
 
         <SaveActions
           isSaved={savedTab === 'education'}
+          isSaving={savingTab === 'education'}
+          error={activeTab === 'education' ? saveError : null}
           onSave={() => handleSave('education')}
           onReset={handleResetEducation}
         />

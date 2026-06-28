@@ -25,6 +25,10 @@ export const mapErrorToArabic = (message: string): string => {
     'phone is required': 'رقم الجوال مطلوب',
     'phone must start with 0': 'رقم الجوال يجب أن يبدأ بـ 0',
     'invalid phone number': 'رقم الجوال غير صالح',
+    'experience end date must be after or equal to start date':
+      'تاريخ النهاية يجب أن يكون بعد أو مساوي لتاريخ البداية',
+    'duplicate languages are not allowed': 'هذه اللغة مضافة بالفعل',
+    'duplicate skills are not allowed': 'هذه المهارة مضافة بالفعل',
     'passwords do not match': 'كلمتا المرور غير متطابقتين',
     'account is disabled': 'الحساب معطل',
     'account is not verified': 'الحساب غير مفعل',

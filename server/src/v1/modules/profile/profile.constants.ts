@@ -1,0 +1,27 @@
+export const PROFILE_CONSTANTS = {
+  MESSAGES: {
+    PROFILE_FETCHED_SUCCESSFULLY: 'Profile fetched successfully',
+    PERSONAL_PROFILE_UPDATED_SUCCESSFULLY: 'Personal profile updated successfully',
+    EXPERIENCE_UPDATED_SUCCESSFULLY: 'Profile experience updated successfully',
+    EDUCATION_SKILLS_UPDATED_SUCCESSFULLY: 'Profile education and skills updated successfully',
+    PHONE_ALREADY_IN_USE: 'phone already in use',
+    DUPLICATE_SKILL: 'Duplicate skills are not allowed',
+    DUPLICATE_LANGUAGE: 'Duplicate languages are not allowed',
+    INVALID_EXPERIENCE_DATE_RANGE: 'Experience end date must be after or equal to start date',
+    INVALID_MONTH: 'Date must be in YYYY-MM format',
+  },
+  LIMITS: {
+    NAME_MAX_LENGTH: 80,
+    PHONE_MAX_LENGTH: 30,
+    SUMMARY_MAX_LENGTH: 1500,
+    INSTITUTION_MAX_LENGTH: 160,
+    EXPERIENCE_MAX_COUNT: 20,
+    EXPERIENCE_TEXT_MAX_LENGTH: 1000,
+    SKILLS_MAX_COUNT: 50,
+    SKILL_NAME_MAX_LENGTH: 80,
+    LANGUAGES_MAX_COUNT: 20,
+    LANGUAGE_NAME_MAX_LENGTH: 80,
+    GRADUATION_YEAR_MIN: 1950,
+    GRADUATION_YEAR_MAX_OFFSET: 10,
+  },
+} as const;

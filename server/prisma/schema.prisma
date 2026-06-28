@@ -140,6 +140,14 @@ enum JobSpecialization {
   OTHER
 }
 
+enum LanguageLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  FLUENT
+  NATIVE
+}
+
 model User {
   id                         String     @id @default(uuid())
   firstName                  String     @map("first_name")
@@ -161,13 +169,84 @@ model User {
   createdAt                  DateTime   @default(now()) @map("created_at")
   updatedAt                  DateTime   @updatedAt @map("updated_at")
 
-  gmailTokens    GmailToken[]
-  savedJobs      SavedJob[]
-  applications   Application[]
-  notifications  Notification[]
-  activityLogs   ActivityLog[]
+  gmailTokens   GmailToken[]
+  savedJobs     SavedJob[]
+  applications  Application[]
+  notifications Notification[]
+  activityLogs  ActivityLog[]
+  profile       UserProfile?
+  experiences   UserExperience[]
+  skills        UserSkill[]
+  languages     UserLanguage[]
 
   @@map("users")
+}
+
+model UserProfile {
+  id             String             @id @default(uuid())
+  userId         String             @unique @map("user_id")
+  summary        String?
+  qualification  JobQualification?
+  specialization JobSpecialization?
+  institution    String?
+  graduationYear Int?               @map("graduation_year")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model UserExperience {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  jobTitle    String    @map("job_title")
+  company     String
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime? @map("end_date")
+  description String?
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sortOrder])
+  @@map("user_experiences")
+}
+
+model UserSkill {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  name           String
+  normalizedName String   @map("normalized_name")
+  sortOrder      Int      @default(0) @map("sort_order")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, normalizedName])
+  @@index([userId, sortOrder])
+  @@map("user_skills")
+}
+
+model UserLanguage {
+  id             String        @id @default(uuid())
+  userId         String        @map("user_id")
+  name           String
+  normalizedName String        @map("normalized_name")
+  level          LanguageLevel
+  sortOrder      Int           @default(0) @map("sort_order")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, normalizedName])
+  @@index([userId, sortOrder])
+  @@map("user_languages")
 }
 
 model GmailToken {
@@ -186,25 +265,25 @@ model GmailToken {
 }
 
 model Job {
-  id          String       @id @default(uuid())
-  title       String
-  companyName String       @map("company_name")
-  location    JobLocation? @default(OTHER)
-  category    String?
-  description String?
-  hrEmail     String?      @map("hr_email")
-  source      String
-  sourceUrl   String?      @map("source_url")
-  experience  String?
-  languageRequirement String?      @map("language_requirement")
-  language    String       @default("ar")
-  postedAt    DateTime?    @map("posted_at")
-  expiresAt   DateTime?    @map("expires_at")
-  isExpired      Boolean           @default(false) @map("is_expired")
-  qualification  JobQualification  @default(OTHER)
-  specialization JobSpecialization @default(OTHER)
-  createdAt      DateTime          @default(now()) @map("created_at")
-  updatedAt      DateTime          @updatedAt @map("updated_at")
+  id                  String            @id @default(uuid())
+  title               String
+  companyName         String            @map("company_name")
+  location            JobLocation?      @default(OTHER)
+  category            String?
+  description         String?
+  hrEmail             String?           @map("hr_email")
+  source              String
+  sourceUrl           String?           @map("source_url")
+  experience          String?
+  languageRequirement String?           @map("language_requirement")
+  language            String            @default("ar")
+  postedAt            DateTime?         @map("posted_at")
+  expiresAt           DateTime?         @map("expires_at")
+  isExpired           Boolean           @default(false) @map("is_expired")
+  qualification       JobQualification  @default(OTHER)
+  specialization      JobSpecialization @default(OTHER)
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
 
   savedJobs    SavedJob[]
   applications Application[]
@@ -227,22 +306,22 @@ model SavedJob {
 }
 
 model Application {
-  id              String            @id @default(uuid())
-  userId          String            @map("user_id")
-  jobId           String            @map("job_id")
-  status          ApplicationStatus @default(SCHEDULED)
-  scheduledAt     DateTime?         @map("scheduled_at")
-  sentAt          DateTime?         @map("sent_at")
-  openedAt        DateTime?         @map("opened_at")
-  trackingToken   String?           @unique @map("tracking_token")
-  errorMessage    String?           @map("error_message")
-  retryCount      Int               @default(0) @map("retry_count")
+  id            String            @id @default(uuid())
+  userId        String            @map("user_id")
+  jobId         String            @map("job_id")
+  status        ApplicationStatus @default(SCHEDULED)
+  scheduledAt   DateTime?         @map("scheduled_at")
+  sentAt        DateTime?         @map("sent_at")
+  openedAt      DateTime?         @map("opened_at")
+  trackingToken String?           @unique @map("tracking_token")
+  errorMessage  String?           @map("error_message")
+  retryCount    Int               @default(0) @map("retry_count")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job           Job            @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@index([userId, status, createdAt])
   @@map("applications")

@@ -31,6 +31,9 @@ import { ScraperController } from './modules/scraper/scraper.controller';
 import { SettingsService } from './modules/settings/settings.service';
 import { SettingsController } from './modules/settings/settings.controller';
 import { settingsRoutes } from './modules/settings/settings.routes';
+import { ProfileService } from './modules/profile/profile.service';
+import { ProfileController } from './modules/profile/profile.controller';
+import { profileRoutes } from './modules/profile/profile.routes';
 
 export const v1Routes = () => {
   const router = Router();
@@ -57,6 +60,8 @@ export const v1Routes = () => {
 
   const settingsService = new SettingsService(prisma);
   const settingsController = new SettingsController(settingsService);
+  const profileService = new ProfileService(prisma);
+  const profileController = new ProfileController(profileService);
 
   const { adminRouter: adminNotificationsRouter, userRouter: userNotificationsRouter } =
     notificationsRoutes(notificationsController);
@@ -70,6 +75,7 @@ export const v1Routes = () => {
   router.use('/notifications', userNotificationsRouter);
   router.use('/applications', applicationsRoutes(applicationsController));
   router.use('/gmail', gmailRoutes(gmailController));
+  router.use('/profile', profileRoutes(profileController));
   router.use('/admin/scraper', scraperRoutes(scraperController));
   router.use('/admin/settings', settingsRoutes(settingsController));
 
