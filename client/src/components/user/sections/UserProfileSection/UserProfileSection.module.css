@@ -24,6 +24,84 @@
   line-height: 1.35;
 }
 
+.loading-block {
+  position: relative;
+  overflow: hidden;
+  background: rgba(200, 184, 154, 0.32);
+}
+
+.loading-block::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: loading-shimmer 1.4s infinite;
+}
+
+.loading-headline {
+  width: min(280px, 70%);
+  height: 42px;
+  margin-bottom: 20px;
+  border: 2px solid rgba(13, 13, 13, 0.12);
+}
+
+.loading-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.loading-tab {
+  min-height: 86px;
+  border: 2px solid rgba(13, 13, 13, 0.22);
+  background: var(--cream);
+  padding: 14px 12px;
+  display: grid;
+  gap: 9px;
+  align-content: center;
+}
+
+.loading-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.loading-line,
+.loading-line-short,
+.loading-title-line,
+.loading-desc-line {
+  height: 12px;
+}
+
+.loading-line {
+  width: 78%;
+}
+
+.loading-line-short {
+  width: 54%;
+}
+
+.loading-title-line {
+  width: 180px;
+  margin-bottom: 10px;
+}
+
+.loading-desc-line {
+  width: min(360px, 85%);
+  margin-bottom: 24px;
+}
+
+.loading-row {
+  margin-top: 0;
+}
+
+.loading-input {
+  height: 46px;
+  border: 2px solid rgba(13, 13, 13, 0.12);
+}
+
 .tab-nav {
   display: flex;
   direction: rtl;
@@ -239,6 +317,47 @@
 .ltr-input {
   direction: ltr;
   text-align: left;
+}
+
+.phone-control {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: stretch;
+  direction: ltr;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.phone-control:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
+}
+
+.phone-prefix {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border-right: 2px solid var(--ink);
+  background: var(--cream);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.phone-input {
+  min-height: 46px;
+  border: 0;
+  box-shadow: none;
+}
+
+.phone-input:focus {
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .textarea {
@@ -870,6 +989,10 @@
     display: none;
   }
 
+  .loading-tabs {
+    grid-template-columns: 1fr;
+  }
+
   .two-col {
     grid-template-columns: 1fr;
   }
@@ -981,5 +1104,11 @@
   .btn-primary,
   .btn-ghost {
     width: 100%;
+  }
+}
+
+@keyframes loading-shimmer {
+  100% {
+    transform: translateX(-100%);
   }
 }

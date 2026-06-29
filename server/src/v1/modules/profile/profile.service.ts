@@ -58,7 +58,7 @@ export class ProfileService {
           data: {
             firstName: data.firstName,
             lastName: data.lastName,
-            phone: data.phone,
+            phone: data.phone ?? null,
           },
         });
 
@@ -166,12 +166,20 @@ export class ProfileService {
 
         await tx.userSkill.deleteMany({ where: { userId } });
         if (skills.length > 0) {
-          await tx.userSkill.createMany({ data: skills });
+          try {
+            await tx.userSkill.createMany({ data: skills });
+          } catch (error) {
+            this.handleKnownWriteError(error, PROFILE_CONSTANTS.MESSAGES.DUPLICATE_SKILL);
+          }
         }
 
         await tx.userLanguage.deleteMany({ where: { userId } });
         if (languages.length > 0) {
-          await tx.userLanguage.createMany({ data: languages });
+          try {
+            await tx.userLanguage.createMany({ data: languages });
+          } catch (error) {
+            this.handleKnownWriteError(error, PROFILE_CONSTANTS.MESSAGES.DUPLICATE_LANGUAGE);
+          }
         }
 
         await this.logActivity(tx, userId, 'UPDATE_PROFILE_EDUCATION_SKILLS');
@@ -308,16 +316,26 @@ export class ProfileService {
     });
   }
 
-  private handleKnownWriteError(error: unknown): never {
+  private handleKnownWriteError(
+    error: unknown,
+    duplicateNormalizedNameMessage: string = PROFILE_CONSTANTS.MESSAGES.DUPLICATE_SKILL
+  ): never {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      const target = Array.isArray(error.meta?.target) ? error.meta.target.join(',') : '';
+      const rawTarget = error.meta?.target;
+      const target = (
+        Array.isArray(rawTarget)
+          ? rawTarget.join(',')
+          : typeof rawTarget === 'string'
+            ? rawTarget
+            : ''
+      ).toLocaleLowerCase();
 
       if (target.includes('phone')) {
         throw new ConflictException(PROFILE_CONSTANTS.MESSAGES.PHONE_ALREADY_IN_USE);
       }
 
-      if (target.includes('normalized_name')) {
-        throw new ConflictException(PROFILE_CONSTANTS.MESSAGES.DUPLICATE_SKILL);
+      if (target.includes('normalizedname') || target.includes('normalized_name')) {
+        throw new ConflictException(duplicateNormalizedNameMessage);
       }
     }
 

@@ -6,7 +6,6 @@ import {
   type UserExperienceEntry,
   type UserProfileFormValues,
 } from '@/components/user/sections';
-import { FullPageSpinner } from '@/components/ui';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/modules/auth/api/hooks';
 import {
@@ -24,6 +23,25 @@ import type { ApiResponse } from '@/services/api';
 type ProfileApiResponse = ApiResponse<ProfileData>;
 
 const PROFILE_STALE_TIME_MS = 2 * 60 * 1000;
+
+const EMPTY_PROFILE_DATA: ProfileData = {
+  profile: {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    summary: '',
+  },
+  experience: [],
+  skills: [],
+  languages: [],
+  education: {
+    qualification: '',
+    specialization: '',
+    institution: '',
+    graduationYear: '',
+  },
+};
 
 const updateProfileCache =
   (queryClient: ReturnType<typeof useQueryClient>) => (response: ProfileApiResponse) => {
@@ -69,6 +87,7 @@ export default function DashboardProfilePage() {
   });
 
   const profileData = data?.data;
+  const isProfileLoading = isLoading || (isFetching && !profileData);
 
   const handleSavePersonal = async (profile: UserProfileFormValues) => {
     await personalMutation.mutateAsync({
@@ -109,11 +128,7 @@ export default function DashboardProfilePage() {
     showToast({ message: 'تم حفظ التعليم والمهارات', type: 'success' });
   };
 
-  if (isLoading || (isFetching && !profileData)) {
-    return <FullPageSpinner message="جاري تحميل الملف الشخصي" />;
-  }
-
-  if (isError || !profileData) {
+  if (isError && !profileData) {
     return (
       <section>
         <EmptyState
@@ -125,13 +140,16 @@ export default function DashboardProfilePage() {
     );
   }
 
+  const visibleProfileData = profileData ?? EMPTY_PROFILE_DATA;
+
   return (
     <UserProfileSection
-      initialProfile={profileData.profile}
-      initialExperience={profileData.experience}
-      initialSkills={profileData.skills}
-      initialLanguages={profileData.languages}
-      initialEducation={profileData.education}
+      isLoading={isProfileLoading}
+      initialProfile={visibleProfileData.profile}
+      initialExperience={visibleProfileData.experience}
+      initialSkills={visibleProfileData.skills}
+      initialLanguages={visibleProfileData.languages}
+      initialEducation={visibleProfileData.education}
       onSavePersonal={handleSavePersonal}
       onSaveExperience={handleSaveExperience}
       onSaveEducationSkills={handleSaveEducationSkills}

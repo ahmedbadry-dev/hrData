@@ -4,6 +4,7 @@ import { PROFILE_CONSTANTS } from '../profile.constants';
 
 const currentYear = new Date().getFullYear();
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
+const saudiLocalPhoneRegex = /^05\d{8}$/;
 
 const blankToUndefined = (value: unknown) => {
   if (typeof value === 'string' && value.trim() === '') {
@@ -11,6 +12,32 @@ const blankToUndefined = (value: unknown) => {
   }
 
   return value;
+};
+
+const normalizeSaudiLocalPhone = (value: unknown) => {
+  if (typeof value !== 'string') {
+    return value;
+  }
+
+  const digits = value.replace(/\D/g, '');
+
+  if (!digits) {
+    return undefined;
+  }
+
+  if (digits.startsWith('96605') && digits.length === 13) {
+    return digits.slice(3);
+  }
+
+  if (digits.startsWith('9665') && digits.length === 12) {
+    return `0${digits.slice(3)}`;
+  }
+
+  if (digits.startsWith('5') && digits.length === 9) {
+    return `0${digits}`;
+  }
+
+  return digits;
 };
 
 const nullableTrimmedString = (maxLength: number) =>
@@ -31,12 +58,13 @@ export const UpdatePersonalProfileDtoSchema = z.object({
       .trim()
       .min(1, 'Last name is required')
       .max(PROFILE_CONSTANTS.LIMITS.NAME_MAX_LENGTH),
-    phone: z
-      .string()
-      .trim()
-      .min(1, 'Phone is required')
-      .startsWith('0', 'Phone must start with 0')
-      .max(PROFILE_CONSTANTS.LIMITS.PHONE_MAX_LENGTH),
+    phone: z.preprocess(
+      normalizeSaudiLocalPhone,
+      z
+        .string()
+        .regex(saudiLocalPhoneRegex, PROFILE_CONSTANTS.MESSAGES.INVALID_SAUDI_PHONE)
+        .optional()
+    ),
     summary: nullableTrimmedString(PROFILE_CONSTANTS.LIMITS.SUMMARY_MAX_LENGTH),
   }),
 });

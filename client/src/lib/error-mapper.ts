@@ -24,6 +24,8 @@ export const mapErrorToArabic = (message: string): string => {
     'last name is required': 'الاسم الأخير مطلوب',
     'phone is required': 'رقم الجوال مطلوب',
     'phone must start with 0': 'رقم الجوال يجب أن يبدأ بـ 0',
+    'phone must be a saudi mobile number':
+      'رقم الجوال يجب أن يكون رقم سعودي يبدأ بـ 05 ويتكون من 10 أرقام',
     'invalid phone number': 'رقم الجوال غير صالح',
     'experience end date must be after or equal to start date':
       'تاريخ النهاية يجب أن يكون بعد أو مساوي لتاريخ البداية',

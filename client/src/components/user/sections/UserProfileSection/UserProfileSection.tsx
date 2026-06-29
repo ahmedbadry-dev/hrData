@@ -46,6 +46,7 @@ export interface UserEducationSkillsValues {
 }
 
 interface UserProfileSectionProps {
+  isLoading?: boolean;
   initialProfile: UserProfileFormValues;
   initialExperience: UserExperienceEntry[];
   initialSkills: string[];
@@ -65,12 +66,22 @@ interface SaveActionsProps {
 }
 
 type ExperienceFieldName = keyof Omit<UserExperienceEntry, 'id'>;
+type PersonalFieldName = 'firstName' | 'lastName' | 'phone';
+type PersonalFieldErrors = Partial<Record<PersonalFieldName, string>>;
 type ExperienceFieldErrors = Record<string, Partial<Record<ExperienceFieldName, string>>>;
 type LanguageFieldErrors = Record<string, string>;
 
+const PERSONAL_FIRST_NAME_REQUIRED_ERROR = 'الاسم الأول مطلوب';
+const PERSONAL_LAST_NAME_REQUIRED_ERROR = 'الاسم الثاني مطلوب';
+const PERSONAL_PHONE_INVALID_ERROR = 'رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام';
 const EXPERIENCE_END_DATE_ERROR = 'تاريخ النهاية يجب أن يكون بعد أو مساوي لتاريخ البداية';
+const EXPERIENCE_JOB_TITLE_REQUIRED_ERROR = 'المسمى الوظيفي مطلوب';
+const EXPERIENCE_COMPANY_REQUIRED_ERROR = 'اسم الشركة مطلوب';
+const EXPERIENCE_START_DATE_REQUIRED_ERROR = 'تاريخ البداية مطلوب';
 const DUPLICATE_LANGUAGE_ERROR = 'هذه اللغة مضافة بالفعل';
 const DUPLICATE_SKILL_ERROR = 'هذه المهارة مضافة بالفعل';
+const SAUDI_PHONE_PREFIX = '+966';
+const SAUDI_LOCAL_PHONE_REGEX = /^05\d{8}$/;
 
 const PROFILE_TABS: Array<{
   id: ProfileTab;
@@ -152,14 +163,18 @@ const YEAR_OPTIONS = Array.from({ length: 61 }, (_, index) => String(2030 - inde
 const DEFAULT_MONTH_PICKER_YEAR = '2026';
 const DEFAULT_MONTH_PICKER_MONTH = '01';
 
-let newExperienceCounter = 0;
-let newLanguageCounter = 0;
+function createTemporaryId(prefix: string) {
+  const uniquePart =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  return `${prefix}-${uniquePart}`;
+}
 
 function createEmptyExperienceEntry(): UserExperienceEntry {
-  newExperienceCounter += 1;
-
   return {
-    id: `new-experience-${newExperienceCounter}`,
+    id: createTemporaryId('new-experience'),
     jobTitle: '',
     company: '',
     startDate: '',
@@ -169,13 +184,59 @@ function createEmptyExperienceEntry(): UserExperienceEntry {
 }
 
 function createTemporaryLanguageEntry(): UserLanguageEntry {
-  newLanguageCounter += 1;
-
   return {
-    id: `new-language-${newLanguageCounter}`,
+    id: createTemporaryId('new-language'),
     name: '',
     level: 'BEGINNER',
   };
+}
+
+function normalizeLocalPhoneInput(value: string) {
+  const digits = value.replace(/\D/g, '');
+
+  if (digits.startsWith('96605')) {
+    return digits.slice(3);
+  }
+
+  if (digits.startsWith('9665')) {
+    return `0${digits.slice(3)}`;
+  }
+
+  if (digits.startsWith('5')) {
+    return `0${digits}`;
+  }
+
+  return digits;
+}
+
+function ProfileLoadingSkeleton() {
+  return (
+    <section className={styles['profile-section']} aria-busy="true">
+      <span className={styles['sr-only']}>جاري تحميل الملف الشخصي</span>
+      <div className={cn(styles['loading-block'], styles['loading-headline'])} />
+
+      <div className={styles['loading-tabs']}>
+        {[0, 1, 2].map((item) => (
+          <div className={styles['loading-tab']} key={item}>
+            <span className={cn(styles['loading-block'], styles['loading-icon'])} />
+            <span className={cn(styles['loading-block'], styles['loading-line'])} />
+            <span className={cn(styles['loading-block'], styles['loading-line-short'])} />
+          </div>
+        ))}
+      </div>
+
+      {[0, 1, 2].map((card) => (
+        <div className={styles['profile-card']} key={card}>
+          <div className={cn(styles['loading-block'], styles['loading-title-line'])} />
+          <div className={cn(styles['loading-block'], styles['loading-desc-line'])} />
+          <div className={cn(styles['two-col'], styles['loading-row'])}>
+            <div className={cn(styles['loading-block'], styles['loading-input'])} />
+            <div className={cn(styles['loading-block'], styles['loading-input'])} />
+          </div>
+        </div>
+      ))}
+    </section>
+  );
 }
 
 function TabIcon({ icon }: { icon: 'user' | 'briefcase' | 'education' }) {
@@ -414,6 +475,7 @@ function SaveActions({ isSaved, isSaving, error, onSave, onReset }: SaveActionsP
 }
 
 export default function UserProfileSection({
+  isLoading = false,
   initialProfile,
   initialExperience,
   initialSkills,
@@ -436,11 +498,13 @@ export default function UserProfileSection({
   const [savedTab, setSavedTab] = useState<ProfileTab | null>(null);
   const [savingTab, setSavingTab] = useState<ProfileTab | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [personalErrors, setPersonalErrors] = useState<PersonalFieldErrors>({});
   const [experienceErrors, setExperienceErrors] = useState<ExperienceFieldErrors>({});
   const [languageErrors, setLanguageErrors] = useState<LanguageFieldErrors>({});
 
   useEffect(() => {
     setProfile(initialProfile);
+    setPersonalErrors({});
   }, [initialProfile]);
 
   useEffect(() => {
@@ -462,6 +526,25 @@ export default function UserProfileSection({
   useEffect(() => {
     setEducation(initialEducation);
   }, [initialEducation]);
+
+  if (isLoading) {
+    return <ProfileLoadingSkeleton />;
+  }
+
+  const clearPersonalError = (field: keyof UserProfileFormValues) => {
+    if (field !== 'firstName' && field !== 'lastName' && field !== 'phone') {
+      return;
+    }
+
+    setPersonalErrors((currentErrors) => {
+      if (!currentErrors[field]) {
+        return currentErrors;
+      }
+
+      const { [field]: _removed, ...remainingErrors } = currentErrors;
+      return remainingErrors;
+    });
+  };
 
   const clearExperienceError = (id: string, field?: ExperienceFieldName) => {
     setExperienceErrors((currentErrors) => {
@@ -506,6 +589,7 @@ export default function UserProfileSection({
   const handleTabChange = (tab: ProfileTab) => {
     setActiveTab(tab);
     setSaveError(null);
+    setPersonalErrors({});
     setExperienceErrors({});
     setLanguageErrors({});
     setSkillError('');
@@ -518,6 +602,7 @@ export default function UserProfileSection({
     }));
     setSavedTab(null);
     setSaveError(null);
+    clearPersonalError(field);
   };
 
   const updateExperienceEntry = (
@@ -644,6 +729,7 @@ export default function UserProfileSection({
 
   const handleResetPersonal = () => {
     setProfile(initialProfile);
+    setPersonalErrors({});
     setSavedTab(null);
     setSaveError(null);
   };
@@ -679,15 +765,49 @@ export default function UserProfileSection({
     clearExperienceError(id);
   };
 
+  const validatePersonalBeforeSave = () => {
+    const nextErrors: PersonalFieldErrors = {};
+
+    if (!profile.firstName.trim()) {
+      nextErrors.firstName = PERSONAL_FIRST_NAME_REQUIRED_ERROR;
+    }
+
+    if (!profile.lastName.trim()) {
+      nextErrors.lastName = PERSONAL_LAST_NAME_REQUIRED_ERROR;
+    }
+
+    if (profile.phone && !SAUDI_LOCAL_PHONE_REGEX.test(profile.phone)) {
+      nextErrors.phone = PERSONAL_PHONE_INVALID_ERROR;
+    }
+
+    setPersonalErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const validateExperienceBeforeSave = () => {
     const nextErrors: ExperienceFieldErrors = {};
 
     for (const entry of experienceEntries) {
+      const entryErrors: Partial<Record<ExperienceFieldName, string>> = {};
+
+      if (!entry.jobTitle.trim()) {
+        entryErrors.jobTitle = EXPERIENCE_JOB_TITLE_REQUIRED_ERROR;
+      }
+
+      if (!entry.company.trim()) {
+        entryErrors.company = EXPERIENCE_COMPANY_REQUIRED_ERROR;
+      }
+
+      if (!entry.startDate) {
+        entryErrors.startDate = EXPERIENCE_START_DATE_REQUIRED_ERROR;
+      }
+
       if (entry.startDate && entry.endDate && entry.endDate < entry.startDate) {
-        nextErrors[entry.id] = {
-          ...nextErrors[entry.id],
-          endDate: EXPERIENCE_END_DATE_ERROR,
-        };
+        entryErrors.endDate = EXPERIENCE_END_DATE_ERROR;
+      }
+
+      if (Object.keys(entryErrors).length > 0) {
+        nextErrors[entry.id] = entryErrors;
       }
     }
 
@@ -738,6 +858,10 @@ export default function UserProfileSection({
 
   const handleSave = async (tab: ProfileTab) => {
     setSaveError(null);
+
+    if (tab === 'personal' && !validatePersonalBeforeSave()) {
+      return;
+    }
 
     if (tab === 'experience' && !validateExperienceBeforeSave()) {
       return;
@@ -813,21 +937,35 @@ export default function UserProfileSection({
               <label className={styles['field-wrap']}>
                 <span className={styles['field-label']}>الاسم الأول</span>
                 <Input
-                  className={styles.input}
+                  className={cn(
+                    styles.input,
+                    personalErrors.firstName && styles['field-control-error']
+                  )}
                   value={profile.firstName}
                   placeholder="الاسم الأول"
+                  aria-invalid={Boolean(personalErrors.firstName) || undefined}
                   onChange={(event) => updateProfile('firstName', event.target.value)}
                 />
+                {personalErrors.firstName ? (
+                  <span className={styles['field-error']}>{personalErrors.firstName}</span>
+                ) : null}
               </label>
 
               <label className={styles['field-wrap']}>
                 <span className={styles['field-label']}>الاسم الثاني</span>
                 <Input
-                  className={styles.input}
+                  className={cn(
+                    styles.input,
+                    personalErrors.lastName && styles['field-control-error']
+                  )}
                   value={profile.lastName}
                   placeholder="الاسم الثاني"
+                  aria-invalid={Boolean(personalErrors.lastName) || undefined}
                   onChange={(event) => updateProfile('lastName', event.target.value)}
                 />
+                {personalErrors.lastName ? (
+                  <span className={styles['field-error']}>{personalErrors.lastName}</span>
+                ) : null}
               </label>
             </div>
           </div>
@@ -853,13 +991,27 @@ export default function UserProfileSection({
 
               <label className={styles['field-wrap']}>
                 <span className={styles['field-label']}>رقم الجوال</span>
-                <Input
-                  type="tel"
-                  className={cn(styles.input, styles['ltr-input'])}
-                  value={profile.phone}
-                  placeholder="05XXXXXXXX"
-                  onChange={(event) => updateProfile('phone', event.target.value)}
-                />
+                <div
+                  className={cn(
+                    styles['phone-control'],
+                    personalErrors.phone && styles['field-control-error']
+                  )}
+                >
+                  <span className={styles['phone-prefix']}>{SAUDI_PHONE_PREFIX}</span>
+                  <Input
+                    type="tel"
+                    className={cn(styles.input, styles['ltr-input'], styles['phone-input'])}
+                    value={profile.phone}
+                    placeholder="0512345678"
+                    aria-invalid={Boolean(personalErrors.phone) || undefined}
+                    onChange={(event) =>
+                      updateProfile('phone', normalizeLocalPhoneInput(event.target.value))
+                    }
+                  />
+                </div>
+                {personalErrors.phone ? (
+                  <span className={styles['field-error']}>{personalErrors.phone}</span>
+                ) : null}
               </label>
             </div>
           </div>
@@ -924,25 +1076,43 @@ export default function UserProfileSection({
                     <label className={styles['field-wrap']}>
                       <span className={styles['field-label']}>المسمى الوظيفي</span>
                       <Input
-                        className={styles.input}
+                        className={cn(
+                          styles.input,
+                          experienceErrors[entry.id]?.jobTitle && styles['field-control-error']
+                        )}
                         value={entry.jobTitle}
                         placeholder="مثال: مطور واجهات أمامية"
+                        aria-invalid={Boolean(experienceErrors[entry.id]?.jobTitle) || undefined}
                         onChange={(event) =>
                           updateExperienceEntry(entry.id, 'jobTitle', event.target.value)
                         }
                       />
+                      {experienceErrors[entry.id]?.jobTitle ? (
+                        <span className={styles['field-error']}>
+                          {experienceErrors[entry.id]?.jobTitle}
+                        </span>
+                      ) : null}
                     </label>
 
                     <label className={styles['field-wrap']}>
                       <span className={styles['field-label']}>اسم الشركة</span>
                       <Input
-                        className={styles.input}
+                        className={cn(
+                          styles.input,
+                          experienceErrors[entry.id]?.company && styles['field-control-error']
+                        )}
                         value={entry.company}
                         placeholder="اسم الشركة أو المؤسسة"
+                        aria-invalid={Boolean(experienceErrors[entry.id]?.company) || undefined}
                         onChange={(event) =>
                           updateExperienceEntry(entry.id, 'company', event.target.value)
                         }
                       />
+                      {experienceErrors[entry.id]?.company ? (
+                        <span className={styles['field-error']}>
+                          {experienceErrors[entry.id]?.company}
+                        </span>
+                      ) : null}
                     </label>
                   </div>
 
@@ -952,10 +1122,16 @@ export default function UserProfileSection({
                       <MonthPicker
                         value={entry.startDate}
                         placeholder="اختر تاريخ البداية"
+                        hasError={Boolean(experienceErrors[entry.id]?.startDate)}
                         onValueChange={(value) =>
                           updateExperienceEntry(entry.id, 'startDate', value)
                         }
                       />
+                      {experienceErrors[entry.id]?.startDate ? (
+                        <span className={styles['field-error']}>
+                          {experienceErrors[entry.id]?.startDate}
+                        </span>
+                      ) : null}
                     </label>
 
                     <label className={styles['field-wrap']}>

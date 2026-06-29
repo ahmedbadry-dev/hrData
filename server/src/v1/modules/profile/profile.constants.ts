@@ -7,6 +7,7 @@ export const PROFILE_CONSTANTS = {
     PHONE_ALREADY_IN_USE: 'phone already in use',
     DUPLICATE_SKILL: 'Duplicate skills are not allowed',
     DUPLICATE_LANGUAGE: 'Duplicate languages are not allowed',
+    INVALID_SAUDI_PHONE: 'Phone must be a Saudi mobile number',
     INVALID_EXPERIENCE_DATE_RANGE: 'Experience end date must be after or equal to start date',
     INVALID_MONTH: 'Date must be in YYYY-MM format',
   },
