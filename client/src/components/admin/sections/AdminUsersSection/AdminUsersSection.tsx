@@ -16,13 +16,20 @@ interface AdminUsersSectionProps {
   onDeleteUser: (id: string | number) => void;
   onEditUser: (id: string | number) => void;
   onToggleActivity: (id: string | number) => void;
+  onRestoreQuota: (id: string | number) => void;
   onSearch?: () => void;
-  openActivityId: number | null;
+  openActivityId: string | number | null;
   currentPage?: number;
   totalPages?: number;
   isLoading?: boolean;
   onPageChange?: (page: number) => void;
 }
+
+const getStatusLabel = (status: AdminUser['status']) => {
+  if (status === 'active') return 'نشط';
+  if (status === 'pending_verification') return 'بانتظار التفعيل';
+  return 'موقوف';
+};
 
 export default function AdminUsersSection({
   users,
@@ -34,6 +41,7 @@ export default function AdminUsersSection({
   onDeleteUser,
   onEditUser,
   onToggleActivity,
+  onRestoreQuota,
   onSearch,
   openActivityId,
   currentPage = 1,
@@ -41,7 +49,7 @@ export default function AdminUsersSection({
   isLoading,
   onPageChange,
 }: AdminUsersSectionProps) {
-  const activeUser = users.find((u) => u.id === openActivityId) ?? null;
+  const activeUser = users.find((u) => String(u.id) === String(openActivityId)) ?? null;
   const [pendingDelete, setPendingDelete] = useState<string | number | null>(null);
 
   const handleDeleteClick = (id: string | number) => {
@@ -76,6 +84,7 @@ export default function AdminUsersSection({
           </div>
         </div>
       )}
+
       <section>
         <PageHeader
           eyebrow="الإدارة"
@@ -113,7 +122,7 @@ export default function AdminUsersSection({
             )}
             onClick={() => onFilterChange('pending_verification')}
           >
-            بإنتظار التفعيل
+            بانتظار التفعيل
           </Button>
           <Button
             className={cn(styles['filter-btn'], activeFilter === 'suspended' && styles.active)}
@@ -138,7 +147,9 @@ export default function AdminUsersSection({
           <>
             <div className={styles['control-bar']}>
               <span className={styles['count-label']}>{users.length} مستخدم</span>
-              <span className={styles['helper-label']}>اضغط "نشاط" لتفاصيل المستخدم</span>
+              <span className={styles['helper-label']}>
+                اضغط "نشاط" لتفاصيل المستخدم
+              </span>
             </div>
 
             <div className={styles['admin-table-wrap']}>
@@ -150,6 +161,7 @@ export default function AdminUsersSection({
                     <th>الجوال</th>
                     <th>تاريخ الانضمام</th>
                     <th>الحالة</th>
+                    <th>الكوتة</th>
                     <th>الإجراءات</th>
                   </tr>
                 </thead>
@@ -170,12 +182,25 @@ export default function AdminUsersSection({
                       <td className={styles.joined}>{u.joined}</td>
                       <td>
                         <Badge className={cn(styles['status-badge'], styles[u.status])}>
-                          {u.status === 'active'
-                            ? 'نشط'
-                            : u.status === 'pending_verification'
-                              ? 'بانتظار التفعيل'
-                              : 'موقوف'}
+                          {getStatusLabel(u.status)}
                         </Badge>
+                      </td>
+                      <td>
+                        {u.quota ? (
+                          <div
+                            className={cn(
+                              styles['quota-cell'],
+                              u.quota.remaining <= 0 && styles['quota-empty']
+                            )}
+                          >
+                            <span className={styles['quota-main']}>
+                              {u.quota.emailsUsedToday}/{u.quota.dailyEmailLimit}
+                            </span>
+                            <span className={styles['quota-sub']}>متبقي {u.quota.remaining}</span>
+                          </div>
+                        ) : (
+                          <span className={styles['quota-muted']}>-</span>
+                        )}
                       </td>
                       <td>
                         <Button
@@ -191,11 +216,19 @@ export default function AdminUsersSection({
                           className={cn(styles['action-btn'], styles.success)}
                           onClick={() => onToggleStatus(u.id)}
                         >
-                          {u.status === 'active'
-                            ? 'إيقاف'
-                            : u.status === 'suspended'
-                              ? 'تفعيل'
-                              : 'تفعيل'}
+                          {u.status === 'active' ? 'إيقاف' : 'تفعيل'}
+                        </Button>
+                        <Button
+                          className={cn(styles['action-btn'], styles['quota-action'])}
+                          onClick={() => onRestoreQuota(u.id)}
+                          disabled={!u.quota?.canRestore}
+                          title={
+                            u.quota?.canRestore
+                              ? 'تجديد كوتة الإيميلات'
+                              : 'التجديد متاح بعد استهلاك الكوتة فقط'
+                          }
+                        >
+                          تجديد
                         </Button>
                         <Button
                           className={cn(styles['action-btn'], styles.danger)}
@@ -249,7 +282,7 @@ export default function AdminUsersSection({
 
         {activeUser ? (
           <div className={cn(styles['activity-panel'], styles.open)}>
-            <div className={styles['activity-title']}>نشاط — {activeUser.name}</div>
+            <div className={styles['activity-title']}>نشاط - {activeUser.name}</div>
             <div className={styles['activity-row']}>
               <span className={styles['activity-key']}>إجمالي التقديمات</span>
               <span className={styles['activity-val']}>{activeUser.applied}</span>
@@ -264,14 +297,20 @@ export default function AdminUsersSection({
             </div>
             <div className={styles['activity-row']}>
               <span className={styles['activity-key']}>الحالة</span>
-              <span className={styles['activity-val']}>
-                {activeUser.status === 'active' ? '🟢 نشط' : '🔴 موقوف'}
-              </span>
+              <span className={styles['activity-val']}>{getStatusLabel(activeUser.status)}</span>
             </div>
             <div className={styles['activity-row']}>
               <span className={styles['activity-key']}>البريد</span>
               <span className={styles['activity-email']}>{activeUser.email}</span>
             </div>
+            {activeUser.quota ? (
+              <div className={styles['activity-row']}>
+                <span className={styles['activity-key']}>الكوتة</span>
+                <span className={styles['activity-val']}>
+                  {activeUser.quota.emailsUsedToday}/{activeUser.quota.dailyEmailLimit}
+                </span>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </section>

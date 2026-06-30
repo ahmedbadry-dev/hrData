@@ -159,6 +159,7 @@ model User {
   status                     UserStatus @default(PENDING_VERIFICATION)
   dailyEmailLimit            Int        @default(50) @map("daily_email_limit")
   limitReachedAt             DateTime?  @map("limit_reached_at")
+  lastQuotaResetAt           DateTime?  @map("last_quota_reset_at")
   emailVerified              Boolean    @default(false) @map("email_verified")
   verificationToken          String?    @map("verification_token")
   verificationTokenExpiresAt DateTime?  @map("verification_token_expires_at")
@@ -178,8 +179,25 @@ model User {
   experiences   UserExperience[]
   skills        UserSkill[]
   languages     UserLanguage[]
+  quotaResets   UserQuotaReset[] @relation("QuotaResetsForUser")
+  quotaResetBy  UserQuotaReset[] @relation("QuotaResetsByAdmin")
 
   @@map("users")
+}
+
+model UserQuotaReset {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  resetById String?  @map("reset_by_id")
+  reason    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User  @relation("QuotaResetsForUser", fields: [userId], references: [id], onDelete: Cascade)
+  resetBy User? @relation("QuotaResetsByAdmin", fields: [resetById], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([resetById, createdAt])
+  @@map("user_quota_resets")
 }
 
 model UserProfile {

@@ -3,6 +3,7 @@ import ResponseHelper from '@/shared/utils/api-response';
 import { GetUsersDto } from './dto/get-users.dto';
 import { UserIdParamDto } from './dto/user-id-param.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ResetUserQuotaDto } from './dto/reset-user-quota.dto';
 import { UsersService } from './users.service';
 import { USERS_CONSTANTS } from './users.constants';
 
@@ -58,6 +59,21 @@ export class UsersController {
       res,
       data,
       USERS_CONSTANTS.MESSAGES.USER_ACTIVATED_SUCCESSFULLY,
+      req.path
+    );
+  };
+
+  restoreUserQuota = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.usersService.restoreUserQuota(
+      (req.params as UserIdParamDto['params']).id,
+      req.user!.id,
+      req.body as ResetUserQuotaDto['body']
+    );
+
+    return ResponseHelper.ok(
+      res,
+      data,
+      USERS_CONSTANTS.MESSAGES.USER_QUOTA_RESET_SUCCESSFULLY,
       req.path
     );
   };

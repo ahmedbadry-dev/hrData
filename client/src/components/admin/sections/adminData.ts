@@ -8,6 +8,16 @@ export interface AdminUser {
   saved: number;
   joined: string;
   rowIndex?: number;
+  quota?: AdminUserQuota;
+}
+
+export interface AdminUserQuota {
+  emailsUsedToday: number;
+  dailyEmailLimit: number;
+  remaining: number;
+  resetsAt: string | null;
+  lastQuotaResetAt: string | null;
+  canRestore: boolean;
 }
 
 export interface AdminAnnouncement {

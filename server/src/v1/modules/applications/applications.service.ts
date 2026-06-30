@@ -25,6 +25,7 @@ import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import logger from '@/shared/utils/logger.util';
+import { EmailQuotaService, EmailQuotaState } from './email-quota.service';
 
 interface MulterFile {
   fieldname: string;
@@ -35,19 +36,9 @@ interface MulterFile {
   buffer: Buffer;
 }
 
-interface ResolvedEmailQuotaState extends EmailQuotaResponse {
-  limitReachedAt: Date | null;
-}
-
-interface EmailLimitCheckResult extends ResolvedEmailQuotaState {
+interface EmailLimitCheckResult extends EmailQuotaState {
   allowedCount: number;
 }
-
-const QUOTA_COUNTED_STATUSES: ApplicationStatus[] = [
-  ApplicationStatus.SCHEDULED,
-  ApplicationStatus.SENDING,
-  ApplicationStatus.EMAIL_SENT,
-];
 
 export class ApplicationsService {
   constructor(private readonly prisma: PrismaClient) {}
@@ -117,7 +108,7 @@ export class ApplicationsService {
           orderBy: APPLICATIONS_CONSTANTS.ORDER_BY.CREATED_AT_DESC,
         }),
         tx.application.count({ where }),
-        this.resolveEmailQuotaState(tx, userId, now),
+        EmailQuotaService.resolveUserQuota(tx, userId, { now }),
       ]);
 
       return {
@@ -174,7 +165,7 @@ export class ApplicationsService {
         throw new NotFoundException(APPLICATIONS_CONSTANTS.MESSAGES.APPLICATION_NOT_FOUND);
       }
 
-      const quotaResult = await this.resolveEmailQuotaState(tx, userId, now);
+      const quotaResult = await EmailQuotaService.resolveUserQuota(tx, userId, { now });
 
       return {
         application: applicationResult,
@@ -192,7 +183,11 @@ export class ApplicationsService {
   }
 
   async getEmailQuota(userId: string): Promise<EmailQuotaResponse> {
-    return this.prisma.$transaction((tx) => this.resolveEmailQuotaState(tx, userId, new Date()));
+    const quota = await this.prisma.$transaction((tx) =>
+      EmailQuotaService.resolveUserQuota(tx, userId, { now: new Date() })
+    );
+
+    return this.mapEmailQuotaResponse(quota);
   }
 
   async scheduleApplications(
@@ -337,6 +332,8 @@ export class ApplicationsService {
             scheduledAt,
             errorMessage: null,
             retryCount: 0,
+            // Rescheduled cancelled rows must count in the current quota window.
+            createdAt: now,
           },
         });
       }
@@ -498,7 +495,10 @@ export class ApplicationsService {
     now: Date = new Date()
   ): Promise<EmailLimitCheckResult> {
     const normalizedRequestedCount = Math.max(requestedCount, 0);
-    const quotaState = await this.resolveEmailQuotaState(tx, userId, now, true);
+    const quotaState = await EmailQuotaService.resolveUserQuota(tx, userId, {
+      now,
+      lockUserRow: true,
+    });
 
     if (quotaState.remaining <= 0) {
       if (quotaState.limitReachedAt) {
@@ -517,8 +517,11 @@ export class ApplicationsService {
         emailsUsedToday: quotaState.dailyEmailLimit,
         dailyEmailLimit: quotaState.dailyEmailLimit,
         remaining: 0,
-        resetsAt: this.getResetAt(now),
+        resetsAt: EmailQuotaService.getResetAt(now),
+        lastQuotaResetAt: quotaState.lastQuotaResetAt,
+        canRestore: quotaState.canRestore,
         limitReachedAt: now,
+        countFrom: quotaState.countFrom,
         allowedCount: 0,
       };
     }
@@ -555,109 +558,8 @@ export class ApplicationsService {
       emailsUsedToday,
       dailyEmailLimit: quotaBeforeScheduling.dailyEmailLimit,
       remaining: Math.max(quotaBeforeScheduling.dailyEmailLimit - emailsUsedToday, 0),
-      resetsAt: this.getResetAt(limitReachedAt),
+      resetsAt: EmailQuotaService.getResetAt(limitReachedAt),
     };
-  }
-
-  private async resolveEmailQuotaState(
-    tx: Prisma.TransactionClient,
-    userId: string,
-    now: Date,
-    lockUserRow: boolean = false
-  ): Promise<ResolvedEmailQuotaState> {
-    if (lockUserRow) {
-      await tx.$queryRaw<{ id: string }[]>`
-        SELECT "id"
-        FROM "users"
-        WHERE "id" = ${userId}
-        FOR UPDATE
-      `;
-    }
-
-    const user = await tx.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        dailyEmailLimit: true,
-        limitReachedAt: true,
-      },
-    });
-
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-
-    const normalizedDailyLimit = this.normalizeDailyEmailLimit(user.dailyEmailLimit);
-
-    if (user.dailyEmailLimit !== normalizedDailyLimit) {
-      await tx.user.update({
-        where: { id: userId },
-        data: { dailyEmailLimit: normalizedDailyLimit },
-      });
-    }
-
-    let limitReachedAt = user.limitReachedAt;
-    const resetAt = this.getResetAt(limitReachedAt);
-
-    if (limitReachedAt && resetAt && now >= resetAt) {
-      await tx.user.update({
-        where: { id: userId },
-        data: { limitReachedAt: null },
-      });
-      limitReachedAt = null;
-    }
-
-    if (limitReachedAt) {
-      return {
-        emailsUsedToday: normalizedDailyLimit,
-        dailyEmailLimit: normalizedDailyLimit,
-        remaining: 0,
-        resetsAt: this.getResetAt(limitReachedAt),
-        limitReachedAt,
-      };
-    }
-
-    const emailsUsedToday = await tx.application.count({
-      where: {
-        userId,
-        status: { in: QUOTA_COUNTED_STATUSES },
-        createdAt: {
-          gte: this.getStartOfDay(now),
-        },
-      },
-    });
-
-    return {
-      emailsUsedToday,
-      dailyEmailLimit: normalizedDailyLimit,
-      remaining: Math.max(normalizedDailyLimit - emailsUsedToday, 0),
-      resetsAt: null,
-      limitReachedAt: null,
-    };
-  }
-
-  private normalizeDailyEmailLimit(limit: number | null | undefined): number {
-    const defaultLimit = APPLICATIONS_CONSTANTS.DEFAULT_DAILY_EMAIL_LIMIT; // 50
-    if (typeof limit !== 'number' || Number.isNaN(limit)) {
-      return defaultLimit;
-    }
-
-    // Force limit to be at most 50 as requested by the user
-    return Math.min(50, Math.max(APPLICATIONS_CONSTANTS.DAILY_EMAIL_LIMIT_MIN, Math.floor(limit)));
-  }
-
-  private getStartOfDay(date: Date): Date {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
-  }
-
-  private getResetAt(limitReachedAt: Date | null): Date | null {
-    if (!limitReachedAt) {
-      return null;
-    }
-
-    return new Date(
-      limitReachedAt.getTime() + APPLICATIONS_CONSTANTS.DAILY_EMAIL_LIMIT_RESET_WINDOW_MS
-    );
   }
 
   private mapApplicationResponse(
@@ -689,6 +591,15 @@ export class ApplicationsService {
       createdAt: application.createdAt,
       updatedAt: application.updatedAt,
       job: application.job,
+    };
+  }
+
+  private mapEmailQuotaResponse(quota: EmailQuotaState): EmailQuotaResponse {
+    return {
+      emailsUsedToday: quota.emailsUsedToday,
+      dailyEmailLimit: quota.dailyEmailLimit,
+      remaining: quota.remaining,
+      resetsAt: quota.resetsAt,
     };
   }
 }

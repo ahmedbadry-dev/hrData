@@ -126,7 +126,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  min-width: 680px;
+  min-width: 780px;
 }
 
 .admin-table th {
@@ -228,6 +228,37 @@
   border: 1px solid var(--accent);
 }
 
+.quota-cell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  min-width: 64px;
+  color: var(--ink);
+}
+
+.quota-main {
+  font-size: 12px;
+  font-weight: 900;
+  direction: ltr;
+}
+
+.quota-sub {
+  font-size: 9px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.quota-empty .quota-main,
+.quota-empty .quota-sub {
+  color: var(--accent);
+}
+
+.quota-muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .action-btn {
   background: none;
   border: 1px solid var(--cream);
@@ -266,6 +297,22 @@
   border-color: var(--gold);
   color: var(--gold);
   background: rgba(184, 134, 11, 0.05);
+}
+
+.quota-action {
+  border-color: rgba(184, 134, 11, 0.45);
+  color: var(--gold);
+}
+
+.quota-action:hover:not(:disabled) {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(184, 134, 11, 0.08);
+}
+
+.quota-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .activity-panel {
@@ -427,7 +474,7 @@
   }
 
   .admin-table {
-    min-width: 620px;
+    min-width: 760px;
   }
 
   .filter-row {

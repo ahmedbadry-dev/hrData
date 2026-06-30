@@ -1,5 +1,11 @@
 import { axiosClient } from '@/services/api';
-import type { AdminUser, PaginatedUsers, UpdateUserRequest } from './types';
+import type {
+  AdminUser,
+  PaginatedUsers,
+  RestoreUserQuotaRequest,
+  RestoreUserQuotaResponse,
+  UpdateUserRequest,
+} from './types';
 
 export const fetchUsersList = async (params?: {
   page?: number;
@@ -31,6 +37,14 @@ export const suspendUser = async (id: string): Promise<{ data: AdminUser }> => {
 
 export const activateUser = async (id: string): Promise<{ data: AdminUser }> => {
   const { data } = await axiosClient.patch(`/admin/users/${id}/activate`);
+  return data;
+};
+
+export const restoreUserQuota = async (
+  id: string,
+  body: RestoreUserQuotaRequest
+): Promise<{ data: RestoreUserQuotaResponse }> => {
+  const { data } = await axiosClient.post(`/admin/users/${id}/quota-reset`, body);
   return data;
 };
 

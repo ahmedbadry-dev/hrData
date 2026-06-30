@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { AdminUsersSection, AdminModals } from '@/components/admin/sections';
 import {
   useUsersList,
@@ -6,8 +7,11 @@ import {
   useActivateUser,
   useDeleteUser,
   useUpdateUser,
+  useRestoreUserQuota,
 } from '@/modules/admin/users/api/hooks';
 import { NotificationType, UserStatus } from '@/constants/enums';
+import { mapError } from '@/lib/error-mapper';
+import type { AdminDashboardContextType } from './AdminDashboardLayout';
 import type { AdminUser } from '@/components/admin/sections';
 
 type FilterValue = 'all' | UserStatus;
@@ -26,6 +30,9 @@ export default function AdminUsersPage() {
     phone: '',
     status: 'active' as 'active' | 'suspended',
   });
+  const [quotaRestoreUserId, setQuotaRestoreUserId] = useState<string | null>(null);
+  const [quotaRestoreReason, setQuotaRestoreReason] = useState('');
+  const { showToast } = useOutletContext<AdminDashboardContextType>();
 
   const { data, refetch, isLoading } = useUsersList({
     page,
@@ -38,6 +45,7 @@ export default function AdminUsersPage() {
   const activateMutation = useActivateUser();
   const deleteMutation = useDeleteUser();
   const updateMutation = useUpdateUser();
+  const restoreQuotaMutation = useRestoreUserQuota();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -64,6 +72,7 @@ export default function AdminUsersPage() {
             : 'suspended',
       applied: 0,
       saved: 0,
+      quota: u.quota,
       joined: new Date(u.joinDate).toLocaleDateString('ar-SA', {
         year: 'numeric',
         month: 'long',
@@ -92,6 +101,46 @@ export default function AdminUsersPage() {
 
   const handleDeleteUser = (id: string | number) => {
     deleteMutation.mutate(String(id), { onSuccess: () => refetch() });
+  };
+
+  const handleOpenQuotaRestore = (id: string | number) => {
+    const user = users.find((u) => String(u.id) === String(id));
+    if (!user?.quota?.canRestore) {
+      showToast('تجديد الكوتة متاح بعد استهلاك الحد اليومي فقط', 'error');
+      return;
+    }
+
+    setQuotaRestoreUserId(String(id));
+    setQuotaRestoreReason('');
+  };
+
+  const handleCloseQuotaRestore = () => {
+    setQuotaRestoreUserId(null);
+    setQuotaRestoreReason('');
+  };
+
+  const handleConfirmQuotaRestore = () => {
+    if (!quotaRestoreUserId) return;
+
+    const reason = quotaRestoreReason.trim();
+    if (reason.length < 3) {
+      showToast('سبب التجديد مطلوب', 'error');
+      return;
+    }
+
+    restoreQuotaMutation.mutate(
+      { id: quotaRestoreUserId, reason },
+      {
+        onSuccess: () => {
+          refetch();
+          handleCloseQuotaRestore();
+          showToast('تم تجديد كوتة الإيميلات بنجاح');
+        },
+        onError: (error) => {
+          showToast(mapError(error), 'error');
+        },
+      }
+    );
   };
 
   const handleEditUser = (id: string | number) => {
@@ -153,6 +202,9 @@ export default function AdminUsersPage() {
         : activeFilter === UserStatus.PENDING_VERIFICATION
           ? 'pending_verification'
           : 'suspended';
+  const quotaRestoreUser = quotaRestoreUserId
+    ? users.find((u) => String(u.id) === quotaRestoreUserId) ?? null
+    : null;
 
   return (
     <>
@@ -176,6 +228,7 @@ export default function AdminUsersPage() {
         onDeleteUser={handleDeleteUser}
         onEditUser={handleEditUser}
         onToggleActivity={handleToggleActivity}
+        onRestoreQuota={handleOpenQuotaRestore}
         onSearch={() => refetch()}
         openActivityId={null}
         currentPage={page}
@@ -190,6 +243,13 @@ export default function AdminUsersPage() {
         onEditChange={(patch) => setEditForm((prev) => ({ ...prev, ...patch }))}
         onSaveEdit={handleSaveEdit}
         onCloseEdit={handleCloseEdit}
+        quotaRestoreOpen={Boolean(quotaRestoreUser)}
+        quotaRestoreUser={quotaRestoreUser}
+        quotaRestoreReason={quotaRestoreReason}
+        onQuotaRestoreReasonChange={setQuotaRestoreReason}
+        onConfirmQuotaRestore={handleConfirmQuotaRestore}
+        onCloseQuotaRestore={handleCloseQuotaRestore}
+        quotaRestoreSubmitting={restoreQuotaMutation.isPending}
         announceOpen={false}
         announceForm={{
           title: '',

@@ -9,6 +9,16 @@ export interface AdminUser {
   accountStatus: UserStatus;
   appliedCount?: number;
   savedCount?: number;
+  quota?: AdminUserQuota;
+}
+
+export interface AdminUserQuota {
+  emailsUsedToday: number;
+  dailyEmailLimit: number;
+  remaining: number;
+  resetsAt: string | null;
+  lastQuotaResetAt: string | null;
+  canRestore: boolean;
 }
 
 export interface PaginatedUsers {
@@ -28,4 +38,19 @@ export interface UpdateUserRequest {
   lastName?: string;
   phone?: string;
   accountStatus?: UserStatus.ACTIVE | UserStatus.SUSPENDED;
+}
+
+export interface RestoreUserQuotaRequest {
+  reason: string;
+}
+
+export interface RestoreUserQuotaResponse {
+  quota: AdminUserQuota;
+  reset: {
+    id: string;
+    userId: string;
+    resetById: string | null;
+    reason: string;
+    createdAt: string;
+  };
 }

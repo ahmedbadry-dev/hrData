@@ -12,6 +12,7 @@ import {
 import { GetUsersDtoSchema } from './dto/get-users.dto';
 import { UserIdParamDtoSchema } from './dto/user-id-param.dto';
 import { UpdateUserDtoSchema } from './dto/update-user.dto';
+import { ResetUserQuotaDtoSchema } from './dto/reset-user-quota.dto';
 import { UsersController } from './users.controller';
 
 export const usersRoutes = (usersController: UsersController): Router => {
@@ -56,6 +57,15 @@ export const usersRoutes = (usersController: UsersController): Router => {
     authorizationMiddleware(UserRole.ADMIN),
     validateParamsMiddleware(UserIdParamDtoSchema),
     usersController.activateUser
+  );
+
+  router.post(
+    '/:id/quota-reset',
+    authenticationMiddleware,
+    authorizationMiddleware(UserRole.ADMIN),
+    validateParamsMiddleware(UserIdParamDtoSchema),
+    validateBodyMiddleware(ResetUserQuotaDtoSchema),
+    usersController.restoreUserQuota
   );
 
   router.delete(

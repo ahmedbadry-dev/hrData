@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { NotificationType } from '@/constants/enums';
+import type { AdminUser } from '@/components/admin/sections/adminData';
 import styles from './AdminModals.module.css';
 
 export interface EditUserForm {
@@ -21,6 +22,13 @@ interface AdminModalsProps {
   onEditChange: (patch: Partial<EditUserForm>) => void;
   onSaveEdit: () => void;
   onCloseEdit: () => void;
+  quotaRestoreOpen?: boolean;
+  quotaRestoreUser?: AdminUser | null;
+  quotaRestoreReason?: string;
+  onQuotaRestoreReasonChange?: (reason: string) => void;
+  onConfirmQuotaRestore?: () => void;
+  onCloseQuotaRestore?: () => void;
+  quotaRestoreSubmitting?: boolean;
   announceOpen: boolean;
   announceForm: AnnouncementForm;
   onAnnounceChange: (patch: Partial<AnnouncementForm>) => void;
@@ -35,6 +43,13 @@ export default function AdminModals({
   onEditChange,
   onSaveEdit,
   onCloseEdit,
+  quotaRestoreOpen = false,
+  quotaRestoreUser = null,
+  quotaRestoreReason = '',
+  onQuotaRestoreReasonChange,
+  onConfirmQuotaRestore,
+  onCloseQuotaRestore,
+  quotaRestoreSubmitting = false,
   announceOpen,
   announceForm,
   onAnnounceChange,
@@ -42,6 +57,14 @@ export default function AdminModals({
   onCloseAnnounce,
   announceSubmitting,
 }: AdminModalsProps) {
+  const quota = quotaRestoreUser?.quota;
+  const lastQuotaResetLabel = quota?.lastQuotaResetAt
+    ? new Date(quota.lastQuotaResetAt).toLocaleString('ar-SA', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      })
+    : 'لا يوجد';
+
   return (
     <>
       <div className={cn(styles['modal-overlay'], editOpen && styles.open)} onClick={onCloseEdit}>
@@ -97,6 +120,64 @@ export default function AdminModals({
               حفظ التغييرات
             </button>
             <button className={styles['btn-ghost']} onClick={onCloseEdit}>
+              إلغاء
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className={cn(styles['modal-overlay'], quotaRestoreOpen && styles.open)}
+        onClick={onCloseQuotaRestore}
+      >
+        <div className={styles['modal-box']} onClick={(e) => e.stopPropagation()}>
+          <button className={styles['modal-close']} onClick={onCloseQuotaRestore}>
+            ×
+          </button>
+          <div className={styles['modal-title']}>تجديد كوتة الإيميلات</div>
+
+          {quotaRestoreUser ? (
+            <div className={styles['quota-summary']}>
+              <div className={styles['quota-user-name']}>{quotaRestoreUser.name}</div>
+              <div className={styles['quota-user-email']}>{quotaRestoreUser.email}</div>
+              <div className={styles['quota-grid']}>
+                <div>
+                  <span>الاستخدام</span>
+                  <strong>
+                    {quota?.emailsUsedToday ?? 0}/{quota?.dailyEmailLimit ?? 50}
+                  </strong>
+                </div>
+                <div>
+                  <span>المتبقي</span>
+                  <strong>{quota?.remaining ?? 0}</strong>
+                </div>
+                <div>
+                  <span>آخر تجديد</span>
+                  <strong>{lastQuotaResetLabel}</strong>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          <div className={styles['modal-field']}>
+            <label>سبب التجديد</label>
+            <textarea
+              rows={3}
+              placeholder="اكتب سبب تجديد الكوتة"
+              value={quotaRestoreReason}
+              onChange={(e) => onQuotaRestoreReasonChange?.(e.target.value)}
+            />
+          </div>
+
+          <div className={styles['modal-actions']}>
+            <button
+              className={styles['btn-primary']}
+              onClick={onConfirmQuotaRestore}
+              disabled={quotaRestoreSubmitting}
+            >
+              {quotaRestoreSubmitting ? 'جاري التجديد...' : 'تأكيد التجديد'}
+            </button>
+            <button className={styles['btn-ghost']} onClick={onCloseQuotaRestore}>
               إلغاء
             </button>
           </div>
