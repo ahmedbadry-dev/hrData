@@ -37,11 +37,17 @@ interface UserAutoApplySectionProps {
 const staticEmailIntro = `السلام عليكم ورحمة الله وبركاته،
 يُسعدني أن أتقدم بهذه الرسالة إلى شركة [اسم الشركة]، مُعبِّرًا عن رغبتي الصادقة في الانضمام إلى فريقكم المتميز، لِما تتمتع به شركتكم من بيئة عمل احترافية وفرص حقيقية للنمو والتطور.`;
 
-const professionalEmailBody = `أنا شاب سعودي طموح، أحمل مؤهلًا أكاديميًا مناسبًا وخبرة عملية أسهمت في صقل مهاراتي التحليلية وتعزيز قدرتي على العمل ضمن فريق متناسق وفعّال. وأُرفق مع هذه الرسالة سيرتي الذاتية التفصيلية للاطلاع على مسيرتي المهنية وأبرز إنجازاتي.
+const professionalEmailBody = `أتطلع إلى أن أكون جزءًا من فريق عملكم، حيث أرى في هذه الفرصة بيئة مناسبة لتطوير مهاراتي والمساهمة بفاعلية في تحقيق أهداف الشركة.
 
-وأُعرب عن أملي في التواصل معكم في الوقت الذي يناسبكم، لمناقشة ما أستطيع تقديمه من قيمة مضافة تُسهم في تحقيق أهداف الشركة وتطلعاتها.
+أمتلك شغفًا كبيرًا بالتعلم وتطوير المهارات، وأسعى دائمًا إلى تقديم أفضل ما لدي بروح المسؤولية والالتزام والعمل الجماعي.
 
-وتقبلوا خالص الشكر والتقدير،`;
+وأؤمن بأن الانضمام إلى فريقكم سيكون فرصة قيّمة لاكتساب الخبرات والمساهمة في تحقيق أهداف الشركة من خلال بذل الجهد وتقديم أداء احترافي يعكس حرصي على النجاح والتميز.
+
+
+أرفق لكم سيرتي الذاتية للاطلاع عليها، وآمل أن أحظى بفرصة لإجراء مقابلة شخصية أستطيع من خلالها التعريف بمؤهلاتي بشكل أكبر.
+
+شاكرًا لكم وقتكم واهتمامكم، ومتطلعًا إلى فرصة العمل معكم.
+وتفضلوا بقبول فائق الاحترام والتقدير.`;
 
 const getSavedJobSelectionKey = (job: SavedJob, index: number): string =>
   job.jobId ?? `${job.company}-${job.role}-${index}`;
@@ -359,7 +365,7 @@ export default function UserAutoApplySection({
 
   if (!gmailConnected) {
     return (
-      <section>
+      <section className={styles['auto-apply-section']}>
         <PageHeader title="التقديم الآلي" titleClassName={styles['section-headline']} />
         <div className={styles['warning-card']}>
           <div className={styles['warning-icon']}></div>
@@ -386,7 +392,7 @@ export default function UserAutoApplySection({
 
   if (step === 3) {
     return (
-      <section>
+      <section className={styles['auto-apply-section']}>
         {renderQuotaPanel()}
         <EmptyState
           symbol=""
@@ -425,7 +431,7 @@ export default function UserAutoApplySection({
 
   if (step === 2) {
     return (
-      <section>
+      <section className={styles['auto-apply-section']}>
         {renderQuotaPanel()}
         <PageHeader
           title={
@@ -514,7 +520,7 @@ export default function UserAutoApplySection({
   }
 
   return (
-    <section>
+    <section className={styles['auto-apply-section']}>
       {renderQuotaPanel()}
       <PageHeader
         title={
@@ -545,98 +551,50 @@ export default function UserAutoApplySection({
 
       <div className={styles['field-wrap']}>
         <span className={styles['search-label']}>نص الرسالة</span>
-        <div
-          style={{
-            marginBottom: '16px',
-            padding: '16px',
-            backgroundColor: 'var(--surface)',
-            borderRadius: '8px',
-            border: '1px solid var(--border)',
-          }}
-        >
-          <div
-            style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}
-          >
-            <span style={{ fontSize: '18px', flexShrink: 0 }}></span>
+        <div className={styles['instruction-card']}>
+          <div className={styles['instruction-row']}>
+            <span className={styles['instruction-icon']} aria-hidden="true">
+              💡
+            </span>
             <div>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+              <div className={styles['instruction-title']}>
                 كيفية كتابة الرسالة
               </div>
-              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                <strong>الخطوة 1:</strong> المقدمة الثابتة (تُضاف تلقائياً من قبلنا) <br />
-                <strong>الخطوة 2:</strong> أضف نصك الشخصي بدءاً من "أنا شاب سعودي..." <br />
-                <strong>النتيجة:</strong> رسالة احترافية متكاملة = (المقدمة) + (نصك)
-              </div>
+              <ul className={styles['instruction-list']}>
+                <li>
+                  <strong>الخطوة 1:</strong> المقدمة الثابتة (تُضاف تلقائياً من قبلنا)
+                </li>
+                <li>
+                  <strong>الخطوة 2:</strong> اكتب ما تشاء عن نفسك أو استخدم AI
+                </li>
+                <li>
+                  <strong>الخطوة 3:</strong> رسالة احترافية متكاملة = (المقدمة) + (نصك)
+                </li>
+              </ul>
             </div>
           </div>
-        </div>
-
-        <div style={{ marginBottom: '18px' }}>
-          <div
-            style={{
-              fontSize: '12px',
-              fontWeight: 600,
-              color: 'var(--text-secondary)',
-              marginBottom: '8px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            المقدمة الثابتة (تُضاف تلقائياً)
-          </div>
-          <div
-            style={{
-              width: '100%',
-              border: '2px solid var(--ink)',
-              padding: '18px 22px',
-              fontFamily: "'Cairo', sans-serif",
-              fontSize: '14px',
-              backgroundColor: 'var(--paper)',
-              color: 'var(--ink)',
-              borderRadius: '4px',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-              lineHeight: '1.8',
-            }}
-          >
+          <div className={styles['fixed-intro-box']}>
+            <span className={styles['intro-label']}>المقدمة الثابتة (تُضاف تلقائياً)</span>
             {staticEmailIntro}
           </div>
         </div>
 
-        <div style={{ marginBottom: '16px' }}>
-          <div
-            style={{
-              fontSize: '12px',
-              fontWeight: 600,
-              color: 'var(--text-secondary)',
-              marginBottom: '8px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            إضافتك الشخصية (عدّل هنا)
-          </div>
+        <div className={styles['message-body-field']}>
+          <span className={styles['search-label']}>نص الرسالة الشخصي</span>
           <textarea
-            placeholder="اكتب نصك الشخصي بدءاً من معلوماتك ومؤهلاتك... يمكنك تعديل النص وإضافة لمستك الشخصية"
+            className={styles['message-textarea']}
+            placeholder="اكتب نص الرسالة الشخصي"
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            style={{
-              minHeight: '200px',
-              minWidth: '100%',
-              padding: '12px 14px',
-              fontSize: '13px',
-              lineHeight: '1.6',
-              borderRadius: '4px',
-              border: '1px solid var(--border)',
-              backgroundColor: 'var(--surface)',
-              color: 'var(--text-primary)',
-              fontFamily: 'inherit',
-              resize: 'both',
-              overflow: 'auto',
-            }}
           />
-          <div style={{ marginTop: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-            <strong>نصيحة:</strong> ركّز على مؤهلاتك وخبرتك وما يميزك عن الآخرين.
+          <div className={styles['message-tips']}>
+            <div>
+              <strong>نصيحة:</strong> ركّز على مؤهلاتك وخبرتك وما يميزك عن الآخرين.
+            </div>
+            <div>
+              يمكنك في المربع أعلاه تعديل نص الرسالة المرسلة.
+              <span> قريباً سيتم إضافة ميزة AI ✦</span>
+            </div>
           </div>
         </div>
       </div>
@@ -663,22 +621,24 @@ export default function UserAutoApplySection({
       ) : (
         <div className={styles['results-list']}>
           <div className={styles['selection-tools']}>
-            <span className={styles['search-label']}>الوظائف المختارة ({selectedCount})</span>
-            <div className={styles['tool-buttons']}>
+            <div className={styles['select-all-tools']}>
               <Button
                 className={styles['btn-ghost']}
                 disabled={isQuotaBlocked || savedJobs.length === 0 || effectiveSelectionLimit <= 0}
                 onClick={handleSelectFirstJobs}
               >
-                اختر الكل
+                تحديد الكل
               </Button>
+            </div>
+            <div className={styles['selected-tools']}>
+              <span className={styles['search-label']}>الوظائف المختارة ({selectedCount})</span>
               <Button
                 className={styles['btn-ghost']}
                 disabled={selectedCount === 0}
                 onClick={handleDeselectAll}
                 style={{ color: 'var(--red)' }}
               >
-                إلغاء تحديد الكل
+                إلغاء الكل
               </Button>
             </div>
           </div>
@@ -739,19 +699,19 @@ export default function UserAutoApplySection({
           >
             التالي: جدولة الإرسال ←
           </Button>
-          {(!selectedCv || selectedJobs.length === 0 || isQuotaBlocked) && (
-            <div className={styles['field-hint']}>
-              {isQuotaBlocked
-                ? DAILY_LIMIT_BLOCK_MESSAGE
-                : !selectedCv && !selectedJobs.length
-                  ? 'يرجى رفع السيرة الذاتية واختيار وظيفة واحدة على الأقل'
-                  : !selectedCv
-                    ? 'يرجى رفع السيرة الذاتية للمتابعة'
-                    : 'يرجى اختيار وظيفة واحدة على الأقل'}
-            </div>
-          )}
         </div>
       </div>
+      {(!selectedCv || selectedJobs.length === 0 || isQuotaBlocked) && (
+        <div className={styles['submit-hint']}>
+          {isQuotaBlocked
+            ? DAILY_LIMIT_BLOCK_MESSAGE
+            : !selectedCv && !selectedJobs.length
+              ? 'يرجى رفع السيرة الذاتية واختيار وظيفة واحدة على الأقل'
+              : !selectedCv
+                ? 'يرجى رفع السيرة الذاتية للمتابعة'
+                : 'يرجى اختيار وظيفة واحدة على الأقل'}
+        </div>
+      )}
     </section>
   );
 }
