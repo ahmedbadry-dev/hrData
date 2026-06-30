@@ -25,6 +25,7 @@
   color: #111;
   flex-shrink: 0;
 }
+
 .logo-box {
   width: 42px;
   height: 42px;
@@ -37,15 +38,18 @@
   font-size: 26px;
   font-weight: 900;
 }
+
 .logo-text {
   line-height: 1.1;
   text-align: left;
 }
+
 .logo-text h2 {
   font-size: 21px;
   font-weight: 700;
   margin: 0;
 }
+
 .logo-text span {
   font-size: 11px;
   letter-spacing: 2.5px;
@@ -215,6 +219,7 @@
     opacity 0.28s ease,
     visibility 0s linear 0.35s;
 }
+
 .mobile-menu.active {
   transform: translateY(0);
   opacity: 1;
@@ -233,6 +238,7 @@
   transform: translateY(-8px);
   transition: transform 0.3s ease 0.05s;
 }
+
 .mobile-menu.active .mobile-menu-content {
   transform: translateY(0);
 }
@@ -249,9 +255,11 @@
   justify-content: space-between;
   transition: color 0.2s;
 }
+
 .mobile-menu a.nav-link-mobile:hover {
   color: #555;
 }
+
 .arrow-icon {
   opacity: 0.22;
   font-size: 14px;
@@ -486,7 +494,7 @@
   background: var(--cream);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   padding: 48px 36px;
   position: relative;
   overflow: hidden;
@@ -1133,10 +1141,12 @@
 }
 
 @media (max-width: 950px) {
+
   .nav-menu-center,
   .nav-auth-left {
     display: none !important;
   }
+
   .menu-btn {
     display: flex !important;
   }
@@ -1146,6 +1156,7 @@
   .mobile-menu-content {
     padding: 14px 4% 20px;
   }
+
   .mobile-btns {
     flex-direction: column;
     gap: 8px;
