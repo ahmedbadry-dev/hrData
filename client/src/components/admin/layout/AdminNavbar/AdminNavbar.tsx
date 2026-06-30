@@ -50,13 +50,6 @@ export default function AdminNavbar({ onToggleSidebar, isSidebarOpen }: AdminNav
 
       <div className={styles['header-right']}>
         <span className={styles['admin-user']}>مرحباً، {firstName}</span>
-        <div className={styles['header-stamp']}>
-          إدارة
-          <br />
-          النظام
-          <br />
-          ٢٠٢٦
-        </div>
         <button className={styles['btn-logout']} onClick={() => navigate('/')}>
           ← اذهب للرئيسيه
         </button>

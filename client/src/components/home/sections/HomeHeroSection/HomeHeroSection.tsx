@@ -55,13 +55,6 @@ export default function HomeHeroSection() {
       </div>
 
       <div className={styles['hero-right']}>
-        {/* <div className={styles['hero-stamp']}>
-          توظيف
-          <br />
-          مباشر
-          <br />
-          ٢٠٢٦
-        </div> */}
         <div>
           <div className={styles['hero-card-preview']}>
             <div className={styles['hcp-tag']}>أرامكو السعودية</div>
