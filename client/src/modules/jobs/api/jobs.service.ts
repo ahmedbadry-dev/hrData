@@ -27,6 +27,11 @@ export interface PaginatedJobs {
   pagination: PaginationMeta;
 }
 
+export interface JobsStats {
+  totalJobs: number;
+  newJobsToday: number;
+}
+
 export interface GetJobsParams {
   page?: number;
   limit?: number;
@@ -52,6 +57,11 @@ export const fetchJobs = async (params?: GetJobsParams): Promise<ApiResponse<Pag
   const { data } = await axiosClient.get<ApiResponse<PaginatedJobs>>(
     `/jobs?${searchParams.toString()}`
   );
+  return data;
+};
+
+export const fetchJobsStats = async (): Promise<ApiResponse<JobsStats>> => {
+  const { data } = await axiosClient.get<ApiResponse<JobsStats>>('/jobs/stats');
   return data;
 };
 
@@ -120,6 +130,7 @@ export const fetchEligibleSavedJobs = async (
 
 export const jobsService = {
   fetchJobs,
+  fetchJobsStats,
   saveJob,
   unsaveJob,
   saveJobs,

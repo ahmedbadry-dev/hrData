@@ -56,6 +56,8 @@ export const jobsRoutes = (jobsController: JobsController): Router => {
     jobsController.searchJobs
   );
 
+  router.get('/stats', authenticationMiddleware, jobsController.getJobsStats);
+
   router.get(
     '/',
     authenticationMiddleware,

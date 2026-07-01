@@ -8,6 +8,7 @@ interface UserHomeSectionProps {
   applicationsCount?: number;
   repliesCount?: number;
   totalJobs?: number;
+  newJobsToday?: number;
   weeklyData?: number[];
   isStatsLoading?: boolean;
   isWeeklyLoading?: boolean;
@@ -18,6 +19,7 @@ export default function UserHomeSection({
   applicationsCount = 0,
   repliesCount = 0,
   totalJobs = 0,
+  newJobsToday = 0,
   weeklyData,
   isStatsLoading = false,
   isWeeklyLoading = false,
@@ -28,6 +30,13 @@ export default function UserHomeSection({
 
   const chartValues = useMemo(() => weeklyData ?? [0, 0, 0, 0, 0, 0, 0], [weeklyData]);
   const chartDataKey = useMemo(() => chartValues.join('-'), [chartValues]);
+  const jobsTrend =
+    newJobsToday > 0
+      ? {
+          value: `+${newJobsToday} وظيفة أضيفت اليوم`,
+          direction: 'up' as const,
+        }
+      : undefined;
 
   useEffect(() => {
     if (isWeeklyLoading) {
@@ -150,6 +159,7 @@ export default function UserHomeSection({
           valueClassName={styles['stat-val']}
           titleClassName={styles['stat-tit']}
           value={totalJobs}
+          trend={jobsTrend}
           isLoading={isStatsLoading}
           title="إجمالي الوظائف"
         />

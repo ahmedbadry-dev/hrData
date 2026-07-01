@@ -17,6 +17,7 @@ export const JOBS_CONSTANTS = {
   TEXT_SEARCH_MODE: 'insensitive' as const,
   MESSAGES: {
     JOBS_FETCHED_SUCCESSFULLY: 'Jobs fetched successfully',
+    JOBS_STATS_FETCHED_SUCCESSFULLY: 'Jobs stats fetched successfully',
     SAVED_JOBS_FETCHED_SUCCESSFULLY: 'Saved jobs fetched successfully',
     ELIGIBLE_SAVED_JOBS_FETCHED_SUCCESSFULLY: 'Eligible saved jobs fetched successfully',
     JOB_FETCHED_SUCCESSFULLY: 'Job fetched successfully',

@@ -24,6 +24,7 @@ import { CreateBulkJobsDto } from './dto/create-bulk-jobs.dto';
 import {
   JobResponse,
   PaginatedJobsResponse,
+  JobsStatsResponse,
   SaveJobResponse,
   BulkCreateJobsResponse,
   BulkSaveJobsResponse,
@@ -45,6 +46,27 @@ export class JobsService {
     const where = this.buildSearchJobsWhere(query);
 
     return this.getPaginatedJobsWithSavedState(userId, where, pagination);
+  }
+
+  async getJobsStats(): Promise<JobsStatsResponse> {
+    const startOfTodayUtc = new Date();
+    startOfTodayUtc.setUTCHours(0, 0, 0, 0);
+
+    const [totalJobs, newJobsToday] = await this.prisma.$transaction([
+      this.prisma.job.count(),
+      this.prisma.job.count({
+        where: {
+          createdAt: {
+            gte: startOfTodayUtc,
+          },
+        },
+      }),
+    ]);
+
+    return {
+      totalJobs,
+      newJobsToday,
+    };
   }
 
   async getJobById(userId: string, jobId: string): Promise<JobResponse> {

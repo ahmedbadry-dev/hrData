@@ -73,11 +73,11 @@ const buildCurrentWeekActivity = (applications: Application[]): number[] => {
 };
 
 export default function DashboardHomePage() {
-  const [totalJobsQuery, savedJobsQuery, applicationsCountQuery, statsQuery] = useQueries({
+  const [jobsStatsQuery, savedJobsQuery, applicationsCountQuery, statsQuery] = useQueries({
     queries: [
       {
-        queryKey: jobsQueryKeys.list({ page: 1, limit: 1 }),
-        queryFn: () => jobsService.fetchJobs({ page: 1, limit: 1 }),
+        queryKey: jobsQueryKeys.stats,
+        queryFn: () => jobsService.fetchJobsStats(),
         ...STATS_QUERY_OPTIONS,
       },
       {
@@ -105,14 +105,14 @@ export default function DashboardHomePage() {
   });
 
   const hasError =
-    totalJobsQuery.isError ||
+    jobsStatsQuery.isError ||
     savedJobsQuery.isError ||
     applicationsCountQuery.isError ||
     statsQuery.isError ||
     weeklyActivityQuery.isError;
 
-  const totalJobs =
-    totalJobsQuery.data?.paginationMeta?.total ?? totalJobsQuery.data?.data?.pagination?.total ?? 0;
+  const totalJobs = jobsStatsQuery.data?.data?.totalJobs ?? 0;
+  const newJobsToday = jobsStatsQuery.data?.data?.newJobsToday ?? 0;
 
   const savedJobsCount =
     savedJobsQuery.data?.paginationMeta?.total ?? savedJobsQuery.data?.data?.pagination?.total ?? 0;
@@ -132,8 +132,8 @@ export default function DashboardHomePage() {
   );
 
   const isStatsLoading =
-    totalJobsQuery.isLoading ||
-    totalJobsQuery.isFetching ||
+    jobsStatsQuery.isLoading ||
+    jobsStatsQuery.isFetching ||
     savedJobsQuery.isLoading ||
     savedJobsQuery.isFetching ||
     applicationsCountQuery.isLoading ||
@@ -161,6 +161,7 @@ export default function DashboardHomePage() {
       applicationsCount={applicationsCount}
       repliesCount={successRate}
       totalJobs={totalJobs}
+      newJobsToday={newJobsToday}
       weeklyData={weeklyData}
       isStatsLoading={isStatsLoading}
       isWeeklyLoading={isWeeklyLoading}

@@ -30,6 +30,11 @@ export interface PaginatedJobsResponse {
   pagination: PaginationMeta;
 }
 
+export interface JobsStatsResponse {
+  totalJobs: number;
+  newJobsToday: number;
+}
+
 export interface SaveJobResponse {
   jobId: string;
   savedAt: Date;

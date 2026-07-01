@@ -31,6 +31,7 @@ export const normalizeEligibleSavedJobsQueryParams = (params?: GetJobsParams) =>
 
 export const jobsQueryKeys = {
   all: ['jobs'] as const,
+  stats: ['jobs', 'stats'] as const,
   list: (params?: GetJobsParams) => ['jobs', normalizeJobsListQueryParams(params)] as const,
   savedAll: ['jobs', 'saved'] as const,
   saved: (params?: GetJobsParams) =>

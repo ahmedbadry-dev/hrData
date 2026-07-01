@@ -23,6 +23,16 @@ export class JobsController {
     );
   };
 
+  getJobsStats = async (req: Request, res: Response): Promise<Response> => {
+    const data = await this.jobsService.getJobsStats();
+    return ResponseHelper.ok(
+      res,
+      data,
+      JOBS_CONSTANTS.MESSAGES.JOBS_STATS_FETCHED_SUCCESSFULLY,
+      req.path
+    );
+  };
+
   getJobById = async (req: Request, res: Response): Promise<Response> => {
     const data = await this.jobsService.getJobById(
       req.user!.id,
