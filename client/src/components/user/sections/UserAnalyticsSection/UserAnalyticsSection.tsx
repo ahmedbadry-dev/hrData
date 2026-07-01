@@ -3,8 +3,6 @@ import { EmptyState, PageHeader } from '@/components/common';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { getPageNumbers } from '@/lib/pagination';
-import { formatCity } from '@/lib/cityMapper';
-import { qualificationOptions } from '@/modules/jobs/types/filterOptions';
 import styles from './UserAnalyticsSection.module.css';
 
 interface UserAnalyticsSectionProps {
@@ -34,16 +32,6 @@ const statusPriority: Record<UserApplication['status'], number> = {
   failed: 3,
   cancelled: 4,
 };
-
-const EMPTY_FIELD_LABEL = 'غير محدد';
-
-const getQualificationLabel = (qualification?: string | null) =>
-  qualificationOptions.find((option) => option.value === qualification)?.label || EMPTY_FIELD_LABEL;
-
-const getExperienceIcon = (experience: string) =>
-  ['بدون خبرة', 'لا يشترط', 'غير مطلوبة', 'غير مطلوب'].some((phrase) => experience.includes(phrase))
-    ? '✨'
-    : '💼';
 
 export default function UserAnalyticsSection({
   applications,
@@ -103,15 +91,6 @@ export default function UserAnalyticsSection({
                 month: 'long',
                 day: 'numeric',
               });
-          const experienceText = app.experience?.trim() || EMPTY_FIELD_LABEL;
-          const experienceIcon = getExperienceIcon(experienceText);
-          const isNoExperience = experienceIcon === '✨';
-          const languageRequirementText = app.languageRequirement?.trim() || EMPTY_FIELD_LABEL;
-          const isLanguageNotRequired = ['غير مطلوبة', 'غير مطلوب'].some((phrase) =>
-            languageRequirementText.includes(phrase)
-          );
-          const descriptionText = app.description?.trim() || 'لا يوجد وصف متاح';
-          const categoryText = app.major?.trim() || EMPTY_FIELD_LABEL;
 
           return (
             <div
@@ -121,58 +100,12 @@ export default function UserAnalyticsSection({
             >
               <div className={styles['card-top']}>
                 <div className={styles['card-main']}>
-                  <div className={styles['company-tag']}>{app.company}</div>
+                  <div className={styles['company-tag']}>اسم الجهة: {app.company}</div>
                   <h2 className={styles['job-title']}>{app.role}</h2>
                   <div className={styles['meta-row']}>
-                    <span className={styles['meta-chip']}>
-                      <span className={styles['meta-icon']} aria-hidden="true">
-                        📍
-                      </span>
-                      <span className={styles['meta-text']}>{formatCity(app.city)}</span>
-                    </span>
-                    <span className={styles['meta-chip']}>
-                      <span className={styles['meta-icon']} aria-hidden="true">
-                        🎓
-                      </span>
-                      <span className={styles['meta-text']}>
-                        {getQualificationLabel(app.qualification)}
-                      </span>
-                    </span>
-                    <span className={styles['meta-chip']}>
-                      <span className={styles['meta-icon']} aria-hidden="true">
-                        📘
-                      </span>
-                      <span className={styles['meta-text']}>{categoryText}</span>
-                    </span>
-                    <span className={styles['meta-chip']}>
-                      <span className={styles['meta-icon']} aria-hidden="true">
-                        📅
-                      </span>
-                      <span className={styles['meta-text']}>{dateStr}</span>
-                    </span>
-                    <span
-                      className={cn(
-                        styles['meta-chip'],
-                        styles['experience-chip'],
-                        isNoExperience && styles['no-experience-chip']
-                      )}
-                    >
-                      <span className={styles['meta-icon']} aria-hidden="true">
-                        {experienceIcon}
-                      </span>
-                      <span className={styles['meta-text']}>{experienceText}</span>
-                    </span>
-                    <span
-                      className={cn(
-                        styles['meta-chip'],
-                        isLanguageNotRequired && styles['language-chip']
-                      )}
-                    >
-                      <span className={styles['meta-icon']} aria-hidden="true">
-                        🌐
-                      </span>
-                      <span className={styles['meta-text']}>{languageRequirementText}</span>
-                    </span>
+                    <span className={styles['meta-chip']}>🎓 {app.major}</span>
+                    <span className={styles['meta-chip']}>📍 {app.city}</span>
+                    <span className={styles['meta-chip']}>📅 {dateStr}</span>
                   </div>
                 </div>
 
@@ -192,11 +125,6 @@ export default function UserAnalyticsSection({
                     إلغاء
                   </button>
                 )}
-              </div>
-
-              <div className={styles['job-description']}>
-                <div className={styles['description-label']}>الوصف الوظيفي</div>
-                <p className={styles['description-text']}>{descriptionText}</p>
               </div>
 
               <div className={styles['card-email']}>
