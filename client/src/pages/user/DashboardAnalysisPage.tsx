@@ -3,12 +3,23 @@ import { useToast } from '@/contexts/ToastContext';
 import { EmptyState } from '@/components/common';
 import { UserAnalyticsSection } from '@/components/user/sections';
 import { useApplicationsList, useCancelApplication } from '@/modules/applications/api/hooks';
-import type { Application } from '@/modules/applications/types';
+import type {
+  Application,
+  ApplicationStatusFilterGroup,
+  ApplicationStatusGroup,
+} from '@/modules/applications/types';
 import { ApplicationStatus } from '@/constants/enums';
 import type { UserApplication } from '@/components/user/sections/userData';
 import styles from './DashboardAnalysisPage.module.css';
 
 const ITEMS_PER_PAGE = 10;
+const STATUS_FILTER_OPTIONS: { value: ApplicationStatusGroup; label: string }[] = [
+  { value: 'all', label: 'الكل' },
+  { value: 'pending', label: 'قيد الإرسال' },
+  { value: 'sent', label: 'تم الإرسال' },
+  { value: 'failed', label: 'فشل' },
+  { value: 'cancelled', label: 'ملغي' },
+];
 
 const mapStatusToUserApp = (status: ApplicationStatus): UserApplication['status'] => {
   switch (status) {
@@ -32,21 +43,29 @@ const mapStatusToUserApp = (status: ApplicationStatus): UserApplication['status'
 
 export default function DashboardAnalysisPage() {
   const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<ApplicationStatusGroup>('all');
   const [pendingCancelId, setPendingCancelId] = useState<string | null>(null);
   const { showToast } = useToast();
 
-  const { data, isLoading, isFetching, isError } = useApplicationsList(
-    {
+  const listRequestParams = useMemo<{
+    page: number;
+    limit: number;
+    statusGroup?: ApplicationStatusFilterGroup;
+  }>(
+    () => ({
       limit: ITEMS_PER_PAGE,
       page,
-    },
-    {
-      staleTime: 0,
-      gcTime: 0,
-      refetchOnMount: true,
-      refetchOnWindowFocus: false,
-    }
+      ...(statusFilter !== 'all' ? { statusGroup: statusFilter } : {}),
+    }),
+    [page, statusFilter]
   );
+
+  const { data, isLoading, isFetching, isError } = useApplicationsList(listRequestParams, {
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+  });
 
   const cancelMutation = useCancelApplication(
     {
@@ -57,7 +76,7 @@ export default function DashboardAnalysisPage() {
         showToast({ message: 'تعذر إلغاء الطلب حالياً. حاول مرة أخرى.', type: 'error' });
       },
     },
-    { page, limit: ITEMS_PER_PAGE }
+    listRequestParams
   );
 
   const applications: UserApplication[] = useMemo(
@@ -92,6 +111,12 @@ export default function DashboardAnalysisPage() {
 
   const from = totalApplications === 0 ? 0 : (page - 1) * ITEMS_PER_PAGE + 1;
   const to = totalApplications === 0 ? 0 : Math.min(page * ITEMS_PER_PAGE, totalApplications);
+
+  const handleStatusFilterChange = (nextFilter: ApplicationStatusGroup) => {
+    if (nextFilter === statusFilter) return;
+    setStatusFilter(nextFilter);
+    setPage(1);
+  };
 
   const handleCancelClick = (id: string) => {
     setPendingCancelId(id);
@@ -142,7 +167,10 @@ export default function DashboardAnalysisPage() {
         currentPage={page}
         totalPages={totalPages}
         isLoading={isLoading || isFetching}
-        showingLabel={`Showing ${from}-${to} of ${totalApplications} applications`}
+        showingLabel={`عرض ${from}-${to} من ${totalApplications} طلب`}
+        filterOptions={STATUS_FILTER_OPTIONS}
+        activeFilter={statusFilter}
+        onFilterChange={handleStatusFilterChange}
         onPageChange={setPage}
         onCancel={handleCancelClick}
       />

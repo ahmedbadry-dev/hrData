@@ -2,6 +2,9 @@ import { ApplicationStatus } from '@/constants/enums';
 
 export { ApplicationStatus };
 
+export type ApplicationStatusGroup = 'all' | 'pending' | 'sent' | 'failed' | 'cancelled';
+export type ApplicationStatusFilterGroup = Exclude<ApplicationStatusGroup, 'all'>;
+
 export interface ApplicationJob {
   id: string;
   title: string;

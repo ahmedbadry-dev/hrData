@@ -26,6 +26,7 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import logger from '@/shared/utils/logger.util';
 import { EmailQuotaService, EmailQuotaState } from './email-quota.service';
+import type { GetApplicationsDto } from './dto/get-applications.dto';
 
 interface MulterFile {
   fieldname: string;
@@ -39,6 +40,28 @@ interface MulterFile {
 interface EmailLimitCheckResult extends EmailQuotaState {
   allowedCount: number;
 }
+
+type ApplicationStatusGroup = NonNullable<GetApplicationsDto['query']['statusGroup']>;
+
+const APPLICATION_STATUS_GROUPS: Record<
+  Exclude<ApplicationStatusGroup, 'all'>,
+  ApplicationStatus[]
+> = {
+  pending: [ApplicationStatus.SCHEDULED, ApplicationStatus.SENDING],
+  sent: [ApplicationStatus.SENT, ApplicationStatus.EMAIL_SENT, ApplicationStatus.EMAIL_OPENED],
+  failed: [ApplicationStatus.FAILED, ApplicationStatus.EMAIL_FAILED],
+  cancelled: [ApplicationStatus.CANCELLED],
+};
+
+const resolveApplicationStatusFilter = (
+  query: GetApplicationsDto['query']
+): Prisma.ApplicationWhereInput['status'] | undefined => {
+  if (query.statusGroup && query.statusGroup !== 'all') {
+    return { in: APPLICATION_STATUS_GROUPS[query.statusGroup] };
+  }
+
+  return query.status ? (query.status as ApplicationStatus) : undefined;
+};
 
 export class ApplicationsService {
   constructor(private readonly prisma: PrismaClient) {}
@@ -65,7 +88,7 @@ export class ApplicationsService {
 
   async getApplications(
     userId: string,
-    query: { page?: number | undefined; limit?: number | undefined; status?: string | undefined }
+    query: GetApplicationsDto['query']
   ): Promise<GetApplicationsResponse> {
     const { page, limit, skip } = resolvePagination(query, {
       minPage: APPLICATIONS_CONSTANTS.PAGINATION.MIN_PAGE,
@@ -75,9 +98,10 @@ export class ApplicationsService {
       maxLimit: APPLICATIONS_CONSTANTS.PAGINATION.MAX_LIMIT,
     });
 
+    const statusFilter = resolveApplicationStatusFilter(query);
     const where: Prisma.ApplicationWhereInput = {
       userId,
-      ...(query.status ? { status: query.status as ApplicationStatus } : {}),
+      ...(statusFilter ? { status: statusFilter } : {}),
     };
 
     const now = new Date();

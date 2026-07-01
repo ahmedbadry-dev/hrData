@@ -1,6 +1,14 @@
 import { z } from 'zod';
 import { APPLICATIONS_CONSTANTS } from '../applications.constants';
 
+export const ApplicationStatusGroupSchema = z.enum([
+  'all',
+  'pending',
+  'sent',
+  'failed',
+  'cancelled',
+]);
+
 export const GetApplicationsDtoSchema = z.object({
   query: z.object({
     page: z.coerce
@@ -15,6 +23,7 @@ export const GetApplicationsDtoSchema = z.object({
       .default(APPLICATIONS_CONSTANTS.PAGINATION.DEFAULT_LIMIT)
       .optional(),
     status: z.string().optional(),
+    statusGroup: ApplicationStatusGroupSchema.optional(),
   }),
 });
 

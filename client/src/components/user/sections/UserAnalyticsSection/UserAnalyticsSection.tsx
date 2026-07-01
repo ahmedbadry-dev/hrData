@@ -1,9 +1,15 @@
 import type { UserApplication } from '@/components/user/sections/userData';
+import type { ApplicationStatusGroup } from '@/modules/applications/types';
 import { EmptyState, PageHeader } from '@/components/common';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { getPageNumbers } from '@/lib/pagination';
 import styles from './UserAnalyticsSection.module.css';
+
+interface StatusFilterOption {
+  value: ApplicationStatusGroup;
+  label: string;
+}
 
 interface UserAnalyticsSectionProps {
   applications: UserApplication[];
@@ -11,6 +17,9 @@ interface UserAnalyticsSectionProps {
   totalPages?: number;
   isLoading?: boolean;
   showingLabel?: string;
+  filterOptions?: StatusFilterOption[];
+  activeFilter?: ApplicationStatusGroup;
+  onFilterChange?: (filter: ApplicationStatusGroup) => void;
   onPageChange?: (page: number) => void;
   onCancel?: (id: string) => void;
 }
@@ -39,6 +48,9 @@ export default function UserAnalyticsSection({
   totalPages = 1,
   isLoading,
   showingLabel,
+  filterOptions = [],
+  activeFilter = 'all',
+  onFilterChange,
   onPageChange,
   onCancel,
 }: UserAnalyticsSectionProps) {
@@ -52,14 +64,46 @@ export default function UserAnalyticsSection({
     return dateB - dateA;
   });
 
+  const hasActiveFilter = activeFilter !== 'all';
+  const shouldRenderFilters = filterOptions.length > 0 && Boolean(onFilterChange);
+  const renderControlBar = () => (
+    <div className={styles['control-bar']}>
+      <span className={styles['count-label']}>
+        {showingLabel || `${applications.length} طلب مرسل`}
+      </span>
+
+      {shouldRenderFilters && (
+        <div className={styles['filter-group']} role="group" aria-label="فلترة الطلبات حسب الحالة">
+          {filterOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={cn(styles['filter-btn'], option.value === activeFilter && styles.active)}
+              onClick={() => onFilterChange?.(option.value)}
+              aria-pressed={option.value === activeFilter}
+              disabled={isLoading && option.value !== activeFilter}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   if (applications.length === 0) {
     return (
       <section>
         <PageHeader title="التحليلات والتتبع" titleClassName={styles['section-headline']} />
+        {renderControlBar()}
         <EmptyState
           symbol="◐"
-          title="لا توجد بيانات تتبع بعد"
-          description='استخدم "التقديم الآلي" لإرسال طلباتك ومتابعتها هنا'
+          title={hasActiveFilter ? 'لا توجد طلبات بهذه الحالة' : 'لا توجد بيانات تتبع بعد'}
+          description={
+            hasActiveFilter
+              ? 'جرّب اختيار حالة أخرى أو الرجوع إلى عرض الكل'
+              : 'استخدم "التقديم الآلي" لإرسال طلباتك ومتابعتها هنا'
+          }
           className={styles['welcome-state']}
           symbolClassName={styles['big-number']}
           descriptionClassName={styles.hint}
@@ -71,11 +115,7 @@ export default function UserAnalyticsSection({
   return (
     <section>
       <PageHeader title="التحليلات والتتبع" titleClassName={styles['section-headline']} />
-      <div className={styles['control-bar']}>
-        <span className={styles['count-label']}>
-          {showingLabel || `${applications.length} طلب مرسل`}
-        </span>
-      </div>
+      {renderControlBar()}
 
       <div className={styles['results-list']}>
         {sortedApplications.map((app, index) => {

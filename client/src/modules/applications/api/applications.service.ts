@@ -1,6 +1,7 @@
 import { axiosClient, type ApiResponse } from '@/services/api';
 import type {
   ApplicationsQuota,
+  ApplicationStatusFilterGroup,
   PaginatedApplications,
   ScheduleApplicationsRequest,
   ScheduleApplicationsResponse,
@@ -10,11 +11,13 @@ export const fetchApplicationsList = async (params?: {
   page?: number;
   limit?: number;
   status?: string;
+  statusGroup?: ApplicationStatusFilterGroup;
 }): Promise<ApiResponse<PaginatedApplications>> => {
   const searchParams = new URLSearchParams();
   if (params?.page) searchParams.set('page', String(params.page));
   if (params?.limit) searchParams.set('limit', String(params.limit));
   if (params?.status) searchParams.set('status', params.status);
+  if (params?.statusGroup) searchParams.set('statusGroup', params.statusGroup);
 
   const { data } = await axiosClient.get<ApiResponse<PaginatedApplications>>(
     `/applications?${searchParams.toString()}`
